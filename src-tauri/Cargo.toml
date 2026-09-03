@@ -79,3 +79,9 @@ codegen-units = 1
 lto = true
 opt-level = "z"
 strip = true
+
+[patch.crates-io]
+# tars-stream 0.1.1 长期未维护，lib.rs 的 `#![feature(...)]`（含 specialization）
+# 使其只能在 nightly 编译。已 vendored 到 vendor/tars-stream 并改为稳定语法
+# （移除过时 feature 门、列表编解码不再用 specialization），行为与上游一致。
+tars-stream = { path = "vendor/tars-stream" }

@@ -16,7 +16,7 @@
         "label": "main",
         "url": "/",
         "titleBarStyle": "Overlay",
-        "decorations": true,
+        "decorations": false,
         "trafficLightPosition": {
           "x": 18,
           "y": 33
@@ -37,14 +37,7 @@
   "plugins": {},
   "bundle": {
     "active": true,
-    "targets": [
-      "app",
-      "dmg",
-      "nsis",
-      "msi",
-      "deb",
-      "appimage"
-    ],
+    "targets": ["app", "dmg", "nsis", "msi", "deb", "appimage"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
