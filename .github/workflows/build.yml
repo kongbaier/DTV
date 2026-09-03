@@ -73,7 +73,7 @@ jobs:
         if: matrix.platform == 'windows-latest'
         run: |
           echo "RUSTY_V8_ARCHIVE=https://github.com/denoland/rusty_v8/releases/download/v0.93.1/rusty_v8_release_x86_64-pc-windows-msvc.lib.gz" >> $GITHUB_ENV
-          
+
       - name: Patch tauri config for Windows build
         if: matrix.platform == 'windows-latest'
         shell: powershell
@@ -97,8 +97,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
-
-
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -131,19 +129,19 @@ jobs:
           releaseName: 'DTV ${{ github.event.inputs.version || github.ref_name }}'
           releaseBody: |
             ## 🎉 DTV Release ${{ github.event.inputs.version || github.ref_name }}
-            
+
             ### 📦 安装包下载
             - **macOS (Apple Silicon)**: DTV_${{ github.event.inputs.version || github.ref_name }}_aarch64.dmg
             - **macOS (Intel)**: DTV_${{ github.event.inputs.version || github.ref_name }}_x64.dmg
             - **Windows**: DTV_${{ github.event.inputs.version || github.ref_name }}_x64-setup.exe
             - **Linux (AppImage)**: DTV_${{ github.event.inputs.version || github.ref_name }}_amd64.AppImage
             - **Linux (Deb)**: DTV_${{ github.event.inputs.version || github.ref_name }}_amd64.deb
-            
+
             ### 🔧 安装说明
             - **macOS**: 下载对应架构的 .dmg 文件，双击安装
             - **Windows**: 下载 .exe 文件，右键以管理员身份运行
             - **Linux**: 下载 .AppImage 文件并添加执行权限，或安装 .deb 包
-            
+
             ### ⚠️ 注意事项
             - 首次运行可能需要在系统设置中允许应用运行
             - macOS 用户可能需要在「系统偏好设置 > 安全性与隐私」中允许应用

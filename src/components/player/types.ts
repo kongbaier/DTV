@@ -1,4 +1,4 @@
-import type { Platform } from "@/platforms/common/types";
+import type { Platform } from '@/platforms/common/types';
 
 export interface RustGetStreamUrlPayload {
   args: {

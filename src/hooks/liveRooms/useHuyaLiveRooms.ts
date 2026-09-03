@@ -1,15 +1,18 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import type { CommonStreamer } from "@/platforms/common/streamerTypes";
-import { useImageProxy } from "@/hooks/useImageProxy";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import type { CommonStreamer } from '@/platforms/common/streamerTypes';
+import { useImageProxy } from '@/hooks/useImageProxy';
 
 export interface UseHuyaLiveRoomsOptions {
   defaultPageSize?: number;
 }
 
-export function useHuyaLiveRooms(gid: string | null, options: UseHuyaLiveRoomsOptions = { defaultPageSize: 120 }) {
+export function useHuyaLiveRooms(
+  gid: string | null,
+  options: UseHuyaLiveRoomsOptions = { defaultPageSize: 120 },
+) {
   const [rooms, setRooms] = useState<CommonStreamer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -25,28 +28,32 @@ export function useHuyaLiveRooms(gid: string | null, options: UseHuyaLiveRoomsOp
   const canFetch = useMemo(() => !!gid, [gid]);
 
   const huyaCoverParams =
-    "x-oss-process=image/resize,limit_0,m_fill,w_338,h_190/sharpen,80/format,jpg/interlace,1/quality,q_90";
+    'x-oss-process=image/resize,limit_0,m_fill,w_338,h_190/sharpen,80/format,jpg/interlace,1/quality,q_90';
   const appendHuyaCoverParams = useCallback((url: string) => {
     if (!url) return url;
-    if (url.includes("x-oss-process=")) return url;
-    return url.includes("?") ? `${url}&${huyaCoverParams}` : `${url}?${huyaCoverParams}`;
+    if (url.includes('x-oss-process=')) return url;
+    return url.includes('?')
+      ? `${url}&${huyaCoverParams}`
+      : `${url}?${huyaCoverParams}`;
   }, []);
 
   const mapHuyaItemToCommonStreamer = useCallback(
     (item: any): CommonStreamer => {
-      const viewers = typeof item.lUserCount === "number" ? item.lUserCount : 0;
-      const rawCover = item.room_cover || item.sScreenshot || "";
+      const viewers = typeof item.lUserCount === 'number' ? item.lUserCount : 0;
+      const rawCover = item.room_cover || item.sScreenshot || '';
       return {
-        room_id: item.room_id?.toString() || item.lProfileRoom?.toString() || "",
-        title: item.title || item.sIntroduction || "",
-        nickname: item.nickname || item.sNick || "",
-        avatar: proxify(item.avatar || item.sAvatar180 || ""),
+        room_id:
+          item.room_id?.toString() || item.lProfileRoom?.toString() || '',
+        title: item.title || item.sIntroduction || '',
+        nickname: item.nickname || item.sNick || '',
+        avatar: proxify(item.avatar || item.sAvatar180 || ''),
         room_cover: proxify(appendHuyaCoverParams(rawCover)),
-        viewer_count_str: item.viewer_count_str || (viewers ? `${viewers}` : "0"),
-        platform: "huya"
+        viewer_count_str:
+          item.viewer_count_str || (viewers ? `${viewers}` : '0'),
+        platform: 'huya',
       };
     },
-    [appendHuyaCoverParams, proxify]
+    [appendHuyaCoverParams, proxify],
   );
 
   const fetchRooms = useCallback(
@@ -70,20 +77,25 @@ export function useHuyaLiveRooms(gid: string | null, options: UseHuyaLiveRoomsOp
         await ensureProxyStarted();
 
         try {
-          const resp = await invoke<{ error: number; msg?: string; data?: any[] }>("fetch_huya_live_list", {
+          const resp = await invoke<{
+            error: number;
+            msg?: string;
+            data?: any[];
+          }>('fetch_huya_live_list', {
             iGid: gid,
             iPageNo: pageNo,
-            iPageSize: pageSize
+            iPageSize: pageSize,
           });
 
-          if (resp.error !== 0 || !Array.isArray(resp.data)) throw new Error(resp.msg || "虎牙接口返回错误");
+          if (resp.error !== 0 || !Array.isArray(resp.data))
+            throw new Error(resp.msg || '虎牙接口返回错误');
           const newRooms = resp.data.map(mapHuyaItemToCommonStreamer);
           setRooms((prev) => (loadMore ? [...prev, ...newRooms] : newRooms));
           setHasMore(newRooms.length === pageSize);
           setCurrentPage(pageNo + 1);
         } catch (e: any) {
-          console.error("[useHuyaLiveRooms] invoke error", e);
-          setError(e?.message || "加载失败");
+          console.error('[useHuyaLiveRooms] invoke error', e);
+          setError(e?.message || '加载失败');
           if (!loadMore) {
             setRooms([]);
             setHasMore(false);
@@ -101,7 +113,7 @@ export function useHuyaLiveRooms(gid: string | null, options: UseHuyaLiveRoomsOp
         inflightRef.current.delete(requestKey);
       }
     },
-    [ensureProxyStarted, gid, mapHuyaItemToCommonStreamer, pageSize]
+    [ensureProxyStarted, gid, mapHuyaItemToCommonStreamer, pageSize],
   );
 
   const loadInitialRooms = useCallback(async () => {
@@ -131,5 +143,13 @@ export function useHuyaLiveRooms(gid: string | null, options: UseHuyaLiveRoomsOp
     void loadInitialRooms();
   }, [canFetch, gid, loadInitialRooms, pageSize]);
 
-  return { rooms, isLoading, isLoadingMore, error, hasMore, loadInitialRooms, loadMoreRooms };
+  return {
+    rooms,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasMore,
+    loadInitialRooms,
+    loadMoreRooms,
+  };
 }

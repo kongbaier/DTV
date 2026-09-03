@@ -246,7 +246,7 @@
   background: #000;
 }
 
-.video-player>.xgplayer {
+.video-player > .xgplayer {
   width: 100%;
   height: 100%;
   position: absolute;
@@ -277,7 +277,15 @@
     -1px 1px 0 var(--danmu-stroke-color, #444444),
     1px -1px 0 var(--danmu-stroke-color, #444444),
     -1px -1px 0 var(--danmu-stroke-color, #444444);
-  font-family: var(--danmu-font-family, "OPPO Sans", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif);
+  font-family: var(
+    --danmu-font-family,
+    'OPPO Sans',
+    'Microsoft YaHei',
+    'PingFang SC',
+    'Helvetica Neue',
+    Arial,
+    sans-serif
+  );
 }
 
 @keyframes player-control-spin {
@@ -419,7 +427,10 @@
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
   transform: translateX(1px);
-  transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .xgplayer-danmu-toggle:not(.is-off) .danmu-toggle-switch .switch-track {
@@ -475,7 +486,9 @@
   background: #ffffff;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
   margin-top: -5px;
 }
 
@@ -486,7 +499,9 @@
   background: #ffffff;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
   transform: translateY(-2px);
 }
 
@@ -543,7 +558,9 @@
   transform: translateY(8px);
   pointer-events: none;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   will-change: opacity, transform;
 }
 
@@ -567,7 +584,9 @@
   justify-content: space-between;
   gap: 12px;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .xgplayer-quality-item .quality-name {
@@ -618,7 +637,9 @@
   transform: translateY(8px);
   pointer-events: none;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   will-change: opacity, transform;
 }
 
@@ -681,7 +702,7 @@
   color: var(--player-accent);
 }
 
-.xgplayer-danmu-settings-panel input[type="color"] {
+.xgplayer-danmu-settings-panel input[type='color'] {
   width: 38px;
   height: 24px;
   padding: 0;
@@ -692,7 +713,7 @@
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12);
 }
 
-.xgplayer-danmu-settings-panel input[type="range"] {
+.xgplayer-danmu-settings-panel input[type='range'] {
   width: 100%;
   -webkit-appearance: none;
   appearance: none;
@@ -703,19 +724,20 @@
   transition: background 0.2s ease;
 }
 
-.xgplayer-danmu-settings-panel input[type="range"]::-webkit-slider-runnable-track {
+.xgplayer-danmu-settings-panel
+  input[type='range']::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 999px;
   background: transparent;
 }
 
-.xgplayer-danmu-settings-panel input[type="range"]::-moz-range-track {
+.xgplayer-danmu-settings-panel input[type='range']::-moz-range-track {
   height: 4px;
   border-radius: 999px;
   background: transparent;
 }
 
-.xgplayer-danmu-settings-panel input[type="range"]::-webkit-slider-thumb {
+.xgplayer-danmu-settings-panel input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 14px;
   height: 14px;
@@ -727,7 +749,7 @@
   margin-top: -5px;
 }
 
-.xgplayer-danmu-settings-panel input[type="range"]::-moz-range-thumb {
+.xgplayer-danmu-settings-panel input[type='range']::-moz-range-thumb {
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -738,8 +760,8 @@
   transform: translateY(-2px);
 }
 
-.xgplayer-danmu-settings-panel input[type="range"]:active::-webkit-slider-thumb,
-.xgplayer-danmu-settings-panel input[type="range"]:active::-moz-range-thumb {
+.xgplayer-danmu-settings-panel input[type='range']:active::-webkit-slider-thumb,
+.xgplayer-danmu-settings-panel input[type='range']:active::-moz-range-thumb {
   transform: scale(1.15);
 }
 
@@ -779,7 +801,9 @@
   transform: translateY(8px);
   pointer-events: none;
   visibility: hidden;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   will-change: opacity, transform;
 }
 
@@ -825,7 +849,10 @@
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .xgplayer-danmu-block-panel .block-clear-btn.is-disabled {
@@ -904,7 +931,9 @@
   align-items: center;
   gap: 8px;
   max-width: 100%;
-  transition: background-color 0.18s ease, border-color 0.18s ease;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .xgplayer-danmu-block-panel .block-keyword-pill .pill-text {
@@ -931,7 +960,6 @@
   font-weight: 700;
 }
 
-
 .xgplayer-danmu-block-panel .block-close-btn {
   width: 28px;
   height: 28px;
@@ -943,7 +971,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .xgplayer-danmu-block-panel .block-close-btn:hover {
@@ -951,26 +982,6 @@
   border-color: rgba(255, 255, 255, 0.18);
   transform: translateY(-1px);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* 主播信息 */
 .streamer-info {
@@ -1010,7 +1021,11 @@
   flex-shrink: 0;
   box-shadow: 0 14px 28px rgba(9, 12, 24, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.22);
-  background: linear-gradient(135deg, rgba(96, 156, 255, 0.5), rgba(219, 134, 255, 0.34));
+  background: linear-gradient(
+    135deg,
+    rgba(96, 156, 255, 0.5),
+    rgba(219, 134, 255, 0.34)
+  );
 }
 
 .avatar-img {
@@ -1088,7 +1103,11 @@
   gap: 6px;
   color: var(--secondary-text);
   background: rgba(255, 255, 255, 0.06);
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease;
 }
 
 .cookie-status-btn:hover {
@@ -1121,7 +1140,9 @@
   background: transparent;
   color: var(--secondary-text);
   cursor: pointer;
-  transition: color 0.2s ease, transform 0.1s ease;
+  transition:
+    color 0.2s ease,
+    transform 0.1s ease;
 }
 
 .cookie-clear-btn:hover {
@@ -1185,7 +1206,10 @@
   color: rgba(244, 247, 255, 0.92);
   cursor: pointer;
   font-weight: var(--weight-bold);
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .follow-btn:hover {
@@ -1202,18 +1226,18 @@
   font-size: 12px;
 }
 
-:root[data-theme="light"] .follow-btn {
+:root[data-theme='light'] .follow-btn {
   color: rgba(15, 23, 42, 0.92);
   background: rgba(16, 185, 129, 0.12);
   border-color: rgba(16, 185, 129, 0.36);
 }
 
-:root[data-theme="light"] .follow-btn:hover {
+:root[data-theme='light'] .follow-btn:hover {
   background: rgba(16, 185, 129, 0.16);
   border-color: rgba(16, 185, 129, 0.46);
 }
 
-:root[data-theme="light"] .follow-btn.is-following {
+:root[data-theme='light'] .follow-btn.is-following {
   color: rgba(15, 23, 42, 0.92);
   background: rgba(255, 59, 59, 0.12);
   border-color: rgba(255, 59, 59, 0.26);
@@ -1235,7 +1259,10 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-left: none;
   box-shadow: none;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .danmu-panel:hover {
@@ -1287,12 +1314,12 @@ html.web-fs-active .danmu-panel {
 }
 
 /* 处理网页全屏模式 - 更强的选择器 (保留作为备份方案) */
-.xgplayer-is-fullscreen~.danmu-panel,
-.xgplayer-is-cssfullscreen~.danmu-panel,
-.xgplayer.xgplayer-is-fullscreen~.danmu-panel,
-.xgplayer.xgplayer-is-cssfullscreen~.danmu-panel,
-.xgplayer-is-fullscreen+.danmu-panel,
-.xgplayer-is-cssfullscreen+.danmu-panel,
+.xgplayer-is-fullscreen ~ .danmu-panel,
+.xgplayer-is-cssfullscreen ~ .danmu-panel,
+.xgplayer.xgplayer-is-fullscreen ~ .danmu-panel,
+.xgplayer.xgplayer-is-cssfullscreen ~ .danmu-panel,
+.xgplayer-is-fullscreen + .danmu-panel,
+.xgplayer-is-cssfullscreen + .danmu-panel,
 .player-layout:has(.xgplayer-is-fullscreen) .danmu-panel,
 .player-layout:has(.xgplayer-is-cssfullscreen) .danmu-panel {
   display: none !important;
@@ -1301,12 +1328,12 @@ html.web-fs-active .danmu-panel {
 }
 
 /* Windows/WebView 兼容：隐藏弹幕面板 */
-.xgplayer-is-fullscreen~.danmu-panel,
-.xgplayer-is-cssfullscreen~.danmu-panel,
-.xgplayer.xgplayer-is-fullscreen~.danmu-panel,
-.xgplayer.xgplayer-is-cssfullscreen~.danmu-panel,
-.xgplayer-is-fullscreen+.danmu-panel,
-.xgplayer-is-cssfullscreen+.danmu-panel {
+.xgplayer-is-fullscreen ~ .danmu-panel,
+.xgplayer-is-cssfullscreen ~ .danmu-panel,
+.xgplayer.xgplayer-is-fullscreen ~ .danmu-panel,
+.xgplayer.xgplayer-is-cssfullscreen ~ .danmu-panel,
+.xgplayer-is-fullscreen + .danmu-panel,
+.xgplayer-is-cssfullscreen + .danmu-panel {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
@@ -1493,7 +1520,7 @@ html.web-fs-active .danmu-panel {
   min-width: 0;
 }
 
-:root[data-theme="light"] .player-topbar-streamer {
+:root[data-theme='light'] .player-topbar-streamer {
   background: rgba(10, 10, 12, 0.52);
   border-color: rgba(255, 255, 255, 0.14);
   box-shadow:
@@ -1526,12 +1553,20 @@ html.web-fs-active .danmu-panel {
   justify-content: center;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.88);
-  background: radial-gradient(120% 120% at 30% 20%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  background: radial-gradient(
+    120% 120% at 30% 20%,
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.06)
+  );
 }
 
-:root[data-theme="light"] .player-topbar-avatarFallback {
+:root[data-theme='light'] .player-topbar-avatarFallback {
   color: rgba(255, 255, 255, 0.88);
-  background: radial-gradient(120% 120% at 30% 20%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  background: radial-gradient(
+    120% 120% at 30% 20%,
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.06)
+  );
 }
 
 .player-topbar-meta {
@@ -1551,7 +1586,7 @@ html.web-fs-active .danmu-panel {
   max-width: 48vw;
 }
 
-:root[data-theme="light"] .player-topbar-title {
+:root[data-theme='light'] .player-topbar-title {
   color: rgba(245, 247, 250, 0.95);
 }
 
@@ -1566,7 +1601,7 @@ html.web-fs-active .danmu-panel {
   max-width: 48vw;
 }
 
-:root[data-theme="light"] .player-topbar-sub {
+:root[data-theme='light'] .player-topbar-sub {
   color: rgba(245, 247, 250, 0.72);
 }
 
@@ -1588,7 +1623,7 @@ html.web-fs-active .danmu-panel {
   color: rgba(226, 232, 240, 0.88);
 }
 
-:root[data-theme="light"] .player-topbar-status.is-offline {
+:root[data-theme='light'] .player-topbar-status.is-offline {
   color: rgba(226, 232, 240, 0.88);
 }
 
@@ -1655,7 +1690,9 @@ html.web-fs-active .danmu-panel {
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: background-color 0.12s ease, color 0.12s ease;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
 }
 
 .player-window-controls .window-btn:hover {
@@ -1682,13 +1719,13 @@ html.web-fs-active .danmu-panel {
   color: #ffffff;
 }
 
-:root[data-theme="light"] .player-topbar-follow {
+:root[data-theme='light'] .player-topbar-follow {
   color: rgba(255, 255, 255, 0.92);
   background: rgba(10, 10, 12, 0.44);
   border-color: rgba(255, 255, 255, 0.14);
 }
 
-:root[data-theme="light"] .player-topbar-follow:hover {
+:root[data-theme='light'] .player-topbar-follow:hover {
   background: rgba(10, 10, 12, 0.56);
   border-color: rgba(255, 255, 255, 0.22);
 }
@@ -1719,7 +1756,9 @@ html.web-fs-active .danmu-panel {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
   padding: 0;
   box-shadow:
     0 22px 54px rgba(0, 0, 0, 0.32),
@@ -1727,17 +1766,22 @@ html.web-fs-active .danmu-panel {
 }
 
 .player-close-btn::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: radial-gradient(90% 90% at 35% 30%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 40%, transparent 72%);
+  background: radial-gradient(
+    90% 90% at 35% 30%,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    transparent 72%
+  );
   opacity: 0.55;
   pointer-events: none;
 }
 
 .player-close-btn::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -1781,7 +1825,9 @@ html.web-fs-active .danmu-panel {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .danmu-filter-toggle-btn:hover,
@@ -1947,7 +1993,11 @@ html.web-fs-active .danmu-panel {
   position: absolute;
   inset: -12px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--loader-glow) 0%, rgba(0, 0, 0, 0) 70%);
+  background: radial-gradient(
+    circle,
+    var(--loader-glow) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
   opacity: 0.35;
   filter: blur(16px);
   animation: spinner-ambient 2s ease-in-out infinite;
@@ -1966,17 +2016,28 @@ html.web-fs-active .danmu-panel {
   position: absolute;
   inset: calc(var(--loader-stroke) * 1.9);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 45%, transparent 100%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.02) 45%,
+    transparent 100%
+  );
 }
 
 .loading-player .spinner-head {
   position: absolute;
   inset: calc(var(--loader-stroke) * -0.5);
   border-radius: 50%;
-  background: conic-gradient(var(--loader-accent) 0deg,
-      var(--loader-accent) 140deg,
-      rgba(255, 255, 255, 0) 140deg);
-  mask: radial-gradient(farthest-side, rgba(0, 0, 0, 0) calc(100% - var(--loader-stroke) * 2.25), #000 calc(100% - var(--loader-stroke) * 1.9));
+  background: conic-gradient(
+    var(--loader-accent) 0deg,
+    var(--loader-accent) 140deg,
+    rgba(255, 255, 255, 0) 140deg
+  );
+  mask: radial-gradient(
+    farthest-side,
+    rgba(0, 0, 0, 0) calc(100% - var(--loader-stroke) * 2.25),
+    #000 calc(100% - var(--loader-stroke) * 1.9)
+  );
   animation: spinner-spin 0.9s linear infinite;
 }
 
@@ -2010,7 +2071,11 @@ html.web-fs-active .danmu-panel {
   height: 3px;
   border-radius: 999px;
   transform: translate(-50%, -50%);
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.7),
+    rgba(255, 255, 255, 0)
+  );
   opacity: 0.6;
   filter: blur(0.5px);
 }
@@ -2026,7 +2091,6 @@ html.web-fs-active .danmu-panel {
 }
 
 @keyframes spinner-dot-bloom {
-
   0%,
   100% {
     transform: translate(-50%, -55%) scale(0.94);
@@ -2040,7 +2104,6 @@ html.web-fs-active .danmu-panel {
 }
 
 @keyframes spinner-ambient {
-
   0%,
   100% {
     opacity: 0.35;
@@ -2132,9 +2195,15 @@ video.xgplayer-video {
 }
 
 /* 强制显示控制栏：避免 xgplayer-inactive / not-allow-autoplay 把 controls 隐藏掉 */
-.player-page:not(.player-chrome-hidden) .xgplayer.xgplayer-inactive .controls-autohide,
-.player-page:not(.player-chrome-hidden) .xgplayer.not-allow-autoplay .xgplayer-controls,
-.player-page:not(.player-chrome-hidden) .xgplayer.xgplayer-nostart .xgplayer-controls {
+.player-page:not(.player-chrome-hidden)
+  .xgplayer.xgplayer-inactive
+  .controls-autohide,
+.player-page:not(.player-chrome-hidden)
+  .xgplayer.not-allow-autoplay
+  .xgplayer-controls,
+.player-page:not(.player-chrome-hidden)
+  .xgplayer.xgplayer-nostart
+  .xgplayer-controls {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
@@ -2161,11 +2230,11 @@ video.xgplayer-video {
     border-right: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  :root[data-theme="light"] .player-container {
+  :root[data-theme='light'] .player-container {
     border-right: 1px solid var(--border-color-light, #e0e0e0);
   }
 
-  :root[data-theme="light"] .danmu-panel {
+  :root[data-theme='light'] .danmu-panel {
     border-left: 1px solid var(--border-color-light, #e0e0e0);
   }
 }
@@ -2253,11 +2322,11 @@ video.xgplayer-video {
 }
 
 /* Day Mode Styles */
-:root[data-theme="light"] .player-page {
+:root[data-theme='light'] .player-page {
   background: transparent;
 }
 
-:root[data-theme="light"] .player-compact-island {
+:root[data-theme='light'] .player-compact-island {
   background: rgba(248, 250, 252, 0.9);
   border-color: #ffffff;
   box-shadow:
@@ -2265,57 +2334,57 @@ video.xgplayer-video {
     0 10px 20px rgba(15, 23, 42, 0.08);
 }
 
-:root[data-theme="light"] .compact-avatar {
+:root[data-theme='light'] .compact-avatar {
   border-color: rgba(148, 163, 184, 0.4);
   background: rgba(148, 163, 184, 0.22);
 }
 
-:root[data-theme="light"] .compact-avatar--fallback {
+:root[data-theme='light'] .compact-avatar--fallback {
   color: #0f172a;
 }
 
-:root[data-theme="light"] .compact-name {
+:root[data-theme='light'] .compact-name {
   color: #111827;
 }
 
-:root[data-theme="light"] .compact-title {
+:root[data-theme='light'] .compact-title {
   color: #475569;
 }
 
-:root[data-theme="light"] .compact-expand-btn {
+:root[data-theme='light'] .compact-expand-btn {
   color: #0f172a;
   background: rgba(148, 163, 184, 0.24);
 }
 
-:root[data-theme="light"] .compact-expand-btn:hover {
+:root[data-theme='light'] .compact-expand-btn:hover {
   background: rgba(148, 163, 184, 0.34);
 }
 
-:root[data-theme="light"] .danmu-filter-toggle-btn,
-:root[data-theme="light"] .danmu-collapse-btn {
+:root[data-theme='light'] .danmu-filter-toggle-btn,
+:root[data-theme='light'] .danmu-collapse-btn {
   color: #111827;
   background: rgba(248, 250, 252, 0.92);
   border: 1px solid #ffffff;
 }
 
-:root[data-theme="light"] .danmu-filter-toggle-btn:hover,
-:root[data-theme="light"] .danmu-collapse-btn:hover {
+:root[data-theme='light'] .danmu-filter-toggle-btn:hover,
+:root[data-theme='light'] .danmu-collapse-btn:hover {
   background: rgba(241, 245, 249, 0.98);
 }
 
-:root[data-theme="light"] .player-layout {
+:root[data-theme='light'] .player-layout {
   border: none;
   box-shadow: none;
   overflow: visible;
 }
 
 /* Night mode: player outer shell should be borderless like the danmu panel */
-:root[data-theme="dark"] .player-container {
+:root[data-theme='dark'] .player-container {
   border: none;
   box-shadow: var(--glass-shadow);
 }
 
-:root[data-theme="light"] .player-container {
+:root[data-theme='light'] .player-container {
   background-color: transparent;
   backdrop-filter: none;
   /* Remove blur for light mode if desired, or adjust */
@@ -2326,7 +2395,7 @@ video.xgplayer-video {
     0 10px 22px rgba(15, 23, 42, 0.08);
 }
 
-:root[data-theme="light"] .danmu-panel {
+:root[data-theme='light'] .danmu-panel {
   background-color: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -2336,17 +2405,17 @@ video.xgplayer-video {
     0 10px 22px rgba(15, 23, 42, 0.08);
 }
 
-:root[data-theme="light"] .player-layout .main-content {
+:root[data-theme='light'] .player-layout .main-content {
   overflow: visible;
 }
 
-:root[data-theme="light"] .danmu-panel:hover {
+:root[data-theme='light'] .danmu-panel:hover {
   transform: none;
   /* Subtle lift */
   box-shadow: none;
 }
 
-:root[data-theme="light"] .player-close-btn {
+:root[data-theme='light'] .player-close-btn {
   background: rgba(10, 10, 12, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.92);
@@ -2355,7 +2424,7 @@ video.xgplayer-video {
     0 0 0 1px rgba(255, 255, 255, 0.08) inset;
 }
 
-:root[data-theme="light"] .player-close-btn:hover {
+:root[data-theme='light'] .player-close-btn:hover {
   background: rgba(10, 10, 12, 0.72);
   border-color: rgba(255, 255, 255, 0.24);
   box-shadow:
@@ -2363,9 +2432,9 @@ video.xgplayer-video {
     0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
-:root[data-theme="light"] .empty-player,
-:root[data-theme="light"] .error-player,
-:root[data-theme="light"] .offline-player {
+:root[data-theme='light'] .empty-player,
+:root[data-theme='light'] .error-player,
+:root[data-theme='light'] .offline-player {
   background-color: var(--content-bg-light, #ffffff);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -2374,60 +2443,62 @@ video.xgplayer-video {
   color: var(--secondary-text-light, #555555);
 }
 
-:root[data-theme="light"] .empty-player .empty-icon,
-:root[data-theme="light"] .error-player .error-icon,
-:root[data-theme="light"] .offline-icon svg {
+:root[data-theme='light'] .empty-player .empty-icon,
+:root[data-theme='light'] .error-player .error-icon,
+:root[data-theme='light'] .offline-icon svg {
   color: var(--icon-color-light, #888888);
   opacity: 0.9;
 }
 
-:root[data-theme="light"] .loading-player {
+:root[data-theme='light'] .loading-player {
   --loader-track: rgba(76, 102, 158, 0.22);
   --loader-accent: rgba(70, 112, 255, 0.92);
   --loader-dot: rgba(70, 112, 255, 0.92);
   --loader-glow: rgba(90, 130, 255, 0.38);
 }
 
-:root[data-theme="light"] .loading-player .spinner-head {
+:root[data-theme='light'] .loading-player .spinner-head {
   filter: drop-shadow(0 0 6px var(--loader-glow));
 }
 
-:root[data-theme="light"] .loading-player .spinner-dot::before {
-  box-shadow: 0 4px 12px rgba(70, 80, 120, 0.22), 0 0 10px var(--loader-glow);
+:root[data-theme='light'] .loading-player .spinner-dot::before {
+  box-shadow:
+    0 4px 12px rgba(70, 80, 120, 0.22),
+    0 0 10px var(--loader-glow);
 }
 
-:root[data-theme="light"] .empty-player h3,
-:root[data-theme="light"] .error-player h3,
-:root[data-theme="light"] .offline-player h3 {
+:root[data-theme='light'] .empty-player h3,
+:root[data-theme='light'] .error-player h3,
+:root[data-theme='light'] .offline-player h3 {
   color: var(--primary-text-light, #333333);
 }
 
-:root[data-theme="light"] .empty-player p,
-:root[data-theme="light"] .error-player p,
-:root[data-theme="light"] .offline-player p {
+:root[data-theme='light'] .empty-player p,
+:root[data-theme='light'] .error-player p,
+:root[data-theme='light'] .offline-player p {
   color: var(--secondary-text-light, #555555);
   opacity: 1;
 }
 
-:root[data-theme="light"] .error-player .retry-btn,
-:root[data-theme="light"] .offline-player .retry-btn {
+:root[data-theme='light'] .error-player .retry-btn,
+:root[data-theme='light'] .offline-player .retry-btn {
   background: var(--accent-gradient);
   color: var(--accent-text);
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   box-shadow: 0 6px 18px var(--accent-glow);
 }
 
-:root[data-theme="light"] .error-player .retry-btn:hover,
-:root[data-theme="light"] .offline-player .retry-btn:hover {
+:root[data-theme='light'] .error-player .retry-btn:hover,
+:root[data-theme='light'] .offline-player .retry-btn:hover {
   filter: brightness(1.03) saturate(1.04);
   box-shadow: 0 10px 26px var(--accent-glow);
 }
 
-:root[data-theme="light"] .error-player .retry-btn:active,
-:root[data-theme="light"] .offline-player .retry-btn:active {
+:root[data-theme='light'] .error-player .retry-btn:active,
+:root[data-theme='light'] .offline-player .retry-btn:active {
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-glow) 70%, transparent);
 }
 
-:root[data-theme="light"] .streamer-info-offline {
+:root[data-theme='light'] .streamer-info-offline {
   border-bottom: 1px solid var(--border-color-light, #e0e0e0);
 }

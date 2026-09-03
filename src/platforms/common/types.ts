@@ -1,10 +1,10 @@
-export type SupportedPlatform = 'douyu' | 'bilibili' | 'douyin' | 'huya'; // Add other platforms as needed 
- 
+export type SupportedPlatform = 'douyu' | 'bilibili' | 'douyin' | 'huya'; // Add other platforms as needed
+
 export enum Platform {
   DOUYU = 'DOUYU',
   DOUYIN = 'DOUYIN',
   HUYA = 'HUYA',
-  BILIBILI = 'BILIBILI'
+  BILIBILI = 'BILIBILI',
 }
 
 export type LiveStatus = 'LIVE' | 'REPLAY' | 'OFFLINE' | 'UNKNOWN';
@@ -68,15 +68,15 @@ export interface CommonDanmakuMessage {
     uid?: string;
     nickname: string;
     level?: number | string; // User level
-    badgeName?: string;    // Fan badge name
-    badgeLevel?: number;   // Fan badge level
+    badgeName?: string; // Fan badge name
+    badgeLevel?: number; // Fan badge level
     // Add other sender details if common across platforms
   };
   content: string; // The main text of the danmaku
   timestamp?: number; // Optional: when the message was sent/received
   color?: string; // Danmaku text color, if specified
   // Platform-specific raw data can be included if needed for advanced use cases
-  rawData?: any; 
+  rawData?: any;
 }
 
 export interface StreamQuality {
@@ -121,7 +121,7 @@ export interface StreamVariant {
 export interface LiveStreamInfo {
   title?: string | null;
   anchor_name?: string | null; // Douyin uses this
-  avatar?: string | null;      // Douyin uses this
+  avatar?: string | null; // Douyin uses this
   stream_url?: string | null;
   status?: number | null; // Add status field, consistent with Rust struct
   error_message?: string | null;

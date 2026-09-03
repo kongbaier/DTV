@@ -8,7 +8,10 @@ import {
   sanitizeDanmuArea,
   sanitizeDanmuOpacity,
 } from './constants';
-import type { DanmuKeywordBlockPreferences, DanmuUserSettings } from './constants';
+import type {
+  DanmuKeywordBlockPreferences,
+  DanmuUserSettings,
+} from './constants';
 
 export class DanmuToggleControl extends Plugin {
   static override pluginName = 'danmuToggle';
@@ -17,7 +20,9 @@ export class DanmuToggleControl extends Plugin {
     index: 4,
     disable: false,
     getState: (() => true) as () => boolean,
-    onToggle: (async (_value: boolean) => {}) as (value: boolean) => Promise<void> | void,
+    onToggle: (async (_value: boolean) => {}) as (
+      value: boolean,
+    ) => Promise<void> | void,
   };
 
   private handleClick: ((event: Event) => void) | null = null;
@@ -27,7 +32,10 @@ export class DanmuToggleControl extends Plugin {
     if (this.config.disable) {
       return;
     }
-    this.isActive = typeof this.config.getState === 'function' ? !!this.config.getState() : true;
+    this.isActive =
+      typeof this.config.getState === 'function'
+        ? !!this.config.getState()
+        : true;
     this.updateState();
     this.handleClick = (event: Event) => {
       event.preventDefault();
@@ -96,7 +104,9 @@ export class DanmuSettingsControl extends Plugin {
       mode: 'scroll',
       opacity: 1,
     })) as () => DanmuUserSettings,
-    onChange: (async (_partial: Partial<DanmuUserSettings>) => {}) as (partial: Partial<DanmuUserSettings>) => Promise<void> | void,
+    onChange: (async (_partial: Partial<DanmuUserSettings>) => {}) as (
+      partial: Partial<DanmuUserSettings>,
+    ) => Promise<void> | void,
   };
 
   private panel: HTMLElement | null = null;
@@ -126,11 +136,14 @@ export class DanmuSettingsControl extends Plugin {
     if (this.config.disable) {
       return;
     }
-    this.currentSettings = typeof this.config.getSettings === 'function'
-      ? this.config.getSettings()
-      : this.currentSettings;
+    this.currentSettings =
+      typeof this.config.getSettings === 'function'
+        ? this.config.getSettings()
+        : this.currentSettings;
     this.currentSettings.area = sanitizeDanmuArea(this.currentSettings.area);
-    this.currentSettings.opacity = sanitizeDanmuOpacity(this.currentSettings.opacity);
+    this.currentSettings.opacity = sanitizeDanmuOpacity(
+      this.currentSettings.opacity,
+    );
     if (typeof this.currentSettings.strokeColor !== 'string') {
       this.currentSettings.strokeColor = '#444444';
     }
@@ -261,12 +274,24 @@ export class DanmuSettingsControl extends Plugin {
       event.stopPropagation();
     });
 
-    this.textColorInput = this.panel.querySelector<HTMLInputElement>('.danmu-setting-color');
-    this.strokeColorInput = this.panel.querySelector<HTMLInputElement>('.danmu-setting-stroke-color');
-    this.fontSizeSlider = this.panel.querySelector<HTMLInputElement>('.danmu-setting-font-range');
-    this.durationSlider = this.panel.querySelector<HTMLInputElement>('.danmu-setting-duration-range');
-    this.areaSlider = this.panel.querySelector<HTMLInputElement>('.danmu-setting-area-range');
-    this.opacitySlider = this.panel.querySelector<HTMLInputElement>('.danmu-setting-opacity-range');
+    this.textColorInput = this.panel.querySelector<HTMLInputElement>(
+      '.danmu-setting-color',
+    );
+    this.strokeColorInput = this.panel.querySelector<HTMLInputElement>(
+      '.danmu-setting-stroke-color',
+    );
+    this.fontSizeSlider = this.panel.querySelector<HTMLInputElement>(
+      '.danmu-setting-font-range',
+    );
+    this.durationSlider = this.panel.querySelector<HTMLInputElement>(
+      '.danmu-setting-duration-range',
+    );
+    this.areaSlider = this.panel.querySelector<HTMLInputElement>(
+      '.danmu-setting-area-range',
+    );
+    this.opacitySlider = this.panel.querySelector<HTMLInputElement>(
+      '.danmu-setting-opacity-range',
+    );
 
     this.textColorInput?.addEventListener('input', (event) => {
       const value = (event.target as HTMLInputElement).value;
@@ -287,7 +312,8 @@ export class DanmuSettingsControl extends Plugin {
       formatter: (value: number) => string,
     ) => {
       const updateDisplay = (value: number) => {
-        const label = this.panel?.querySelector<HTMLSpanElement>(displaySelector);
+        const label =
+          this.panel?.querySelector<HTMLSpanElement>(displaySelector);
         if (label) {
           label.textContent = formatter(value);
         }
@@ -297,7 +323,8 @@ export class DanmuSettingsControl extends Plugin {
         const numericValue = Number(rawValue);
         updateDisplay(numericValue);
         const nextValue = transform(rawValue);
-        (this.currentSettings as Record<string, unknown>)[key as string] = nextValue;
+        (this.currentSettings as Record<string, unknown>)[key as string] =
+          nextValue;
         this.emitChange({ [key]: nextValue } as Partial<DanmuUserSettings>);
         this.updateSliderVisual(el);
       });
@@ -320,7 +347,9 @@ export class DanmuSettingsControl extends Plugin {
       'duration',
       (value) => {
         const numeric = Number(value);
-        const clamped = Number.isFinite(numeric) ? Math.min(20000, Math.max(3000, numeric)) : 10000;
+        const clamped = Number.isFinite(numeric)
+          ? Math.min(20000, Math.max(3000, numeric))
+          : 10000;
         return clamped;
       },
       '.speed-value',
@@ -406,17 +435,24 @@ export class DanmuSettingsControl extends Plugin {
     }
     if (this.fontSizeSlider) {
       const numericFont = parseInt(this.currentSettings.fontSize, 10);
-      this.fontSizeSlider.value = String(Math.min(30, Math.max(14, numericFont)));
-      const fontLabel = this.panel.querySelector<HTMLSpanElement>('.font-size-value');
+      this.fontSizeSlider.value = String(
+        Math.min(30, Math.max(14, numericFont)),
+      );
+      const fontLabel =
+        this.panel.querySelector<HTMLSpanElement>('.font-size-value');
       if (fontLabel) {
         fontLabel.textContent = `${Math.min(30, Math.max(14, numericFont))}px`;
       }
       this.updateSliderVisual(this.fontSizeSlider);
     }
     if (this.durationSlider) {
-      const durationValue = Math.min(20000, Math.max(3000, this.currentSettings.duration));
+      const durationValue = Math.min(
+        20000,
+        Math.max(3000, this.currentSettings.duration),
+      );
       this.durationSlider.value = String(durationValue);
-      const speedLabel = this.panel.querySelector<HTMLSpanElement>('.speed-value');
+      const speedLabel =
+        this.panel.querySelector<HTMLSpanElement>('.speed-value');
       if (speedLabel) {
         speedLabel.textContent = this.formatDurationLabel(durationValue);
       }
@@ -425,7 +461,8 @@ export class DanmuSettingsControl extends Plugin {
     if (this.areaSlider) {
       const areaValue = sanitizeDanmuArea(this.currentSettings.area);
       this.areaSlider.value = String(areaValue);
-      const areaLabel = this.panel.querySelector<HTMLSpanElement>('.area-value');
+      const areaLabel =
+        this.panel.querySelector<HTMLSpanElement>('.area-value');
       if (areaLabel) {
         areaLabel.textContent = this.formatAreaLabel(areaValue);
       }
@@ -434,7 +471,8 @@ export class DanmuSettingsControl extends Plugin {
     if (this.opacitySlider) {
       const opacityValue = sanitizeDanmuOpacity(this.currentSettings.opacity);
       this.opacitySlider.value = String(opacityValue);
-      const opacityLabel = this.panel.querySelector<HTMLSpanElement>('.opacity-value');
+      const opacityLabel =
+        this.panel.querySelector<HTMLSpanElement>('.opacity-value');
       if (opacityLabel) {
         opacityLabel.textContent = this.formatOpacityLabel(opacityValue);
       }
@@ -490,7 +528,10 @@ export class DanmuSettingsControl extends Plugin {
     if (typeof normalized.opacity === 'number') {
       normalized.opacity = sanitizeDanmuOpacity(normalized.opacity);
     }
-    if (typeof normalized.strokeColor !== 'undefined' && typeof normalized.strokeColor !== 'string') {
+    if (
+      typeof normalized.strokeColor !== 'undefined' &&
+      typeof normalized.strokeColor !== 'string'
+    ) {
       delete (normalized as any).strokeColor;
     }
     this.currentSettings = {
@@ -510,15 +551,23 @@ export class DanmuKeywordBlockControl extends Plugin {
     position: POSITIONS.CONTROLS_RIGHT,
     index: 4.4,
     disable: false,
-    getPreferences: (() => ({ enabled: true, keywords: [] })) as () => DanmuKeywordBlockPreferences,
-    onChange: (async (_next: DanmuKeywordBlockPreferences) => {}) as (next: DanmuKeywordBlockPreferences) => Promise<void> | void,
+    getPreferences: (() => ({
+      enabled: true,
+      keywords: [],
+    })) as () => DanmuKeywordBlockPreferences,
+    onChange: (async (_next: DanmuKeywordBlockPreferences) => {}) as (
+      next: DanmuKeywordBlockPreferences,
+    ) => Promise<void> | void,
   };
 
   private panel: HTMLElement | null = null;
   private handleToggle: ((event: Event) => void) | null = null;
   private isOpen = false;
 
-  private current: DanmuKeywordBlockPreferences = { enabled: true, keywords: [] };
+  private current: DanmuKeywordBlockPreferences = {
+    enabled: true,
+    keywords: [],
+  };
   private inputEl: HTMLInputElement | null = null;
   private listEl: HTMLElement | null = null;
   private clearBtn: HTMLButtonElement | null = null;
@@ -529,8 +578,14 @@ export class DanmuKeywordBlockControl extends Plugin {
       return;
     }
 
-    this.current = typeof this.config.getPreferences === 'function' ? this.config.getPreferences() : this.current;
-    this.current = { enabled: true, keywords: normalizeDanmuBlockKeywords(this.current.keywords) };
+    this.current =
+      typeof this.config.getPreferences === 'function'
+        ? this.config.getPreferences()
+        : this.current;
+    this.current = {
+      enabled: true,
+      keywords: normalizeDanmuBlockKeywords(this.current.keywords),
+    };
 
     this.createPanel();
     this.updateUi();
@@ -590,14 +645,21 @@ export class DanmuKeywordBlockControl extends Plugin {
     this.root.appendChild(this.panel);
 
     this.panel.addEventListener('click', (event) => event.stopPropagation());
-    this.panel.addEventListener('pointerdown', (event) => event.stopPropagation());
-    this.panel.addEventListener('mousedown', (event) => event.stopPropagation());
+    this.panel.addEventListener('pointerdown', (event) =>
+      event.stopPropagation(),
+    );
+    this.panel.addEventListener('mousedown', (event) =>
+      event.stopPropagation(),
+    );
 
     this.inputEl = this.panel.querySelector<HTMLInputElement>('.block-input');
     this.listEl = this.panel.querySelector<HTMLElement>('.block-keywords');
-    this.clearBtn = this.panel.querySelector<HTMLButtonElement>('.block-clear-btn');
-    this.closeBtn = this.panel.querySelector<HTMLButtonElement>('.block-close-btn');
-    const addBtn = this.panel.querySelector<HTMLButtonElement>('.block-add-btn');
+    this.clearBtn =
+      this.panel.querySelector<HTMLButtonElement>('.block-clear-btn');
+    this.closeBtn =
+      this.panel.querySelector<HTMLButtonElement>('.block-close-btn');
+    const addBtn =
+      this.panel.querySelector<HTMLButtonElement>('.block-add-btn');
 
     const addKeyword = () => {
       const raw = this.inputEl?.value ?? '';
@@ -605,7 +667,10 @@ export class DanmuKeywordBlockControl extends Plugin {
       if (!nextValue) {
         return;
       }
-      const nextKeywords = normalizeDanmuBlockKeywords([...(this.current.keywords || []), nextValue]);
+      const nextKeywords = normalizeDanmuBlockKeywords([
+        ...(this.current.keywords || []),
+        nextValue,
+      ]);
       this.inputEl && (this.inputEl.value = '');
       this.applyAndEmit({ ...this.current, keywords: nextKeywords });
     };
@@ -683,7 +748,9 @@ export class DanmuKeywordBlockControl extends Plugin {
   }
 
   private updateUi() {
-    const keywords = Array.isArray(this.current.keywords) ? this.current.keywords : [];
+    const keywords = Array.isArray(this.current.keywords)
+      ? this.current.keywords
+      : [];
 
     if (this.clearBtn) {
       const canClear = keywords.length > 0;
@@ -737,7 +804,10 @@ export class DanmuKeywordBlockControl extends Plugin {
   }
 
   setPreferences(next: DanmuKeywordBlockPreferences) {
-    this.current = { enabled: true, keywords: normalizeDanmuBlockKeywords(next.keywords) };
+    this.current = {
+      enabled: true,
+      keywords: normalizeDanmuBlockKeywords(next.keywords),
+    };
     this.updateUi();
   }
 }

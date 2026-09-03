@@ -51,7 +51,10 @@ export class VolumeControl extends Plugin {
         this.valueLabel.textContent = `${Math.round(clamped * 100)}%`;
       }
       if (this.volumeIcon) {
-        this.volumeIcon.setAttribute('data-muted', clamped === 0 ? 'true' : 'false');
+        this.volumeIcon.setAttribute(
+          'data-muted',
+          clamped === 0 ? 'true' : 'false',
+        );
       }
     };
 
@@ -212,7 +215,9 @@ export class QualityControl extends Plugin {
     disable: false,
     options: [] as string[],
     getCurrent: (() => '') as () => string,
-    onSelect: (async (_value: string) => {}) as (value: string) => Promise<void> | void,
+    onSelect: (async (_value: string) => {}) as (
+      value: string,
+    ) => Promise<void> | void,
   };
 
   private dropdown: HTMLElement | null = null;
@@ -327,7 +332,9 @@ export class QualityControl extends Plugin {
   }
 
   private getCurrent() {
-    return typeof this.config.getCurrent === 'function' ? this.config.getCurrent() : '';
+    return typeof this.config.getCurrent === 'function'
+      ? this.config.getCurrent()
+      : '';
   }
 
   private createDropdown() {
@@ -342,7 +349,9 @@ export class QualityControl extends Plugin {
       return;
     }
     this.dropdown.innerHTML = '';
-    const options: string[] = Array.isArray(this.config.options) ? this.config.options : [];
+    const options: string[] = Array.isArray(this.config.options)
+      ? this.config.options
+      : [];
     options.forEach((option) => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -362,7 +371,8 @@ export class QualityControl extends Plugin {
         let actionResult: Promise<void> | void;
         try {
           const callback = this.config.onSelect;
-          actionResult = typeof callback === 'function' ? callback(option) : undefined;
+          actionResult =
+            typeof callback === 'function' ? callback(option) : undefined;
         } catch (error) {
           console.error('[QualityControl] onSelect error:', error);
           actionResult = undefined;
@@ -417,7 +427,9 @@ export class QualityControl extends Plugin {
     if (!this.dropdown) {
       return;
     }
-    const items = this.dropdown.querySelectorAll<HTMLButtonElement>('.xgplayer-quality-item');
+    const items = this.dropdown.querySelectorAll<HTMLButtonElement>(
+      '.xgplayer-quality-item',
+    );
     items.forEach((item) => {
       const label = item.querySelector('.quality-name')?.textContent?.trim();
       item.classList.toggle('active', label === current);
@@ -439,7 +451,9 @@ export class QualityControl extends Plugin {
     }
     if (this.dropdown) {
       this.dropdown.classList.toggle('disabled', this.isSwitching);
-      const buttons = this.dropdown.querySelectorAll<HTMLButtonElement>('.xgplayer-quality-item');
+      const buttons = this.dropdown.querySelectorAll<HTMLButtonElement>(
+        '.xgplayer-quality-item',
+      );
       buttons.forEach((button) => {
         button.disabled = this.isSwitching;
       });
@@ -461,7 +475,9 @@ export class LineControl extends Plugin {
     options: [] as LineOption[],
     getCurrentKey: (() => '') as () => string,
     getCurrentLabel: (() => '线路') as () => string,
-    onSelect: (async (_value: string) => {}) as (value: string) => Promise<void> | void,
+    onSelect: (async (_value: string) => {}) as (
+      value: string,
+    ) => Promise<void> | void,
   };
 
   private dropdown: HTMLElement | null = null;
@@ -610,7 +626,9 @@ export class LineControl extends Plugin {
       return;
     }
     this.dropdown.innerHTML = '';
-    const options: LineOption[] = Array.isArray(this.config.options) ? this.config.options : [];
+    const options: LineOption[] = Array.isArray(this.config.options)
+      ? this.config.options
+      : [];
     options.forEach((option) => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -631,7 +649,8 @@ export class LineControl extends Plugin {
         let actionResult: Promise<void> | void;
         try {
           const callback = this.config.onSelect;
-          actionResult = typeof callback === 'function' ? callback(option.key) : undefined;
+          actionResult =
+            typeof callback === 'function' ? callback(option.key) : undefined;
         } catch (error) {
           console.error('[LineControl] onSelect error:', error);
           actionResult = undefined;
@@ -686,7 +705,9 @@ export class LineControl extends Plugin {
     if (!this.dropdown) {
       return;
     }
-    const items = this.dropdown.querySelectorAll<HTMLButtonElement>('.xgplayer-quality-item');
+    const items = this.dropdown.querySelectorAll<HTMLButtonElement>(
+      '.xgplayer-quality-item',
+    );
     items.forEach((item) => {
       const key = item.dataset.lineKey ?? '';
       item.classList.toggle('active', key === currentKey);
@@ -700,7 +721,9 @@ export class LineControl extends Plugin {
     }
     if (this.dropdown) {
       this.dropdown.classList.toggle('disabled', this.isSwitching);
-      const buttons = this.dropdown.querySelectorAll<HTMLButtonElement>('.xgplayer-quality-item');
+      const buttons = this.dropdown.querySelectorAll<HTMLButtonElement>(
+        '.xgplayer-quality-item',
+      );
       buttons.forEach((button) => {
         button.disabled = this.isSwitching;
       });
@@ -712,7 +735,9 @@ export class LineControl extends Plugin {
     if (!root) {
       return;
     }
-    const options: LineOption[] = Array.isArray(this.config.options) ? this.config.options : [];
+    const options: LineOption[] = Array.isArray(this.config.options)
+      ? this.config.options
+      : [];
     root.style.display = options.length === 0 ? 'none' : '';
   }
 }

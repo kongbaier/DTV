@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  // React Compiler (Rules of React) 相关规则由 oxlint 原生实现，随 react 插件启用。
+  // 本项目已在 vite.config.ts 开启 React Compiler（oxc），这里的规则用于在编译前
+  // 暴露会触发 compiler bail-out / 违规 hook 用法的代码。
+  // 规则清单可参考 node_modules/oxlint/configuration_schema.json 或 oxlint 文档。
+  "plugins": ["react"],
+  "ignorePatterns": ["dist/**", "build/**", "node_modules/**", "src-tauri/**"],
+  "rules": {
+    // Rules of React：hook 必须无条件、按固定顺序在顶层调用
+    "react/rules-of-hooks": "error",
+    // 依赖数组需完整；缺失依赖会让 React Compiler 无法生成正确 memo 代码
+    "react/exhaustive-deps": "warn",
+    // 以下为 React Compiler / Rules-of-React 的细化规则，先以 warn 观察，修复后可视需要提为 error
+    "react/purity": "warn",
+    "react/refs": "warn",
+    "react/immutability": "warn",
+    "react/set-state-in-render": "warn",
+    "react/set-state-in-effect": "warn",
+    "react/no-unstable-nested-components": "warn",
+    "react/preserve-manual-memoization": "warn",
+    "react/memo-dependencies": "warn"
+  }
+}

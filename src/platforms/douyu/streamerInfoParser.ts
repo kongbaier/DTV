@@ -10,18 +10,31 @@ interface DouyuRoomInfoFromCommand {
   show_status?: number | null;
 }
 
-export async function fetchDouyuStreamerDetails(roomId: string): Promise<StreamerDetails> {
+export async function fetchDouyuStreamerDetails(
+  roomId: string,
+): Promise<StreamerDetails> {
   try {
     // Now expects the clean DouyuFollowRoomInfo structure from the Rust command
-    const roomData = await invoke<DouyuRoomInfoFromCommand>('fetch_douyu_room_info', { roomId });
+    const roomData = await invoke<DouyuRoomInfoFromCommand>(
+      'fetch_douyu_room_info',
+      { roomId },
+    );
 
-    if (!roomData) { // Should not happen if invoke succeeds and Rust returns Ok
-      console.error('[StreamerInfo/douyuParser.ts] Received null/undefined roomData from invoke for Douyu room:', roomId);
-      throw new Error('Failed to retrieve valid room data from backend for Douyu.');
+    if (!roomData) {
+      // Should not happen if invoke succeeds and Rust returns Ok
+      console.error(
+        '[StreamerInfo/douyuParser.ts] Received null/undefined roomData from invoke for Douyu room:',
+        roomId,
+      );
+      throw new Error(
+        'Failed to retrieve valid room data from backend for Douyu.',
+      );
     }
-    
-    const sStatus = typeof roomData.show_status === 'number' ? roomData.show_status : null;
-    const vLoop = typeof roomData.video_loop === 'number' ? roomData.video_loop : null;
+
+    const sStatus =
+      typeof roomData.show_status === 'number' ? roomData.show_status : null;
+    const vLoop =
+      typeof roomData.video_loop === 'number' ? roomData.video_loop : null;
 
     let currentLiveStatus: LiveStatus = 'OFFLINE';
     const isActuallyLive = sStatus === 1; // True if live or looping
@@ -50,7 +63,10 @@ export async function fetchDouyuStreamerDetails(roomId: string): Promise<Streame
       categoryName: undefined, // Placeholder - needs data source
     };
   } catch (e: any) {
-    console.error(`[StreamerInfo/douyuParser.ts] Error fetching or parsing Douyu details for ${roomId}:`, e);
+    console.error(
+      `[StreamerInfo/douyuParser.ts] Error fetching or parsing Douyu details for ${roomId}:`,
+      e,
+    );
     // Return a StreamerDetails object with an error message and offline status
     return {
       roomId: roomId,
@@ -61,9 +77,12 @@ export async function fetchDouyuStreamerDetails(roomId: string): Promise<Streame
       liveStatus: 'UNKNOWN',
       isLive: false,
       isLooping: false, // Ensure isLooping is present in error case
-      errorMessage: typeof e === 'string' ? e : e.message || 'Unknown error loading details',
+      errorMessage:
+        typeof e === 'string'
+          ? e
+          : e.message || 'Unknown error loading details',
       viewerCount: 0,
       categoryName: 'N/A',
     };
   }
-} 
+}

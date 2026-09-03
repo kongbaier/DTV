@@ -37,18 +37,18 @@
   box-shadow: none;
 }
 
-:global(:root[data-theme="light"]) .cate3Item {
+:global(:root[data-theme='light']) .cate3Item {
   color: #6c7270;
 }
 
-:global(:root[data-theme="light"]) .cate3ItemActive {
+:global(:root[data-theme='light']) .cate3ItemActive {
   background: var(--accent-gradient);
   border-color: color-mix(in srgb, var(--accent) 65%, var(--accent-hover));
   color: #ffffff;
   box-shadow: none;
 }
 
-:global(:root[data-theme="dark"]) .cate3Item:not(.cate3ItemActive) {
+:global(:root[data-theme='dark']) .cate3Item:not(.cate3ItemActive) {
   background: rgba(50, 56, 60, 0.82);
   border: none;
   color: rgba(226, 232, 240, 0.78);
@@ -57,14 +57,14 @@
     inset 0 -1px 0 rgba(0, 0, 0, 0.22);
 }
 
-:global(:root[data-theme="dark"]) .cate3ItemActive {
+:global(:root[data-theme='dark']) .cate3ItemActive {
   background: var(--accent-gradient);
   border-color: color-mix(in srgb, var(--accent) 65%, var(--accent-hover));
   color: #ffffff;
   box-shadow: none;
 }
 
-:global(:root[data-theme="dark"]) .cate3Item:hover:not(.cate3ItemActive) {
+:global(:root[data-theme='dark']) .cate3Item:hover:not(.cate3ItemActive) {
   background: rgba(56, 63, 67, 0.86);
   border: none;
   box-shadow:

@@ -1,20 +1,22 @@
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
+import React, { useEffect } from 'react';
 
-import { ThemeProvider } from "@/state/theme/ThemeProvider";
-import { FollowProvider } from "@/state/follow/FollowProvider";
-import { CustomCategoriesProvider } from "@/state/customCategories/CustomCategoriesProvider";
-import { PlayerUiProvider } from "@/state/playerUi/PlayerUiProvider";
+import { ThemeProvider } from '@/state/theme/ThemeProvider';
+import { FollowProvider } from '@/state/follow/FollowProvider';
+import { CustomCategoriesProvider } from '@/state/customCategories/CustomCategoriesProvider';
+import { PlayerUiProvider } from '@/state/playerUi/PlayerUiProvider';
 
 async function maybeCheckForUpdates() {
   if (import.meta.env.DEV) return;
   try {
-    const { check } = await import("@tauri-apps/plugin-updater");
+    const { check } = await import('@tauri-apps/plugin-updater');
     const update = await check();
     if (!update?.available) return;
-    const notes = update.body ? `\n\n${update.body}` : "";
-    const shouldUpdate = window.confirm(`发现新版本 ${update.version}，是否立即更新？${notes}`);
+    const notes = update.body ? `\n\n${update.body}` : '';
+    const shouldUpdate = window.confirm(
+      `发现新版本 ${update.version}，是否立即更新？${notes}`,
+    );
     if (!shouldUpdate) return;
     await update.downloadAndInstall();
   } catch {

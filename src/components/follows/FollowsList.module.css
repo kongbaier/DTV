@@ -18,7 +18,7 @@
   overflow: hidden;
 }
 
-:global(:root[data-theme="light"]) .followList {
+:global(:root[data-theme='light']) .followList {
   background: transparent;
   border: none;
   box-shadow: none;
@@ -57,11 +57,11 @@
   color: rgba(100, 116, 139, 1);
 }
 
-:global(:root[data-theme="light"]) .headerTitle {
+:global(:root[data-theme='light']) .headerTitle {
   color: var(--text-primary);
 }
 
-:global(:root[data-theme="light"]) .headerLabel {
+:global(:root[data-theme='light']) .headerLabel {
   color: rgba(100, 116, 139, 1);
 }
 
@@ -77,7 +77,7 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-:global(:root[data-theme="light"]) .headerActions {
+:global(:root[data-theme='light']) .headerActions {
   background: rgba(15, 23, 42, 0.04);
   border-color: rgba(148, 163, 184, 0.35);
   box-shadow: none;
@@ -94,7 +94,11 @@
   color: var(--secondary-text);
   background: transparent;
   border: 1px solid transparent;
-  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .actionBtn :global(svg) {
@@ -108,7 +112,7 @@
   transform: translateY(-1px);
 }
 
-:global(:root[data-theme="light"]) .actionBtn:hover {
+:global(:root[data-theme='light']) .actionBtn:hover {
   background: rgba(255, 255, 255, 0.85);
   border-color: rgba(148, 163, 184, 0.35);
   color: rgba(15, 23, 42, 1);
@@ -142,7 +146,7 @@
   font-weight: 700;
 }
 
-:global(:root[data-theme="light"]) .progressWithSpinner {
+:global(:root[data-theme='light']) .progressWithSpinner {
   background: rgba(255, 255, 255, 0.85);
   border-color: rgba(148, 163, 184, 0.35);
   color: #475569;
@@ -203,13 +207,17 @@
   height: 38px;
   opacity: 0;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.045));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.045)
+  );
   border: none;
   will-change: transform, height, opacity;
   z-index: 0;
 }
 
-:global(:root[data-theme="light"]) .hoverHighlight {
+:global(:root[data-theme='light']) .hoverHighlight {
   background: rgba(15, 23, 42, 0.06);
   border: none;
 }
@@ -228,14 +236,16 @@
   border-radius: 14px;
   background: transparent;
   cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
 }
 
 .streamerItem:hover {
   transform: translateX(4px);
 }
 
-:global(:root[data-theme="light"]) .streamerItem:hover {
+:global(:root[data-theme='light']) .streamerItem:hover {
   background: transparent;
 }
 
@@ -265,7 +275,7 @@
   box-sizing: border-box;
 }
 
-:global(:root[data-theme="light"]) .avatar {
+:global(:root[data-theme='light']) .avatar {
   background: rgba(15, 23, 42, 0.04);
   border: 2px solid rgba(16, 185, 129, 0.3);
 }
@@ -306,7 +316,7 @@
   transition: color 0.18s ease;
 }
 
-:global(:root[data-theme="light"]) .name {
+:global(:root[data-theme='light']) .name {
   color: rgba(15, 23, 42, 1);
 }
 
@@ -314,7 +324,7 @@
   color: rgba(52, 211, 153, 1);
 }
 
-:global(:root[data-theme="light"]) .streamerItem:hover .name {
+:global(:root[data-theme='light']) .streamerItem:hover .name {
   color: rgba(16, 185, 129, 1);
 }
 
@@ -329,7 +339,7 @@
   letter-spacing: 0.05em;
 }
 
-:global(:root[data-theme="light"]) .sub {
+:global(:root[data-theme='light']) .sub {
   color: rgba(100, 116, 139, 1);
 }
 
@@ -367,7 +377,7 @@
   background: rgba(71, 85, 105, 1);
 }
 
-:global(:root[data-theme="light"]) .liveDotOffline {
+:global(:root[data-theme='light']) .liveDotOffline {
   background: rgba(148, 163, 184, 1);
 }
 
@@ -377,7 +387,9 @@
   gap: 6px;
   opacity: 0;
   transform: translateX(6px);
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 
 .streamerItem:hover .itemActions {
@@ -395,7 +407,9 @@
   color: var(--secondary-text);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: transform 0.18s ease, background 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
 }
 
 .miniBtn:hover {
@@ -403,7 +417,7 @@
   background: rgba(255, 255, 255, 0.14);
 }
 
-:global(:root[data-theme="light"]) .miniBtn {
+:global(:root[data-theme='light']) .miniBtn {
   background: rgba(15, 23, 42, 0.06);
   border-color: rgba(148, 163, 184, 0.5);
 }
@@ -418,11 +432,14 @@
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   overflow: hidden;
-  transition: box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+  transition:
+    box-shadow 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease;
   user-select: none;
 }
 
-:global(:root[data-theme="light"]) .folderItem {
+:global(:root[data-theme='light']) .folderItem {
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(15, 23, 42, 0.12);
   box-shadow: none;
@@ -456,7 +473,7 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-:global(:root[data-theme="light"]) .folderHeader:hover {
+:global(:root[data-theme='light']) .folderHeader:hover {
   background: rgba(15, 23, 42, 0.06);
 }
 
@@ -473,11 +490,11 @@
   filter: none;
 }
 
-:global(:root[data-theme="light"]) .folderIcon {
+:global(:root[data-theme='light']) .folderIcon {
   color: #6b7280;
 }
 
-:global(:root[data-theme="light"]) .folderItemExpanded .folderIconExpanded {
+:global(:root[data-theme='light']) .folderItemExpanded .folderIconExpanded {
   color: #111827;
 }
 
@@ -494,7 +511,7 @@
   transition: color 0.2s ease;
 }
 
-:global(:root[data-theme="dark"]) .folderName {
+:global(:root[data-theme='dark']) .folderName {
   color: #e7eee9;
 }
 
@@ -507,7 +524,10 @@
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: none;
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
 .expandIcon {
@@ -519,13 +539,13 @@
   color: #9ca3af;
 }
 
-:global(:root[data-theme="light"]) .folderCount {
+:global(:root[data-theme='light']) .folderCount {
   color: #6b7280;
   background: rgba(15, 23, 42, 0.06);
   border-color: rgba(15, 23, 42, 0.12);
 }
 
-:global(:root[data-theme="light"]) .expandIcon {
+:global(:root[data-theme='light']) .expandIcon {
   color: #6b7280;
 }
 
@@ -545,13 +565,17 @@
   height: 38px;
   opacity: 0;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.05)
+  );
   border: none;
   will-change: transform, height, opacity;
   z-index: 0;
 }
 
-:global(:root[data-theme="light"]) .folderHoverHighlight {
+:global(:root[data-theme='light']) .folderHoverHighlight {
   background: rgba(15, 23, 42, 0.06);
   border: none;
 }
@@ -574,11 +598,11 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-:global(:root[data-theme="light"]) .folderHeader:hover .folderName {
+:global(:root[data-theme='light']) .folderHeader:hover .folderName {
   color: #0f172a;
 }
 
-:global(:root[data-theme="light"]) .folderHeader:hover .folderCount {
+:global(:root[data-theme='light']) .folderHeader:hover .folderCount {
   color: #0f172a;
   background: rgba(15, 23, 42, 0.04);
 }
@@ -616,7 +640,7 @@
   flex-direction: column;
 }
 
-:global(:root[data-theme="light"]) .followOverlayPanel {
+:global(:root[data-theme='light']) .followOverlayPanel {
   background: rgba(255, 255, 255, 0.96);
   border-color: rgba(15, 23, 42, 0.12);
   box-shadow:
@@ -641,7 +665,10 @@
   box-shadow:
     0 10px 24px rgba(0, 0, 0, 0.26),
     0 22px 40px rgba(0, 0, 0, 0.18);
-  transition: transform 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+  transition:
+    transform 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease;
 }
 
 .followOverlayCloseBtn:hover {
@@ -650,7 +677,7 @@
   border-color: rgba(64, 131, 255, 0.7);
 }
 
-:global(:root[data-theme="light"]) .followOverlayCloseBtn {
+:global(:root[data-theme='light']) .followOverlayCloseBtn {
   background: rgba(255, 255, 255, 0.96);
   border-color: rgba(15, 23, 42, 0.12);
 }
@@ -682,7 +709,11 @@
   cursor: pointer;
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);
-  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .filterChip:hover {
@@ -697,7 +728,7 @@
   color: white;
 }
 
-:global(:root[data-theme="light"]) .filterChip {
+:global(:root[data-theme='light']) .filterChip {
   background: rgba(15, 23, 42, 0.04);
   border-color: rgba(148, 163, 184, 0.6);
 }
@@ -721,7 +752,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .overlayTextBtn:hover:not(:disabled) {
@@ -772,7 +807,8 @@
   border-radius: 10px;
 }
 
-:global(:root[data-theme="light"]) .followOverlayContent::-webkit-scrollbar-thumb {
+:global(:root[data-theme='light'])
+  .followOverlayContent::-webkit-scrollbar-thumb {
   background: rgba(15, 23, 42, 0.16);
 }
 
@@ -809,7 +845,10 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.06);
   cursor: pointer;
-  transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    background 0.22s ease;
   position: relative;
   overflow: hidden;
 }
@@ -820,7 +859,7 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-:global(:root[data-theme="light"]) .followOverlayCard {
+:global(:root[data-theme='light']) .followOverlayCard {
   background: rgba(15, 23, 42, 0.04);
   border-color: rgba(148, 163, 184, 0.5);
 }
@@ -907,7 +946,9 @@
   justify-content: center;
   z-index: 10;
   font-weight: var(--weight-bold);
-  transition: transform 0.18s ease, background 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
 }
 
 .followOverlayRemoveBtn:hover {
@@ -977,7 +1018,7 @@
   outline: none;
 }
 
-:global(:root[data-theme="light"]) .textInput {
+:global(:root[data-theme='light']) .textInput {
   background: rgba(15, 23, 42, 0.04);
   border-color: rgba(148, 163, 184, 0.6);
 }
@@ -991,7 +1032,11 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);
   cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    border 0.18s ease;
 }
 
 .secondaryBtn {
@@ -1049,7 +1094,7 @@
   backdrop-filter: blur(14px);
 }
 
-:global(:root[data-theme="light"]) .contextMenu {
+:global(:root[data-theme='light']) .contextMenu {
   background: rgba(255, 255, 255, 0.96);
   border-color: rgba(15, 23, 42, 0.12);
 }
@@ -1069,7 +1114,7 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-:global(:root[data-theme="light"]) .menuItem:hover {
+:global(:root[data-theme='light']) .menuItem:hover {
   background: rgba(15, 23, 42, 0.06);
 }
 

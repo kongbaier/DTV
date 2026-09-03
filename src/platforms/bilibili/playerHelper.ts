@@ -2,7 +2,11 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen, type Event as TauriEvent } from '@tauri-apps/api/event';
 import type { LiveStreamInfo, StreamVariant } from '../common/types';
 import type { Ref } from '../common/ref';
-import type { DanmakuMessage, DanmuOverlayInstance, DanmuRenderOptions } from '../../components/player/types';
+import type {
+  DanmakuMessage,
+  DanmuOverlayInstance,
+  DanmuRenderOptions,
+} from '../../components/player/types';
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '@/utils/logger';
 
@@ -10,23 +14,30 @@ export async function getBilibiliStreamConfig(
   roomId: string,
   quality: string = '原画',
   cookie?: string,
-): Promise<{ streamUrl: string, streamType: string | undefined }> {
+): Promise<{ streamUrl: string; streamType: string | undefined }> {
   if (!roomId) {
     throw new Error('房间ID未提供');
   }
   const payloadData = { args: { room_id_str: roomId } };
   // 若未显式传入 cookie，则尝试从 localStorage 读取，以确保最高画质可用
-  const effectiveCookie = cookie ?? (typeof localStorage !== 'undefined' ? (localStorage.getItem('bilibili_cookie') || undefined) : undefined);
+  const effectiveCookie =
+    cookie ??
+    (typeof localStorage !== 'undefined'
+      ? localStorage.getItem('bilibili_cookie') || undefined
+      : undefined);
 
   const MAX_ATTEMPTS = 2; // 最多重试一次
   let result: LiveStreamInfo | null = null;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
-      const fetched = await invoke<LiveStreamInfo>('get_bilibili_live_stream_url_with_quality', {
-        payload: payloadData,
-        quality,
-        cookie: effectiveCookie || null,
-      });
+      const fetched = await invoke<LiveStreamInfo>(
+        'get_bilibili_live_stream_url_with_quality',
+        {
+          payload: payloadData,
+          quality,
+          cookie: effectiveCookie || null,
+        },
+      );
       result = fetched;
 
       // 若后端返回错误，统一按“未开播”处理（除非明确包含未开播字样）
@@ -51,7 +62,10 @@ export async function getBilibiliStreamConfig(
       break;
     } catch (e: any) {
       const msg = (e?.message || '').trim();
-      const looksOffline = msg.includes('未开播') || msg.includes('房间不存在') || msg.includes('不存在');
+      const looksOffline =
+        msg.includes('未开播') ||
+        msg.includes('房间不存在') ||
+        msg.includes('不存在');
       if (looksOffline) {
         throw new Error(msg || '主播未开播或无法获取直播流');
       }
@@ -68,12 +82,19 @@ export async function getBilibiliStreamConfig(
 
   // 调试输出：真实上游地址与所有可用地址
   if (result.upstream_url) {
-    logger.debug('[Bilibili] 上游真实地址（可用于 VLC 测试）:', result.upstream_url);
+    logger.debug(
+      '[Bilibili] 上游真实地址（可用于 VLC 测试）:',
+      result.upstream_url,
+    );
   }
   if (result.available_streams && Array.isArray(result.available_streams)) {
-    logger.debug(`[Bilibili] 可用播放地址（共 ${result.available_streams.length} 条）:`);
+    logger.debug(
+      `[Bilibili] 可用播放地址（共 ${result.available_streams.length} 条）:`,
+    );
     (result.available_streams as StreamVariant[]).forEach((v, idx) => {
-      const meta = [v.format, v.desc, v.qn?.toString(), v.protocol].filter(Boolean).join(' | ');
+      const meta = [v.format, v.desc, v.qn?.toString(), v.protocol]
+        .filter(Boolean)
+        .join(' | ');
       logger.debug(`  [${idx + 1}] ${v.url}${meta ? `  <<< ${meta}` : ''}`);
     });
   }
@@ -96,23 +117,29 @@ export async function getBilibiliStreamConfig(
     streamType = 'hls';
   }
 
-  if (!streamType && result.available_streams && Array.isArray(result.available_streams)) {
-    const matchedVariant = (result.available_streams as StreamVariant[]).find((variant) => {
-      if (!variant?.url) {
-        return false;
-      }
-      const formatLower = variant.format?.toLowerCase() ?? '';
-      const protocolLower = variant.protocol?.toLowerCase() ?? '';
-      const isSameAsPrimary =
-        variant.url === streamUrl || variant.url === result.upstream_url;
-      const isHlsCandidate =
-        formatLower === 'ts' ||
-        formatLower === 'fmp4' ||
-        formatLower === 'mp4' ||
-        formatLower === 'm4s' ||
-        protocolLower.includes('hls');
-      return isSameAsPrimary && isHlsCandidate;
-    });
+  if (
+    !streamType &&
+    result.available_streams &&
+    Array.isArray(result.available_streams)
+  ) {
+    const matchedVariant = (result.available_streams as StreamVariant[]).find(
+      (variant) => {
+        if (!variant?.url) {
+          return false;
+        }
+        const formatLower = variant.format?.toLowerCase() ?? '';
+        const protocolLower = variant.protocol?.toLowerCase() ?? '';
+        const isSameAsPrimary =
+          variant.url === streamUrl || variant.url === result.upstream_url;
+        const isHlsCandidate =
+          formatLower === 'ts' ||
+          formatLower === 'fmp4' ||
+          formatLower === 'mp4' ||
+          formatLower === 'm4s' ||
+          protocolLower.includes('hls');
+        return isSameAsPrimary && isHlsCandidate;
+      },
+    );
     if (matchedVariant) {
       streamType = 'hls';
     }
@@ -155,61 +182,89 @@ export async function startBilibiliDanmakuListener(
   renderOptions?: DanmuRenderOptions,
 ): Promise<() => void> {
   // 启动后端 B 站弹幕监听（cookie 可选）；若未传，则从 localStorage 兜底读取
-  const effectiveCookie = cookie ?? (typeof localStorage !== 'undefined' ? (localStorage.getItem('bilibili_cookie') || undefined) : undefined);
+  const effectiveCookie =
+    cookie ??
+    (typeof localStorage !== 'undefined'
+      ? localStorage.getItem('bilibili_cookie') || undefined
+      : undefined);
   await invoke('start_bilibili_danmaku_listener', {
     payload: { args: { room_id_str: roomId } },
     cookie: effectiveCookie || null,
   });
 
   const eventName = 'danmaku-message';
-  const unlisten = await listen<UnifiedRustDanmakuPayload>(eventName, (event: TauriEvent<UnifiedRustDanmakuPayload>) => {
-    if (!event.payload || event.payload.room_id !== roomId) return;
+  const unlisten = await listen<UnifiedRustDanmakuPayload>(
+    eventName,
+    (event: TauriEvent<UnifiedRustDanmakuPayload>) => {
+      if (!event.payload || event.payload.room_id !== roomId) return;
 
-    const frontendDanmaku: DanmakuMessage = {
-      id: uuidv4(),
-      nickname: event.payload.user || '未知用户',
-      content: event.payload.content,
-      level: String(event.payload.user_level ?? 0),
-      badgeLevel: event.payload.fans_club_level != null ? String(event.payload.fans_club_level) : undefined,
-      room_id: roomId,
-    };
+      const frontendDanmaku: DanmakuMessage = {
+        id: uuidv4(),
+        nickname: event.payload.user || '未知用户',
+        content: event.payload.content,
+        level: String(event.payload.user_level ?? 0),
+        badgeLevel:
+          event.payload.fans_club_level != null
+            ? String(event.payload.fans_club_level)
+            : undefined,
+        room_id: roomId,
+      };
 
-    const shouldDisplay = renderOptions?.shouldDisplay ? renderOptions.shouldDisplay(frontendDanmaku) : true;
+      const shouldDisplay = renderOptions?.shouldDisplay
+        ? renderOptions.shouldDisplay(frontendDanmaku)
+        : true;
 
-    if (shouldDisplay && danmuOverlay?.sendComment) {
-      try {
-        const commentOptions = renderOptions?.buildCommentOptions?.(frontendDanmaku) ?? {};
-        const styleFromOptions = commentOptions.style ?? {};
-        const preferredColor = styleFromOptions.color || (frontendDanmaku as any).color || '#FFFFFF';
-        danmuOverlay.sendComment({
-          id: frontendDanmaku.id,
-          txt: frontendDanmaku.content,
-          duration: commentOptions.duration ?? 12000,
-          mode: commentOptions.mode ?? 'scroll',
-          style: {
-            ...styleFromOptions,
-            color: preferredColor,
-          },
-        });
-      } catch (emitError) {
-        console.warn('[BilibiliPlayerHelper] Failed emitting danmu.js comment:', emitError);
+      if (shouldDisplay && danmuOverlay?.sendComment) {
+        try {
+          const commentOptions =
+            renderOptions?.buildCommentOptions?.(frontendDanmaku) ?? {};
+          const styleFromOptions = commentOptions.style ?? {};
+          const preferredColor =
+            styleFromOptions.color ||
+            (frontendDanmaku as any).color ||
+            '#FFFFFF';
+          danmuOverlay.sendComment({
+            id: frontendDanmaku.id,
+            txt: frontendDanmaku.content,
+            duration: commentOptions.duration ?? 12000,
+            mode: commentOptions.mode ?? 'scroll',
+            style: {
+              ...styleFromOptions,
+              color: preferredColor,
+            },
+          });
+        } catch (emitError) {
+          console.warn(
+            '[BilibiliPlayerHelper] Failed emitting danmu.js comment:',
+            emitError,
+          );
+        }
       }
-    }
 
-    const shouldAppend = renderOptions?.shouldAppendToList ? renderOptions.shouldAppendToList(frontendDanmaku) : true;
-    if (shouldAppend) {
-      danmakuMessagesRef.value.push(frontendDanmaku);
-      if (danmakuMessagesRef.value.length > 200) {
-        danmakuMessagesRef.value.splice(0, danmakuMessagesRef.value.length - 200);
+      const shouldAppend = renderOptions?.shouldAppendToList
+        ? renderOptions.shouldAppendToList(frontendDanmaku)
+        : true;
+      if (shouldAppend) {
+        danmakuMessagesRef.value.push(frontendDanmaku);
+        if (danmakuMessagesRef.value.length > 200) {
+          danmakuMessagesRef.value.splice(
+            0,
+            danmakuMessagesRef.value.length - 200,
+          );
+        }
       }
-    }
-  });
+    },
+  );
   return unlisten;
 }
 
-export async function stopBilibiliDanmaku(currentUnlistenFn: (() => void) | null): Promise<void> {
+export async function stopBilibiliDanmaku(
+  currentUnlistenFn: (() => void) | null,
+): Promise<void> {
   if (currentUnlistenFn) {
-    try { currentUnlistenFn(); } catch {}
+    try {
+      currentUnlistenFn();
+    } catch {}
   }
   try {
     await invoke('stop_bilibili_danmaku_listener');

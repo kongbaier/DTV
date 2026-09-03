@@ -1,10 +1,13 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import type { CommonStreamer } from "@/platforms/common/streamerTypes";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import type { CommonStreamer } from '@/platforms/common/streamerTypes';
 
-export function useBilibiliLiveRooms(subCategoryId: string | null, parentCategoryId: string | null) {
+export function useBilibiliLiveRooms(
+  subCategoryId: string | null,
+  parentCategoryId: string | null,
+) {
   const [rooms, setRooms] = useState<CommonStreamer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -13,37 +16,45 @@ export function useBilibiliLiveRooms(subCategoryId: string | null, parentCategor
   const [hasMore, setHasMore] = useState(true);
   const proxyBaseRef = useRef<string | null>(null);
 
-  const canFetch = useMemo(() => !!subCategoryId && !!parentCategoryId, [parentCategoryId, subCategoryId]);
+  const canFetch = useMemo(
+    () => !!subCategoryId && !!parentCategoryId,
+    [parentCategoryId, subCategoryId],
+  );
 
   const ensureProxyStarted = useCallback(async () => {
     if (proxyBaseRef.current) return;
     try {
-      const base = await invoke<string>("start_static_proxy_server");
+      const base = await invoke<string>('start_static_proxy_server');
       proxyBaseRef.current = base || null;
     } catch (e) {
-      console.error("[useBilibiliLiveRooms] Failed to start static proxy server", e);
+      console.error(
+        '[useBilibiliLiveRooms] Failed to start static proxy server',
+        e,
+      );
     }
   }, []);
 
   const proxify = useCallback((url?: string) => {
-    if (!url) return "";
-    if (proxyBaseRef.current) return `${proxyBaseRef.current}/image?url=${encodeURIComponent(url)}`;
+    if (!url) return '';
+    if (proxyBaseRef.current)
+      return `${proxyBaseRef.current}/image?url=${encodeURIComponent(url)}`;
     return url;
   }, []);
 
   const mapToCommon = useCallback(
     (raw: any): CommonStreamer => {
       return {
-        room_id: String(raw.roomid ?? ""),
-        title: raw.title ?? "",
-        nickname: raw.uname ?? "",
-        avatar: proxify(raw.face ?? ""),
-        room_cover: proxify(raw.cover ?? ""),
-        viewer_count_str: raw.watched_show?.num != null ? String(raw.watched_show.num) : "",
-        platform: "bilibili"
+        room_id: String(raw.roomid ?? ''),
+        title: raw.title ?? '',
+        nickname: raw.uname ?? '',
+        avatar: proxify(raw.face ?? ''),
+        room_cover: proxify(raw.cover ?? ''),
+        viewer_count_str:
+          raw.watched_show?.num != null ? String(raw.watched_show.num) : '',
+        platform: 'bilibili',
       };
     },
-    [proxify]
+    [proxify],
   );
 
   const fetchPage = useCallback(
@@ -59,10 +70,10 @@ export function useBilibiliLiveRooms(subCategoryId: string | null, parentCategor
       setError(null);
 
       try {
-        const text = await invoke<string>("fetch_bilibili_live_list", {
+        const text = await invoke<string>('fetch_bilibili_live_list', {
           areaId: subCategoryId,
           parentAreaId: parentCategoryId,
-          page
+          page,
         });
         const parsed = JSON.parse(text);
         const list: any[] = parsed?.data?.list ?? [];
@@ -71,7 +82,9 @@ export function useBilibiliLiveRooms(subCategoryId: string | null, parentCategor
         setHasMore(newRooms.length > 0);
         setCurrentPage(page + 1);
       } catch (e: any) {
-        setError(typeof e === "string" ? e : e?.message || "获取 B 站主播列表失败");
+        setError(
+          typeof e === 'string' ? e : e?.message || '获取 B 站主播列表失败',
+        );
         setHasMore(false);
         if (!loadMore) setRooms([]);
       } finally {
@@ -79,7 +92,7 @@ export function useBilibiliLiveRooms(subCategoryId: string | null, parentCategor
         else setIsLoading(false);
       }
     },
-    [ensureProxyStarted, mapToCommon, parentCategoryId, subCategoryId]
+    [ensureProxyStarted, mapToCommon, parentCategoryId, subCategoryId],
   );
 
   const loadInitialRooms = useCallback(async () => {
@@ -103,6 +116,13 @@ export function useBilibiliLiveRooms(subCategoryId: string | null, parentCategor
     void loadInitialRooms();
   }, [canFetch, loadInitialRooms]);
 
-  return { rooms, isLoading, isLoadingMore, error, hasMore, loadInitialRooms, loadMoreRooms };
+  return {
+    rooms,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasMore,
+    loadInitialRooms,
+    loadMoreRooms,
+  };
 }
-

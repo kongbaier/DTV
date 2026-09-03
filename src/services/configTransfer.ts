@@ -55,7 +55,9 @@ const sortEntries = (entries: PortableConfigEntries): PortableConfigEntries => {
     }, {});
 };
 
-export const collectPortableConfigEntries = (storage: Storage): PortableConfigEntries => {
+export const collectPortableConfigEntries = (
+  storage: Storage,
+): PortableConfigEntries => {
   const entries: PortableConfigEntries = {};
   for (let index = 0; index < storage.length; index += 1) {
     const key = storage.key(index);
@@ -103,14 +105,23 @@ export const parsePortableConfigPayload = (raw: string): DtvConfigPayload => {
   }
 
   if (parsed.version !== DTV_CONFIG_VERSION) {
-    throw new Error(`Unsupported config file version: ${String(parsed.version)}.`);
+    throw new Error(
+      `Unsupported config file version: ${String(parsed.version)}.`,
+    );
   }
 
-  if (!isRecord(parsed.source) || typeof parsed.source.client !== 'string' || !parsed.source.client.trim()) {
+  if (
+    !isRecord(parsed.source) ||
+    typeof parsed.source.client !== 'string' ||
+    !parsed.source.client.trim()
+  ) {
     throw new Error('Config file source is invalid.');
   }
 
-  if (typeof parsed.exportedAt !== 'string' || Number.isNaN(Date.parse(parsed.exportedAt))) {
+  if (
+    typeof parsed.exportedAt !== 'string' ||
+    Number.isNaN(Date.parse(parsed.exportedAt))
+  ) {
     throw new Error('Config file exportedAt is invalid.');
   }
 
@@ -132,7 +143,10 @@ export const parsePortableConfigPayload = (raw: string): DtvConfigPayload => {
     exportedAt: parsed.exportedAt,
     source: {
       client: parsed.source.client,
-      appVersion: typeof parsed.source.appVersion === 'string' ? parsed.source.appVersion : null,
+      appVersion:
+        typeof parsed.source.appVersion === 'string'
+          ? parsed.source.appVersion
+          : null,
     },
     entries: sortEntries(sanitizedEntries),
   };
@@ -151,7 +165,9 @@ export const replacePortableConfigEntries = (
   }
 
   keysToClear.forEach((key) => storage.removeItem(key));
-  Object.entries(sortEntries(entries)).forEach(([key, value]) => storage.setItem(key, value));
+  Object.entries(sortEntries(entries)).forEach(([key, value]) =>
+    storage.setItem(key, value),
+  );
 };
 
 const pad = (value: number) => String(value).padStart(2, '0');

@@ -1,4 +1,4 @@
-import type Player from "xgplayer";
+import type Player from 'xgplayer';
 
 export function arrangeControlClusters(player: Player | null) {
   if (!player || !(player as any).root) return;
@@ -13,7 +13,10 @@ export function arrangeControlClusters(player: Player | null) {
     }
   };
 
-  if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.requestAnimationFrame === 'function'
+  ) {
     window.requestAnimationFrame(run);
   } else {
     run();
@@ -21,18 +24,20 @@ export function arrangeControlClusters(player: Player | null) {
 }
 
 function groupPrimaryControls(root: HTMLElement) {
-  const leftControls = root.querySelector(".xgplayer-controls-left");
+  const leftControls = root.querySelector('.xgplayer-controls-left');
   if (!leftControls) return;
 
-  const playEl = leftControls.querySelector(".xgplayer-play");
-  const refreshEl = leftControls.querySelector(".xgplayer-refresh-control");
-  const volumeEl = leftControls.querySelector(".xgplayer-volume-control");
+  const playEl = leftControls.querySelector('.xgplayer-play');
+  const refreshEl = leftControls.querySelector('.xgplayer-refresh-control');
+  const volumeEl = leftControls.querySelector('.xgplayer-volume-control');
   if (!playEl && !refreshEl && !volumeEl) return;
 
-  let cluster = leftControls.querySelector<HTMLElement>(".xgplayer-left-cluster");
+  let cluster = leftControls.querySelector<HTMLElement>(
+    '.xgplayer-left-cluster',
+  );
   if (!cluster) {
-    cluster = document.createElement("div");
-    cluster.className = "xgplayer-left-cluster";
+    cluster = document.createElement('div');
+    cluster.className = 'xgplayer-left-cluster';
     leftControls.insertBefore(cluster, leftControls.firstChild);
   }
 
@@ -44,21 +49,26 @@ function groupPrimaryControls(root: HTMLElement) {
 }
 
 function groupDanmuControls(root: HTMLElement) {
-  const rightControls = root.querySelector(".xgplayer-controls-right");
+  const rightControls = root.querySelector('.xgplayer-controls-right');
   if (!rightControls) return;
 
-  const toggleEl = rightControls.querySelector(".xgplayer-danmu-toggle");
-  const settingsEl = rightControls.querySelector(".xgplayer-danmu-settings");
-  if (!(toggleEl instanceof HTMLElement) || !(settingsEl instanceof HTMLElement)) return;
+  const toggleEl = rightControls.querySelector('.xgplayer-danmu-toggle');
+  const settingsEl = rightControls.querySelector('.xgplayer-danmu-settings');
+  if (
+    !(toggleEl instanceof HTMLElement) ||
+    !(settingsEl instanceof HTMLElement)
+  )
+    return;
 
-  let cluster = rightControls.querySelector<HTMLElement>(".danmu-control-group");
+  let cluster = rightControls.querySelector<HTMLElement>(
+    '.danmu-control-group',
+  );
   if (!cluster) {
-    cluster = document.createElement("div");
-    cluster.className = "danmu-control-group";
+    cluster = document.createElement('div');
+    cluster.className = 'danmu-control-group';
     rightControls.insertBefore(cluster, toggleEl);
   }
 
   if (toggleEl.parentElement !== cluster) cluster.appendChild(toggleEl);
   if (settingsEl.parentElement !== cluster) cluster.appendChild(settingsEl);
 }
-

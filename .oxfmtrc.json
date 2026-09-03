@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "useTabs": false,
+  "tabWidth": 2,
+  "printWidth": 80,
+  "singleQuote": true,
+  "jsxSingleQuote": false,
+  "semi": true,
+  "trailingComma": "all",
+  "arrowParens": "always",
+  "bracketSpacing": true,
+  "bracketSameLine": false,
+  "quoteProps": "as-needed",
+  "endOfLine": "lf",
+  "objectWrap": "preserve",
+  "proseWrap": "preserve",
+  "insertFinalNewline": true,
+  "ignorePatterns": ["dist/", "build/", "node_modules/", "src-tauri/"]
+}

@@ -1,8 +1,12 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { FollowedStreamer, LiveStreamInfo, LiveStatus } from '../common/types';
+import type {
+  FollowedStreamer,
+  LiveStreamInfo,
+  LiveStatus,
+} from '../common/types';
 
 export async function refreshDouyinFollowedStreamer(
-  streamer: FollowedStreamer
+  streamer: FollowedStreamer,
 ): Promise<Partial<FollowedStreamer>> {
   try {
     // The payload for 'get_douyin_live_stream_url' expects { payload: { args: { room_id_str: string } } }
@@ -18,7 +22,9 @@ export async function refreshDouyinFollowedStreamer(
       const nextId = data.web_rid || streamer.id;
 
       if (data.web_rid && data.web_rid !== streamer.id) {
-        console.info(`[DouyinFollowHelper] Migrating stored ID ${streamer.id} -> ${data.web_rid}`);
+        console.info(
+          `[DouyinFollowHelper] Migrating stored ID ${streamer.id} -> ${data.web_rid}`,
+        );
       }
 
       return {
@@ -32,12 +38,12 @@ export async function refreshDouyinFollowedStreamer(
     } else {
       if (data && data.error_message) {
         console.warn(
-          `[DouyinFollowHelper] Error fetching Douyin room ${streamer.id}: ${data.error_message}`
+          `[DouyinFollowHelper] Error fetching Douyin room ${streamer.id}: ${data.error_message}`,
         );
       } else {
         console.warn(
           `[DouyinFollowHelper] Received no/invalid data for Douyin room ${streamer.id}`,
-          data
+          data,
         );
       }
       return { isLive: false, liveStatus: 'OFFLINE' }; // Ensure these are set on error too
@@ -45,8 +51,8 @@ export async function refreshDouyinFollowedStreamer(
   } catch (e) {
     console.error(
       `[DouyinFollowHelper] Failed to refresh Douyin streamer ${streamer.id}:`,
-      e
+      e,
     );
     return { isLive: false, liveStatus: 'OFFLINE' }; // Ensure these are set on error too
   }
-} 
+}

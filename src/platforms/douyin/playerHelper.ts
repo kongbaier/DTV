@@ -2,26 +2,33 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen, type Event as TauriEvent } from '@tauri-apps/api/event';
 import type { Ref } from '../common/ref';
 import { Platform } from '../common/types';
-import type { DanmakuMessage, DanmuOverlayInstance, DanmuRenderOptions, RustGetStreamUrlPayload } from '../../components/player/types';
+import type {
+  DanmakuMessage,
+  DanmuOverlayInstance,
+  DanmuRenderOptions,
+  RustGetStreamUrlPayload,
+} from '../../components/player/types';
 import type { LiveStreamInfo } from '../common/types';
 import { v4 as uuidv4 } from 'uuid';
 
-
 export interface DouyinRustDanmakuPayload {
-  room_id?: string; 
-  user: string;      // Nickname from Rust's DanmakuFrontendPayload
+  room_id?: string;
+  user: string; // Nickname from Rust's DanmakuFrontendPayload
   content: string;
   user_level: number; // from Rust's i64
   fans_club_level: number; // from Rust's i32
 }
 
-export async function fetchAndPrepareDouyinStreamConfig(roomId: string, quality: string = '原画'): Promise<{ 
+export async function fetchAndPrepareDouyinStreamConfig(
+  roomId: string,
+  quality: string = '原画',
+): Promise<{
   streamUrl: string | null;
-  streamType: string | undefined; 
-  title?: string | null; 
-  anchorName?: string | null; 
-  avatar?: string | null; 
-  isLive: boolean; 
+  streamType: string | undefined;
+  title?: string | null;
+  anchorName?: string | null;
+  avatar?: string | null;
+  isLive: boolean;
   normalizedRoomId?: string | null;
   webRid?: string | null;
   initialError: string | null; // Made non-optional, will always be string or null
@@ -36,7 +43,7 @@ export async function fetchAndPrepareDouyinStreamConfig(roomId: string, quality:
       isLive: false,
       normalizedRoomId: null,
       webRid: null,
-      initialError: '房间ID未提供'
+      initialError: '房间ID未提供',
     };
   }
 
@@ -47,15 +54,23 @@ export async function fetchAndPrepareDouyinStreamConfig(roomId: string, quality:
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       // 使用画质参数调用抖音画质切换API
-      const result = await invoke<LiveStreamInfo>('get_douyin_live_stream_url_with_quality', {
-        payload: payloadData,
-        quality: backendQuality,
-      });
+      const result = await invoke<LiveStreamInfo>(
+        'get_douyin_live_stream_url_with_quality',
+        {
+          payload: payloadData,
+          quality: backendQuality,
+        },
+      );
 
       const errorMsg = (result.error_message || '').trim();
       if (errorMsg) {
-        console.error(`[DouyinPlayerHelper] Error from backend for room ${roomId}: ${errorMsg}`);
-        const definitelyOffline = errorMsg.includes('未开播') || errorMsg.includes('不存在') || result.status !== 2;
+        console.error(
+          `[DouyinPlayerHelper] Error from backend for room ${roomId}: ${errorMsg}`,
+        );
+        const definitelyOffline =
+          errorMsg.includes('未开播') ||
+          errorMsg.includes('不存在') ||
+          result.status !== 2;
         if (definitelyOffline || attempt >= MAX_ATTEMPTS) {
           return {
             streamUrl: null,
@@ -113,15 +128,28 @@ export async function fetchAndPrepareDouyinStreamConfig(roomId: string, quality:
       const sanitizedStreamUrl = enforceHttps(rawStreamUrl);
       let streamType: string | undefined = undefined;
 
-      if (rawStreamUrl.startsWith('http://127.0.0.1') && rawStreamUrl.endsWith('/live.flv')) {
+      if (
+        rawStreamUrl.startsWith('http://127.0.0.1') &&
+        rawStreamUrl.endsWith('/live.flv')
+      ) {
         streamType = 'flv';
-      } else if (rawStreamUrl.includes('pull-hls') || rawStreamUrl.endsWith('.m3u8')) {
-        console.warn(`[DouyinPlayerHelper] Received HLS-like stream URL (${rawStreamUrl}), but expected flv. Overriding to flv.`);
+      } else if (
+        rawStreamUrl.includes('pull-hls') ||
+        rawStreamUrl.endsWith('.m3u8')
+      ) {
+        console.warn(
+          `[DouyinPlayerHelper] Received HLS-like stream URL (${rawStreamUrl}), but expected flv. Overriding to flv.`,
+        );
         streamType = 'flv';
-      } else if (rawStreamUrl.includes('pull-flv') || rawStreamUrl.includes('.flv')) {
+      } else if (
+        rawStreamUrl.includes('pull-flv') ||
+        rawStreamUrl.includes('.flv')
+      ) {
         streamType = 'flv';
       } else {
-        console.warn(`[DouyinPlayerHelper] Could not determine stream type for URL: ${rawStreamUrl}. Defaulting to flv.`);
+        console.warn(
+          `[DouyinPlayerHelper] Could not determine stream type for URL: ${rawStreamUrl}. Defaulting to flv.`,
+        );
         streamType = 'flv';
       }
 
@@ -137,7 +165,10 @@ export async function fetchAndPrepareDouyinStreamConfig(roomId: string, quality:
         initialError: null,
       };
     } catch (e: any) {
-      console.error(`[DouyinPlayerHelper] Exception while fetching Douyin stream details for ${roomId} (attempt ${attempt}/${MAX_ATTEMPTS}):`, e);
+      console.error(
+        `[DouyinPlayerHelper] Exception while fetching Douyin stream details for ${roomId} (attempt ${attempt}/${MAX_ATTEMPTS}):`,
+        e,
+      );
       if (attempt >= MAX_ATTEMPTS) {
         return {
           streamUrl: null,
@@ -180,70 +211,93 @@ export async function startDouyinDanmakuListener(
   roomId: string,
   danmuOverlay: DanmuOverlayInstance | null, // For emitting danmaku to overlay
   danmakuMessagesRef: Ref<DanmakuMessage[]>, // For updating DanmuList
-  renderOptions?: DanmuRenderOptions
+  renderOptions?: DanmuRenderOptions,
 ): Promise<() => void> {
-  
-  const rustPayload: RustGetStreamUrlPayload = { 
-    args: { room_id_str: roomId }, 
-    platform: Platform.DOUYIN, 
+  const rustPayload: RustGetStreamUrlPayload = {
+    args: { room_id_str: roomId },
+    platform: Platform.DOUYIN,
   };
   await invoke('start_douyin_danmu_listener', { payload: rustPayload });
-  
+
   const eventName = 'danmaku-message';
 
-  const unlisten = await listen<DouyinRustDanmakuPayload>(eventName, (event: TauriEvent<DouyinRustDanmakuPayload>) => {
-    if (event.payload) {
-      const rustP = event.payload;
-      const frontendDanmaku: DanmakuMessage = {
-        id: uuidv4(),
-        nickname: rustP.user || '未知用户',
-        content: rustP.content || '',
-        level: String(rustP.user_level || 0),
-        badgeLevel: rustP.fans_club_level > 0 ? String(rustP.fans_club_level) : undefined,
-        room_id: rustP.room_id || roomId, // Ensure room_id is present
-      };
+  const unlisten = await listen<DouyinRustDanmakuPayload>(
+    eventName,
+    (event: TauriEvent<DouyinRustDanmakuPayload>) => {
+      if (event.payload) {
+        const rustP = event.payload;
+        const frontendDanmaku: DanmakuMessage = {
+          id: uuidv4(),
+          nickname: rustP.user || '未知用户',
+          content: rustP.content || '',
+          level: String(rustP.user_level || 0),
+          badgeLevel:
+            rustP.fans_club_level > 0
+              ? String(rustP.fans_club_level)
+              : undefined,
+          room_id: rustP.room_id || roomId, // Ensure room_id is present
+        };
 
-      const shouldDisplay = renderOptions?.shouldDisplay ? renderOptions.shouldDisplay(frontendDanmaku) : true;
+        const shouldDisplay = renderOptions?.shouldDisplay
+          ? renderOptions.shouldDisplay(frontendDanmaku)
+          : true;
 
-      if (shouldDisplay && danmuOverlay?.sendComment) {
-        try {
-          const commentOptions = renderOptions?.buildCommentOptions?.(frontendDanmaku) ?? {};
-          const styleFromOptions = commentOptions.style ?? {};
-          const preferredColor = styleFromOptions.color || frontendDanmaku.color || '#FFFFFF';
-          danmuOverlay.sendComment({
-            id: frontendDanmaku.id,
-            txt: frontendDanmaku.content,
-            duration: commentOptions.duration ?? 12000,
-            mode: commentOptions.mode ?? 'scroll',
-            style: {
-              ...styleFromOptions,
-              color: preferredColor,
-            },
-          });
-        } catch (emitError) {
-          console.warn('[DouyinPlayerHelper] Failed emitting danmu.js comment:', emitError);
+        if (shouldDisplay && danmuOverlay?.sendComment) {
+          try {
+            const commentOptions =
+              renderOptions?.buildCommentOptions?.(frontendDanmaku) ?? {};
+            const styleFromOptions = commentOptions.style ?? {};
+            const preferredColor =
+              styleFromOptions.color || frontendDanmaku.color || '#FFFFFF';
+            danmuOverlay.sendComment({
+              id: frontendDanmaku.id,
+              txt: frontendDanmaku.content,
+              duration: commentOptions.duration ?? 12000,
+              mode: commentOptions.mode ?? 'scroll',
+              style: {
+                ...styleFromOptions,
+                color: preferredColor,
+              },
+            });
+          } catch (emitError) {
+            console.warn(
+              '[DouyinPlayerHelper] Failed emitting danmu.js comment:',
+              emitError,
+            );
+          }
+        }
+        const shouldAppend = renderOptions?.shouldAppendToList
+          ? renderOptions.shouldAppendToList(frontendDanmaku)
+          : true;
+        if (shouldAppend) {
+          danmakuMessagesRef.value.push(frontendDanmaku);
+          if (danmakuMessagesRef.value.length > 200) {
+            // Manage danmaku array size
+            danmakuMessagesRef.value.splice(
+              0,
+              danmakuMessagesRef.value.length - 200,
+            );
+          }
         }
       }
-      const shouldAppend = renderOptions?.shouldAppendToList ? renderOptions.shouldAppendToList(frontendDanmaku) : true;
-      if (shouldAppend) {
-        danmakuMessagesRef.value.push(frontendDanmaku);
-        if (danmakuMessagesRef.value.length > 200) { // Manage danmaku array size
-          danmakuMessagesRef.value.splice(0, danmakuMessagesRef.value.length - 200);
-        }
-      }
-    }
-  });
+    },
+  );
   return unlisten;
 }
 
-export async function stopDouyinDanmaku(currentUnlistenFn: (() => void) | null): Promise<void> {
+export async function stopDouyinDanmaku(
+  currentUnlistenFn: (() => void) | null,
+): Promise<void> {
   if (currentUnlistenFn) {
     currentUnlistenFn();
   }
   try {
     await invoke('stop_douyin_danmu_listener');
   } catch (error) {
-    console.error('[DouyinPlayerHelper] Error stopping Douyin danmaku listener:', error);
+    console.error(
+      '[DouyinPlayerHelper] Error stopping Douyin danmaku listener:',
+      error,
+    );
   }
 }
 

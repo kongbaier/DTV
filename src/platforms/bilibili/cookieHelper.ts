@@ -16,49 +16,57 @@ const normalizeCookieResult = (result: any): BilibiliCookieResult => ({
   hasBiliJct: Boolean(result?.hasBiliJct),
 });
 
-export const getBilibiliCookies = async (labels?: string[]): Promise<BilibiliCookieResult> => {
-  const result = await invoke<BilibiliCookieResult>('get_bilibili_cookie', { labels });
+export const getBilibiliCookies = async (
+  labels?: string[],
+): Promise<BilibiliCookieResult> => {
+  const result = await invoke<BilibiliCookieResult>('get_bilibili_cookie', {
+    labels,
+  });
   return normalizeCookieResult(result);
 };
 
-export const bootstrapBilibiliCookies = async (): Promise<BilibiliCookieResult> => {
-  const result = await invoke<BilibiliCookieResult>('bootstrap_bilibili_cookie');
-  return normalizeCookieResult(result);
-};
+export const bootstrapBilibiliCookies =
+  async (): Promise<BilibiliCookieResult> => {
+    const result = await invoke<BilibiliCookieResult>(
+      'bootstrap_bilibili_cookie',
+    );
+    return normalizeCookieResult(result);
+  };
 
 let bootstrapAttempted = false;
 let bootstrapPromise: Promise<BilibiliCookieResult> | null = null;
 let lastBootstrapResult: BilibiliCookieResult | null = null;
 
-export const ensureBilibiliCookieBootstrap = async (): Promise<BilibiliCookieResult | null> => {
-  if (bootstrapAttempted) {
-    return lastBootstrapResult;
-  }
+export const ensureBilibiliCookieBootstrap =
+  async (): Promise<BilibiliCookieResult | null> => {
+    if (bootstrapAttempted) {
+      return lastBootstrapResult;
+    }
 
-  if (!bootstrapPromise) {
-    bootstrapPromise = bootstrapBilibiliCookies()
-      .then((result) => {
-        lastBootstrapResult = result;
-        bootstrapAttempted = true;
-        return result;
-      })
-      .catch((err) => {
-        bootstrapAttempted = true;
-        lastBootstrapResult = null;
-        throw err;
-      })
-      .finally(() => {
-        bootstrapPromise = null;
-      });
-  }
+    if (!bootstrapPromise) {
+      bootstrapPromise = bootstrapBilibiliCookies()
+        .then((result) => {
+          lastBootstrapResult = result;
+          bootstrapAttempted = true;
+          return result;
+        })
+        .catch((err) => {
+          bootstrapAttempted = true;
+          lastBootstrapResult = null;
+          throw err;
+        })
+        .finally(() => {
+          bootstrapPromise = null;
+        });
+    }
 
-  try {
-    return await bootstrapPromise;
-  } catch (err) {
-    console.warn('[BilibiliCookie] Silent bootstrap failed:', err);
-    return null;
-  }
-};
+    try {
+      return await bootstrapPromise;
+    } catch (err) {
+      console.warn('[BilibiliCookie] Silent bootstrap failed:', err);
+      return null;
+    }
+  };
 
 export const ensureBilibiliLoginWindow = async (): Promise<WebviewWindow> => {
   const existing = await WebviewWindow.getByLabel(BILIBILI_LOGIN_WINDOW_LABEL);
@@ -67,7 +75,10 @@ export const ensureBilibiliLoginWindow = async (): Promise<WebviewWindow> => {
       await existing.show();
       await existing.setFocus();
     } catch (e) {
-      console.warn('[BilibiliCookie] Failed to focus existing login window:', e);
+      console.warn(
+        '[BilibiliCookie] Failed to focus existing login window:',
+        e,
+      );
     }
     return existing;
   }
@@ -104,7 +115,8 @@ export const ensureBilibiliLoginWindow = async (): Promise<WebviewWindow> => {
   return loginWindow;
 };
 
-export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 export const extractRequiredFlags = (raw: string | null | undefined) => {
   if (!raw) {
@@ -115,13 +127,19 @@ export const extractRequiredFlags = (raw: string | null | undefined) => {
     .map((segment) => segment.trim().toLowerCase())
     .filter(Boolean);
 
-  const hasSessdata = normalized.some((segment) => segment.startsWith('sessdata='));
-  const hasBiliJct = normalized.some((segment) => segment.startsWith('bili_jct='));
+  const hasSessdata = normalized.some((segment) =>
+    segment.startsWith('sessdata='),
+  );
+  const hasBiliJct = normalized.some((segment) =>
+    segment.startsWith('bili_jct='),
+  );
 
   return { hasSessdata, hasBiliJct };
 };
 
-export const hasRequiredCookies = (result: BilibiliCookieResult | null | undefined) => {
+export const hasRequiredCookies = (
+  result: BilibiliCookieResult | null | undefined,
+) => {
   if (!result) return false;
   return Boolean(result.cookie) && result.hasSessdata && result.hasBiliJct;
 };

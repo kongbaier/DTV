@@ -22,12 +22,12 @@
 
 ### 支持平台
 
-| 平台       | 直播流 | 弹幕  | 搜索   |
-| -------- | --- | --- | ---- |
-| 斗鱼       | ✅   | ✅   | ✅    |
-| 虎牙       | ✅   | ✅   | ✅    |
-| bilibili | ✅   | ✅   | ✅    |
-| 抖音       | ✅   | ✅   | 仅房间号 |
+| 平台     | 直播流 | 弹幕 | 搜索     |
+| -------- | ------ | ---- | -------- |
+| 斗鱼     | ✅     | ✅   | ✅       |
+| 虎牙     | ✅     | ✅   | ✅       |
+| bilibili | ✅     | ✅   | ✅       |
+| 抖音     | ✅     | ✅   | 仅房间号 |
 
 ## 功能
 
@@ -39,8 +39,6 @@
 - 🌓 主题切换：支持明暗主题切换
 
 ## 软件截图
-
-
 
 <div align="center">
   <p>日间模式</p>
@@ -91,7 +89,7 @@ pnpm tauri build --target aarch64-apple-darwin
 
 ## 参考
 
-- 斗鱼直播流获取参考了 [@wbt5/real-url](https://github.com/wbt5/real-url)  
+- 斗鱼直播流获取参考了 [@wbt5/real-url](https://github.com/wbt5/real-url)
 - 抖音弹幕参考了[@saermart/DouyinLiveWebFetcher](https://github.com/saermart/DouyinLiveWebFetcher)
 - 虎牙参考了https://github.com/liuchuancong/pure_live https://github.com/ihmily/DouyinLiveRecorder
 - b站弹幕参考了https://github.com/xfgryujk/blivedm

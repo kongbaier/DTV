@@ -18,7 +18,7 @@
   background: var(--glass-bg);
 }
 
-:global(:root[data-theme="light"]) .navbar {
+:global(:root[data-theme='light']) .navbar {
   background: var(--bg-primary);
 }
 
@@ -67,7 +67,10 @@
   font-size: 12px;
   font-weight: 800;
   color: var(--text-secondary);
-  transition: color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, background-color 0.2s ease;
+  transition:
+    color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.2s ease,
+    background-color 0.2s ease;
 }
 
 .platformTab:hover:not(.platformTabActive) {
@@ -80,17 +83,17 @@
   color: #ffffff;
 }
 
-:global(:root[data-theme="light"]) .platformTabs {
+:global(:root[data-theme='light']) .platformTabs {
   background: rgba(255, 255, 255, 0.75);
   border-color: rgba(148, 163, 184, 0.35);
   box-shadow: none;
 }
 
-:global(:root[data-theme="light"]) .platformTab:hover:not(.platformTabActive) {
+:global(:root[data-theme='light']) .platformTab:hover:not(.platformTabActive) {
   background-color: rgba(15, 23, 42, 0.06);
 }
 
-:global(:root[data-theme="light"]) .platformHighlight {
+:global(:root[data-theme='light']) .platformHighlight {
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
@@ -132,7 +135,11 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -165,61 +172,61 @@
   color: #ffffff;
 }
 
-:global([data-theme="dark"]) .winControls {
+:global([data-theme='dark']) .winControls {
   background: transparent;
   border-color: transparent;
 }
 
-:global([data-theme="dark"]) .winBtn:not(.winBtnClose):hover {
+:global([data-theme='dark']) .winBtn:not(.winBtnClose):hover {
   background: rgba(255, 255, 255, 0.1);
 }
 
-:global([data-theme="dark"]) .winBtn:not(.winBtnClose):active {
+:global([data-theme='dark']) .winBtn:not(.winBtnClose):active {
   background: rgba(255, 255, 255, 0.14);
 }
 
-:global(:root[data-theme="dark"]) .winBtnClose:hover {
+:global(:root[data-theme='dark']) .winBtnClose:hover {
   background: #e81123;
   border-color: #e81123;
   color: #ffffff;
 }
 
-:global(:root[data-theme="dark"]) .winBtnClose:active {
+:global(:root[data-theme='dark']) .winBtnClose:active {
   background: #f1707a;
   border-color: #f1707a;
   color: #ffffff;
 }
 
-:global(:root[data-theme="light"]) .winBtn {
+:global(:root[data-theme='light']) .winBtn {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(148, 163, 184, 0.28);
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
 }
 
-:global(:root[data-theme="light"]) .winBtn:hover {
+:global(:root[data-theme='light']) .winBtn:hover {
   transform: none;
 }
 
-:global(:root[data-theme="light"]) .winBtn:active {
+:global(:root[data-theme='light']) .winBtn:active {
   transform: none;
 }
 
-:global(:root[data-theme="light"]) .winBtn:not(.winBtnClose):hover {
+:global(:root[data-theme='light']) .winBtn:not(.winBtnClose):hover {
   background: rgba(15, 23, 42, 0.06);
   border-color: rgba(148, 163, 184, 0.35);
 }
 
-:global(:root[data-theme="light"]) .winBtn:not(.winBtnClose):active {
+:global(:root[data-theme='light']) .winBtn:not(.winBtnClose):active {
   background: rgba(15, 23, 42, 0.1);
 }
 
-:global(:root[data-theme="light"]) .winBtnClose:hover {
+:global(:root[data-theme='light']) .winBtnClose:hover {
   background: #e81123;
   border-color: #e81123;
   color: #ffffff;
 }
 
-:global(:root[data-theme="light"]) .winBtnClose:active {
+:global(:root[data-theme='light']) .winBtnClose:active {
   background: #f1707a;
   border-color: #f1707a;
   color: #ffffff;
@@ -297,10 +304,12 @@
   color: var(--primary-text);
   font-size: var(--text-sm);
   font-weight: var(--weight-bold);
-  transition: transform 0.18s ease, background 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
 }
 
-:root[data-theme="light"] .playerIslandFollow {
+:root[data-theme='light'] .playerIslandFollow {
   background: rgba(15, 23, 42, 0.06);
   border-color: rgba(148, 163, 184, 0.5);
 }
@@ -322,7 +331,10 @@
   align-items: center;
   justify-content: center;
   color: var(--secondary-text);
-  transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease;
 }
 
 .playerIslandExpand:hover {
@@ -331,7 +343,7 @@
   transform: translateY(-1px);
 }
 
-:root[data-theme="light"] .playerIslandExpand:hover {
+:root[data-theme='light'] .playerIslandExpand:hover {
   background: rgba(15, 23, 42, 0.08);
 }
 
@@ -355,7 +367,7 @@
   -webkit-backdrop-filter: blur(18px) saturate(1.2);
 }
 
-:global(:root[data-theme="light"]) .searchShell {
+:global(:root[data-theme='light']) .searchShell {
   background: rgba(255, 255, 255, 0.75);
   border-color: rgba(148, 163, 184, 0.35);
   box-shadow: none;
@@ -367,8 +379,12 @@
   outline-offset: 2px;
 }
 
-:root[data-theme="light"] .searchShellFocused {
-  border-color: color-mix(in srgb, var(--accent) 60%, rgba(148, 163, 184, 0.35));
+:root[data-theme='light'] .searchShellFocused {
+  border-color: color-mix(
+    in srgb,
+    var(--accent) 60%,
+    rgba(148, 163, 184, 0.35)
+  );
   outline: 3px solid var(--accent-glow);
   outline-offset: 2px;
 }
@@ -396,7 +412,9 @@
   align-items: center;
   justify-content: center;
   color: var(--secondary-text);
-  transition: background 0.18s ease, color 0.18s ease;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
 }
 
 .searchIconBtn:hover {
@@ -404,7 +422,7 @@
   color: var(--primary-text);
 }
 
-:root[data-theme="light"] .searchIconBtn:hover {
+:root[data-theme='light'] .searchIconBtn:hover {
   background: rgba(15, 23, 42, 0.08);
 }
 
@@ -465,7 +483,9 @@
   align-items: center;
   justify-content: center;
   color: var(--secondary-text);
-  transition: background 0.18s ease, color 0.18s ease;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
 }
 
 .overlayClose:hover {
@@ -485,10 +505,14 @@
 
 .syncBtnGlass.primaryBtn {
   background: color-mix(in srgb, var(--accent) 28%, rgba(255, 255, 255, 0.08));
-  border-color: color-mix(in srgb, var(--accent) 55%, rgba(255, 255, 255, 0.18));
+  border-color: color-mix(
+    in srgb,
+    var(--accent) 55%,
+    rgba(255, 255, 255, 0.18)
+  );
 }
 
-:global(:root[data-theme="light"]) .syncBtnGlass.primaryBtn {
+:global(:root[data-theme='light']) .syncBtnGlass.primaryBtn {
   background: var(--accent-gradient);
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   color: var(--accent-text);
@@ -575,7 +599,10 @@
   font-weight: 900;
   font-size: 12px;
   cursor: pointer;
-  transition: transform 0.18s ease, filter 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    filter 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .primaryBtn:hover {
@@ -616,7 +643,10 @@
   font-weight: 900;
   font-size: 12px;
   cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .secondaryBtn:hover {
@@ -634,17 +664,17 @@
   cursor: not-allowed;
 }
 
-:global(:root[data-theme="dark"]) .secondaryBtn {
+:global(:root[data-theme='dark']) .secondaryBtn {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.14);
 }
 
-:global(:root[data-theme="dark"]) .secondaryBtn:hover {
+:global(:root[data-theme='dark']) .secondaryBtn:hover {
   background: rgba(255, 255, 255, 0.11);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-:global(:root[data-theme="dark"]) .secondaryBtn:active {
+:global(:root[data-theme='dark']) .secondaryBtn:active {
   background: rgba(255, 255, 255, 0.07);
   border-color: rgba(255, 255, 255, 0.16);
 }
@@ -662,7 +692,10 @@
   font-weight: 900;
   font-size: 12px;
   cursor: pointer;
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .dangerBtn:hover {
@@ -690,7 +723,7 @@
   margin-bottom: 12px;
 }
 
-:global(:root[data-theme="dark"]) .syncTabs {
+:global(:root[data-theme='dark']) .syncTabs {
   background: rgba(255, 255, 255, 0.06);
   border-color: rgba(255, 255, 255, 0.1);
 }
@@ -708,7 +741,11 @@
   font-size: 12px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .syncTab:hover {
@@ -862,7 +899,11 @@
   align-items: center;
   justify-content: center;
   border: 1px solid transparent;
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .navIconBtn {
@@ -876,11 +917,15 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--primary-text);
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-:global(:root[data-theme="light"]) .navIconBtn {
+:global(:root[data-theme='light']) .navIconBtn {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(148, 163, 184, 0.28);
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
@@ -892,7 +937,7 @@
   border-color: rgba(255, 255, 255, 0.16);
 }
 
-:global(:root[data-theme="light"]) .navIconBtn:hover {
+:global(:root[data-theme='light']) .navIconBtn:hover {
   background: rgba(248, 250, 252, 1);
   border-color: rgba(148, 163, 184, 0.35);
 }
@@ -919,11 +964,14 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--primary-text);
-  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-:global(:root[data-theme="light"]) .versionBtn {
+:global(:root[data-theme='light']) .versionBtn {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(148, 163, 184, 0.28);
   box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
@@ -935,7 +983,7 @@
   border-color: rgba(255, 255, 255, 0.16);
 }
 
-:global(:root[data-theme="light"]) .versionBtn:hover {
+:global(:root[data-theme='light']) .versionBtn:hover {
   background: rgba(248, 250, 252, 1);
   border-color: rgba(148, 163, 184, 0.35);
 }

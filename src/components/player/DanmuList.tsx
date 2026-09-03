@@ -1,17 +1,23 @@
-"use client";
+'use client';
 
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
-import "./DanmuList.css";
-import type { DanmakuMessage } from "@/components/player/types";
+import './DanmuList.css';
+import type { DanmakuMessage } from '@/components/player/types';
 import {
   DANMU_BLOCK_KEYWORDS_CHANGED_EVENT,
   loadDanmuBlockKeywords,
-  persistDanmuBlockKeywords
-} from "@/components/player/constants";
+  persistDanmuBlockKeywords,
+} from '@/components/player/constants';
 
 function userColor(nickname: string | undefined) {
-  if (!nickname) return "hsl(0, 0%, 75%)";
+  if (!nickname) return 'hsl(0, 0%, 75%)';
   let hash = 0;
   for (let i = 0; i < nickname.length; i++) {
     hash = nickname.charCodeAt(i) + ((hash << 5) - hash);
@@ -24,7 +30,7 @@ function userColor(nickname: string | undefined) {
 export function DanmuList({
   roomId,
   messages,
-  actions
+  actions,
 }: {
   roomId: string | null;
   messages: DanmakuMessage[];
@@ -32,15 +38,22 @@ export function DanmuList({
 }) {
   const listEl = useRef<HTMLDivElement | null>(null);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [keywordInput, setKeywordInput] = useState("");
+  const [keywordInput, setKeywordInput] = useState('');
   const [blockedKeywords, setBlockedKeywords] = useState<string[]>([]);
   const scrollRafRef = useRef(0);
 
   useEffect(() => {
     setBlockedKeywords(loadDanmuBlockKeywords());
     const onChange = () => setBlockedKeywords(loadDanmuBlockKeywords());
-    window.addEventListener(DANMU_BLOCK_KEYWORDS_CHANGED_EVENT, onChange as EventListener);
-    return () => window.removeEventListener(DANMU_BLOCK_KEYWORDS_CHANGED_EVENT, onChange as EventListener);
+    window.addEventListener(
+      DANMU_BLOCK_KEYWORDS_CHANGED_EVENT,
+      onChange as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        DANMU_BLOCK_KEYWORDS_CHANGED_EVENT,
+        onChange as EventListener,
+      );
   }, []);
 
   const filtered = useMemo(() => {
@@ -48,7 +61,7 @@ export function DanmuList({
     const kws = blockedKeywords.map((k) => k.toLowerCase());
     return messages.filter((m) => {
       if (m.isSystem) return true;
-      const content = (m.content || "").toLowerCase();
+      const content = (m.content || '').toLowerCase();
       return !kws.some((kw) => content.includes(kw));
     });
   }, [blockedKeywords, messages]);
@@ -85,13 +98,13 @@ export function DanmuList({
     const kw = keywordInput.trim();
     if (!kw) return;
     if (blockedKeywords.some((k) => k.toLowerCase() === kw.toLowerCase())) {
-      setKeywordInput("");
+      setKeywordInput('');
       return;
     }
     const next = [...blockedKeywords, kw];
     setBlockedKeywords(next);
     persistDanmuBlockKeywords(next);
-    setKeywordInput("");
+    setKeywordInput('');
   };
 
   const removeKeyword = (idx: number) => {
@@ -103,7 +116,7 @@ export function DanmuList({
 
   const copyDanmaku = async (m: DanmakuMessage) => {
     try {
-      await navigator.clipboard.writeText(m.content || "");
+      await navigator.clipboard.writeText(m.content || '');
     } catch {
       // ignore
     }
@@ -125,10 +138,18 @@ export function DanmuList({
       </div>
 
       {showFilterPanel ? (
-        <div className="danmu-filter-panel" onPointerDown={(e) => e.stopPropagation()}>
+        <div
+          className="danmu-filter-panel"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           <div className="panel-header">
             <span className="panel-title">屏蔽关键词</span>
-            <button className="panel-close" type="button" onClick={() => setShowFilterPanel(false)} title="关闭">
+            <button
+              className="panel-close"
+              type="button"
+              onClick={() => setShowFilterPanel(false)}
+              title="关闭"
+            >
               ×
             </button>
           </div>
@@ -141,12 +162,12 @@ export function DanmuList({
               onChange={(e) => setKeywordInput(e.target.value)}
               onKeyDown={(e) => {
                 e.stopPropagation();
-                if (e.key === "Enter") {
+                if (e.key === 'Enter') {
                   e.preventDefault();
                   addKeyword();
                   return;
                 }
-                if (e.key === "Escape") {
+                if (e.key === 'Escape') {
                   e.preventDefault();
                   setShowFilterPanel(false);
                 }
@@ -154,11 +175,17 @@ export function DanmuList({
               onKeyUp={(e) => e.stopPropagation()}
             />
             <div className="panel-list">
-              {blockedKeywords.length === 0 ? <div className="panel-empty">暂无屏蔽词</div> : null}
+              {blockedKeywords.length === 0 ? (
+                <div className="panel-empty">暂无屏蔽词</div>
+              ) : null}
               {blockedKeywords.map((kw, i) => (
                 <div key={`${kw}-${i}`} className="panel-item">
                   <span className="panel-item-text">{kw}</span>
-                  <button className="panel-remove" type="button" onClick={() => removeKeyword(i)}>
+                  <button
+                    className="panel-remove"
+                    type="button"
+                    onClick={() => removeKeyword(i)}
+                  >
                     删除
                   </button>
                 </div>
@@ -168,27 +195,29 @@ export function DanmuList({
         </div>
       ) : null}
 
-      <div
-        className="danmu-messages-area"
-        ref={listEl}
-      >
+      <div className="danmu-messages-area" ref={listEl}>
         {renderMessages.length === 0 ? (
           <div className="empty-danmu-placeholder">
-            <p>{roomId ? "暂无弹幕或连接中..." : "请先选择一个直播间"}</p>
+            <p>{roomId ? '暂无弹幕或连接中...' : '请先选择一个直播间'}</p>
           </div>
         ) : null}
 
         {renderMessages.map((m, idx) => (
           <div
-            key={m.id || `${m.room_id || ""}-${m.nickname}-${m.content}-${idx}`}
-            className={`danmu-item ${m.isSystem ? "system-message" : ""}`}
+            key={m.id || `${m.room_id || ''}-${m.nickname}-${m.content}-${idx}`}
+            className={`danmu-item ${m.isSystem ? 'system-message' : ''}`}
             onClick={() => copyDanmaku(m)}
             title="点击复制弹幕"
           >
             {!m.isSystem ? (
               <div className="danmu-meta-line">
-                <span className="danmu-user" style={{ color: m.color || userColor(m.nickname) }}>
-                  {m.level ? <span style={{ opacity: 0.8 }}>[Lv.{m.level}] </span> : null}
+                <span
+                  className="danmu-user"
+                  style={{ color: m.color || userColor(m.nickname) }}
+                >
+                  {m.level ? (
+                    <span style={{ opacity: 0.8 }}>[Lv.{m.level}] </span>
+                  ) : null}
                   {m.nickname}
                 </span>
               </div>

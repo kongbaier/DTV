@@ -1,11 +1,21 @@
-"use client";
+'use client';
 
-import React, { Suspense, lazy, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { AnimatePresence, m } from "framer-motion";
+import React, {
+  Suspense,
+  lazy,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { AnimatePresence, m } from 'framer-motion';
 
-import styles from "./PlayerOverlayProvider.module.css";
+import styles from './PlayerOverlayProvider.module.css';
 
-const PlayerPage = lazy(() => import("@/screens/PlayerPage").then((m) => ({ default: m.PlayerPage })));
+const PlayerPage = lazy(() =>
+  import('@/screens/PlayerPage').then((m) => ({ default: m.PlayerPage })),
+);
 
 type PlayerOverlayOpenPayload = { platform: string; roomId: string };
 
@@ -17,11 +27,15 @@ type PlayerOverlayContextValue = {
   closePlayer: () => void;
 };
 
-const PlayerOverlayContext = React.createContext<PlayerOverlayContextValue | null>(null);
+const PlayerOverlayContext =
+  React.createContext<PlayerOverlayContextValue | null>(null);
 
 export function usePlayerOverlay() {
   const ctx = useContext(PlayerOverlayContext);
-  if (!ctx) throw new Error("usePlayerOverlay must be used within PlayerOverlayProvider");
+  if (!ctx)
+    throw new Error(
+      'usePlayerOverlay must be used within PlayerOverlayProvider',
+    );
   return ctx;
 }
 
@@ -31,10 +45,10 @@ export function PlayerOverlayHost() {
   useEffect(() => {
     if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closePlayer();
+      if (e.key === 'Escape') closePlayer();
     };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, [closePlayer, isOpen]);
 
   // NOTE:
@@ -50,7 +64,12 @@ export function PlayerOverlayHost() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.16 }}
         >
-          <button type="button" className={styles.backdrop} aria-label="关闭播放器" onClick={closePlayer} />
+          <button
+            type="button"
+            className={styles.backdrop}
+            aria-label="关闭播放器"
+            onClick={closePlayer}
+          />
           <m.div
             className={styles.overlayPanel}
             initial={false}
@@ -60,12 +79,22 @@ export function PlayerOverlayHost() {
           >
             <Suspense
               fallback={
-                <div style={{ padding: 18, color: "var(--secondary-text)", fontWeight: 700 }}>
+                <div
+                  style={{
+                    padding: 18,
+                    color: 'var(--secondary-text)',
+                    fontWeight: 700,
+                  }}
+                >
                   加载播放器...
                 </div>
               }
             >
-              <PlayerPage platform={platform} roomId={roomId} onRequestClose={closePlayer} />
+              <PlayerPage
+                platform={platform}
+                roomId={roomId}
+                onRequestClose={closePlayer}
+              />
             </Suspense>
           </m.div>
         </m.div>
@@ -74,15 +103,27 @@ export function PlayerOverlayHost() {
   );
 }
 
-export function PlayerOverlayProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<{ isOpen: boolean; platform: string; roomId: string }>({
+export function PlayerOverlayProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [state, setState] = useState<{
+    isOpen: boolean;
+    platform: string;
+    roomId: string;
+  }>({
     isOpen: false,
-    platform: "douyu",
-    roomId: ""
+    platform: 'douyu',
+    roomId: '',
   });
 
   const openPlayer = useCallback((payload: PlayerOverlayOpenPayload) => {
-    setState({ isOpen: true, platform: payload.platform, roomId: payload.roomId });
+    setState({
+      isOpen: true,
+      platform: payload.platform,
+      roomId: payload.roomId,
+    });
   }, []);
 
   const closePlayer = useCallback(() => {
@@ -95,10 +136,14 @@ export function PlayerOverlayProvider({ children }: { children: React.ReactNode 
       platform: state.platform,
       roomId: state.roomId,
       openPlayer,
-      closePlayer
+      closePlayer,
     }),
-    [closePlayer, openPlayer, state.isOpen, state.platform, state.roomId]
+    [closePlayer, openPlayer, state.isOpen, state.platform, state.roomId],
   );
 
-  return <PlayerOverlayContext.Provider value={value}>{children}</PlayerOverlayContext.Provider>;
+  return (
+    <PlayerOverlayContext.Provider value={value}>
+      {children}
+    </PlayerOverlayContext.Provider>
+  );
 }

@@ -69,7 +69,7 @@
   contain-intrinsic-size: 260px 220px;
 }
 
-:global(:root[data-scrolling="1"]) .cardOuter {
+:global(:root[data-scrolling='1']) .cardOuter {
   transition: none !important;
   transform: none !important;
 }
@@ -123,16 +123,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.72) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.72) 100%
+  );
   transition: none;
 }
 
-:global(:root[data-scrolling="1"]) .previewImage {
+:global(:root[data-scrolling='1']) .previewImage {
   transition: none !important;
   transform: none !important;
 }
 
-:global(:root[data-scrolling="1"]) .previewHoverOverlay {
+:global(:root[data-scrolling='1']) .previewHoverOverlay {
   transition: none !important;
 }
 
@@ -144,7 +148,11 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.1)
+  );
   border: 1px solid rgba(255, 255, 255, 0.24);
   color: rgba(255, 255, 255, 0.92);
   box-shadow:
@@ -157,17 +165,22 @@
 }
 
 .playButton::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  background: radial-gradient(120% 120% at 30% 20%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 40%, transparent 70%);
+  background: radial-gradient(
+    120% 120% at 30% 20%,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(255, 255, 255, 0.08) 40%,
+    transparent 70%
+  );
   opacity: 0.7;
   pointer-events: none;
 }
 
 .playButton::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -207,7 +220,7 @@
   font-weight: 900;
 }
 
-:global(:root:not([data-scrolling="1"])) .viewerPill {
+:global(:root:not([data-scrolling='1'])) .viewerPill {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -233,17 +246,18 @@
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: border-color 0.3s ease, transform 0.3s ease;
+  transition:
+    border-color 0.3s ease,
+    transform 0.3s ease;
 }
 
-:global(:root[data-scrolling="1"]) .avatarImg {
+:global(:root[data-scrolling='1']) .avatarImg {
   transition: none !important;
 }
 
-:global(:root[data-theme="light"]) .avatarImg {
+:global(:root[data-theme='light']) .avatarImg {
   border-color: rgba(148, 163, 184, 0.28);
 }
-
 
 .skeletonCard {
   cursor: default;
@@ -300,7 +314,7 @@
   transition: color 0.2s ease;
 }
 
-:global(:root[data-scrolling="1"]) .roomTitle {
+:global(:root[data-scrolling='1']) .roomTitle {
   transition: none !important;
 }
 
@@ -322,32 +336,36 @@
   max-width: 180px;
 }
 
-:global(:root[data-theme="light"]) .roomTitle {
+:global(:root[data-theme='light']) .roomTitle {
   color: rgba(15, 23, 42, 1);
 }
 
-:global(:root[data-theme="light"]) .subLine {
+:global(:root[data-theme='light']) .subLine {
   color: rgba(100, 116, 139, 1);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  :global(:root:not([data-scrolling="1"])) .card:hover .previewHoverOverlay {
+  :global(:root:not([data-scrolling='1'])) .card:hover .previewHoverOverlay {
     opacity: 1;
   }
 
-  :global(:root:not([data-scrolling="1"])) .card:hover .avatarImg {
+  :global(:root:not([data-scrolling='1'])) .card:hover .avatarImg {
     border-color: rgba(255, 255, 255, 0.18);
   }
 
-  :global(:root:not([data-scrolling="1"])) .card:hover .roomTitle {
+  :global(:root:not([data-scrolling='1'])) .card:hover .roomTitle {
     color: var(--accent);
   }
 
-  :global(:root[data-theme="light"]:not([data-scrolling="1"])) .card:hover .avatarImg {
+  :global(:root[data-theme='light']:not([data-scrolling='1']))
+    .card:hover
+    .avatarImg {
     border-color: rgba(148, 163, 184, 0.45);
   }
 
-  :global(:root[data-theme="light"]:not([data-scrolling="1"])) .card:hover .roomTitle {
+  :global(:root[data-theme='light']:not([data-scrolling='1']))
+    .card:hover
+    .roomTitle {
     color: var(--accent);
   }
 }

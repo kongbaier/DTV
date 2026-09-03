@@ -86,10 +86,10 @@ jobs:
           releaseName: 'DTV ${{ github.event.inputs.version || github.ref_name }}'
           releaseBody: |
             ## 🎉 DTV Release ${{ github.event.inputs.version || github.ref_name }}
-            
+
             ### 📦 安装包下载
             - **Windows**: DTV_${{ github.event.inputs.version || github.ref_name }}_x64-setup.exe
-            
+
             ### 🔧 安装说明
             - **Windows**: 下载 .exe 文件，右键以管理员身份运行
           releaseDraft: false

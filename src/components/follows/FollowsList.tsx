@@ -1,16 +1,37 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { AnimatePresence, m, useMotionValue, useSpring } from "framer-motion";
-import { Check, ChevronDown, Folder, FolderPlus, ListCollapse, RotateCw, Users, X } from "lucide-react";
-import { createPortal } from "react-dom";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import { AnimatePresence, m, useMotionValue, useSpring } from 'framer-motion';
+import {
+  Check,
+  ChevronDown,
+  Folder,
+  FolderPlus,
+  ListCollapse,
+  RotateCw,
+  Users,
+  X,
+} from 'lucide-react';
+import { createPortal } from 'react-dom';
 
-import styles from "./FollowsList.module.css";
-import { Platform as PlatformEnum } from "@/platforms/common/types";
-import { useFollow, type FollowListItem, type FollowedStreamer, type Platform as FollowPlatform } from "@/state/follow/FollowProvider";
-import { useImageProxy } from "@/hooks/useImageProxy";
-import { usePlayerOverlay } from "@/state/playerOverlay/PlayerOverlayProvider";
+import styles from './FollowsList.module.css';
+import { Platform as PlatformEnum } from '@/platforms/common/types';
+import {
+  useFollow,
+  type FollowListItem,
+  type FollowedStreamer,
+  type Platform as FollowPlatform,
+} from '@/state/follow/FollowProvider';
+import { useImageProxy } from '@/hooks/useImageProxy';
+import { usePlayerOverlay } from '@/state/playerOverlay/PlayerOverlayProvider';
 
 const FOLLOW_REFRESH_CONCURRENCY = 2;
 const REFRESH_INITIAL_DELAY_MS = 1500;
@@ -18,73 +39,100 @@ const DRAG_PREP_DELAY_MS = 150;
 const DRAG_MIN_PX = 8;
 
 function normalizeFollowKey(key: string) {
-  const [p, id] = String(key || "").split(":");
-  return `${String(p || "").toUpperCase()}:${String(id || "")}`;
+  const [p, id] = String(key || '').split(':');
+  return `${String(p || '').toUpperCase()}:${String(id || '')}`;
 }
 
-function normalizeLiveStatus(isLive: boolean | null | undefined): FollowedStreamer["liveStatus"] {
-  if (isLive === true) return "LIVE";
-  if (isLive === false) return "OFFLINE";
-  return "UNKNOWN";
+function normalizeLiveStatus(
+  isLive: boolean | null | undefined,
+): FollowedStreamer['liveStatus'] {
+  if (isLive === true) return 'LIVE';
+  if (isLive === false) return 'OFFLINE';
+  return 'UNKNOWN';
 }
 
 async function refreshOne(streamer: FollowedStreamer) {
-  if (streamer.platform === "DOUYU") {
-    const info = await invoke<any>("fetch_douyu_room_info", { roomId: streamer.id });
-    const showStatus = typeof info?.show_status === "number" ? info.show_status : Number(info?.show_status ?? 0);
+  if (streamer.platform === 'DOUYU') {
+    const info = await invoke<any>('fetch_douyu_room_info', {
+      roomId: streamer.id,
+    });
+    const showStatus =
+      typeof info?.show_status === 'number'
+        ? info.show_status
+        : Number(info?.show_status ?? 0);
     const rawVideoLoop = info?.video_loop ?? info?.videoLoop ?? null;
     const videoLoop =
-      typeof rawVideoLoop === "number" ? rawVideoLoop : rawVideoLoop === null || typeof rawVideoLoop === "undefined" ? null : Number(rawVideoLoop);
+      typeof rawVideoLoop === 'number'
+        ? rawVideoLoop
+        : rawVideoLoop === null || typeof rawVideoLoop === 'undefined'
+          ? null
+          : Number(rawVideoLoop);
 
     // Douyu: show_status === 1 需要结合 video_loop 判断；未知值一律不展示“在线”以避免误判
-    let liveStatus: FollowedStreamer["liveStatus"] = "OFFLINE";
+    let liveStatus: FollowedStreamer['liveStatus'] = 'OFFLINE';
     if (showStatus === 1) {
-      if (videoLoop === 0) liveStatus = "LIVE";
-      else if (videoLoop === 1) liveStatus = "OFFLINE";
-      else liveStatus = "UNKNOWN";
+      if (videoLoop === 0) liveStatus = 'LIVE';
+      else if (videoLoop === 1) liveStatus = 'OFFLINE';
+      else liveStatus = 'UNKNOWN';
     }
     return {
       nickname: info?.nickname ?? streamer.nickname,
       avatarUrl: info?.avatar_url ?? streamer.avatarUrl,
       roomTitle: info?.room_name ?? info?.roomName ?? streamer.roomTitle,
-      liveStatus
+      liveStatus,
     } satisfies Partial<FollowedStreamer>;
   }
 
-  if (streamer.platform === "HUYA") {
+  if (streamer.platform === 'HUYA') {
     try {
-      const info = await invoke<any>("get_huya_unified_cmd", { roomId: streamer.id, quality: null, line: null });
+      const info = await invoke<any>('get_huya_unified_cmd', {
+        roomId: streamer.id,
+        quality: null,
+        line: null,
+      });
       return {
         nickname: info?.nick ?? streamer.nickname,
         avatarUrl: info?.avatar ?? streamer.avatarUrl,
         roomTitle: info?.title ?? streamer.roomTitle,
-        liveStatus: normalizeLiveStatus(!!info?.is_live)
+        liveStatus: normalizeLiveStatus(!!info?.is_live),
       } satisfies Partial<FollowedStreamer>;
     } catch (e: any) {
-      const msg = typeof e === "string" ? e : e?.message || "";
-      if (msg.includes("主播未开播或获取虎牙房间详情失败")) {
-        return { liveStatus: "OFFLINE" } satisfies Partial<FollowedStreamer>;
+      const msg = typeof e === 'string' ? e : e?.message || '';
+      if (msg.includes('主播未开播或获取虎牙房间详情失败')) {
+        return { liveStatus: 'OFFLINE' } satisfies Partial<FollowedStreamer>;
       }
       throw e;
     }
   }
 
-  if (streamer.platform === "BILIBILI") {
-    const payload = { platform: PlatformEnum.BILIBILI, args: { room_id_str: streamer.id } };
-    const cookie = typeof localStorage !== "undefined" ? localStorage.getItem("bilibili_cookie") || null : null;
-    const info = await invoke<any>("fetch_bilibili_streamer_info", { payload, cookie });
+  if (streamer.platform === 'BILIBILI') {
+    const payload = {
+      platform: PlatformEnum.BILIBILI,
+      args: { room_id_str: streamer.id },
+    };
+    const cookie =
+      typeof localStorage !== 'undefined'
+        ? localStorage.getItem('bilibili_cookie') || null
+        : null;
+    const info = await invoke<any>('fetch_bilibili_streamer_info', {
+      payload,
+      cookie,
+    });
     const live = Number(info?.status ?? 0) === 1;
     return {
       nickname: info?.anchor_name ?? streamer.nickname,
       avatarUrl: info?.avatar ?? streamer.avatarUrl,
       roomTitle: info?.title ?? streamer.roomTitle,
-      liveStatus: normalizeLiveStatus(live)
+      liveStatus: normalizeLiveStatus(live),
     } satisfies Partial<FollowedStreamer>;
   }
 
-  if (streamer.platform === "DOUYIN") {
-    const payload = { platform: PlatformEnum.DOUYIN, args: { room_id_str: streamer.id } };
-    const info = await invoke<any>("fetch_douyin_streamer_info", { payload });
+  if (streamer.platform === 'DOUYIN') {
+    const payload = {
+      platform: PlatformEnum.DOUYIN,
+      args: { room_id_str: streamer.id },
+    };
+    const info = await invoke<any>('fetch_douyin_streamer_info', { payload });
     const status = Number(info?.status ?? 0);
     // Douyin: status === 2 means live (align with player/follow helpers)
     const live = status === 2;
@@ -92,7 +140,7 @@ async function refreshOne(streamer: FollowedStreamer) {
       nickname: info?.anchor_name ?? streamer.nickname,
       avatarUrl: info?.avatar ?? streamer.avatarUrl,
       roomTitle: info?.title ?? streamer.roomTitle,
-      liveStatus: normalizeLiveStatus(live)
+      liveStatus: normalizeLiveStatus(live),
     } satisfies Partial<FollowedStreamer>;
   }
 
@@ -112,8 +160,16 @@ export function FollowsList() {
   const hoverOpacity = useMotionValue(0);
   const hoverYRaw = useMotionValue(0);
   const hoverHRaw = useMotionValue(38);
-  const hoverY = useSpring(hoverYRaw, { stiffness: 520, damping: 44, mass: 0.7 });
-  const hoverH = useSpring(hoverHRaw, { stiffness: 520, damping: 44, mass: 0.7 });
+  const hoverY = useSpring(hoverYRaw, {
+    stiffness: 520,
+    damping: 44,
+    mass: 0.7,
+  });
+  const hoverH = useSpring(hoverHRaw, {
+    stiffness: 520,
+    damping: 44,
+    mass: 0.7,
+  });
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [progressCurrent, setProgressCurrent] = useState(0);
@@ -124,15 +180,29 @@ export function FollowsList() {
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [overlayAlignLeft, setOverlayAlignLeft] = useState(240);
   const [overlayDeleteMode, setOverlayDeleteMode] = useState(false);
-  const [overlayFilter, setOverlayFilter] = useState<"ALL" | FollowPlatform>("ALL");
+  const [overlayFilter, setOverlayFilter] = useState<'ALL' | FollowPlatform>(
+    'ALL',
+  );
   const overlayAnchorCenterXRef = useRef<number | null>(null);
   const overlayPanelRef = useRef<HTMLDivElement | null>(null);
 
-  const [folderNameModal, setFolderNameModal] = useState<{ open: boolean; mode: "create" | "rename"; folderId: string | null }>({ open: false, mode: "create", folderId: null });
-  const [folderNameInput, setFolderNameInput] = useState("");
-  const [folderMenu, setFolderMenu] = useState<{ open: boolean; x: number; y: number; folderId: string | null }>({ open: false, x: 0, y: 0, folderId: null });
-  const [folderDeleteConfirm, setFolderDeleteConfirm] = useState<{ open: boolean; folderId: string | null }>({ open: false, folderId: null });
-  const portalTarget = typeof document !== "undefined" ? document.body : null;
+  const [folderNameModal, setFolderNameModal] = useState<{
+    open: boolean;
+    mode: 'create' | 'rename';
+    folderId: string | null;
+  }>({ open: false, mode: 'create', folderId: null });
+  const [folderNameInput, setFolderNameInput] = useState('');
+  const [folderMenu, setFolderMenu] = useState<{
+    open: boolean;
+    x: number;
+    y: number;
+    folderId: string | null;
+  }>({ open: false, x: 0, y: 0, folderId: null });
+  const [folderDeleteConfirm, setFolderDeleteConfirm] = useState<{
+    open: boolean;
+    folderId: string | null;
+  }>({ open: false, folderId: null });
+  const portalTarget = typeof document !== 'undefined' ? document.body : null;
 
   const listItems: FollowListItem[] = follow.listOrder;
   const allStreamers = follow.followedStreamers;
@@ -145,7 +215,12 @@ export function FollowsList() {
   }, [listItems, follow.folders]);
 
   useEffect(() => {
-    if (allStreamers.some((s) => (s.platform === "BILIBILI" || s.platform === "HUYA") && !!s.avatarUrl)) {
+    if (
+      allStreamers.some(
+        (s) =>
+          (s.platform === 'BILIBILI' || s.platform === 'HUYA') && !!s.avatarUrl,
+      )
+    ) {
       void ensureProxyStarted();
     }
   }, [allStreamers, ensureProxyStarted]);
@@ -154,11 +229,12 @@ export function FollowsList() {
     let cancelled = false;
     (async () => {
       try {
-        const osMod: any = await import("@tauri-apps/plugin-os");
-        const p = typeof osMod?.platform === "function" ? await osMod.platform() : "";
+        const osMod: any = await import('@tauri-apps/plugin-os');
+        const p =
+          typeof osMod?.platform === 'function' ? await osMod.platform() : '';
         if (cancelled) return;
         const platform = String(p).toLowerCase();
-        setIsMac(platform === "macos" || platform === "darwin");
+        setIsMac(platform === 'macos' || platform === 'darwin');
       } catch {
         // non-tauri env: ignore
       }
@@ -174,12 +250,19 @@ export function FollowsList() {
     if (allStreamers.length === 0) return;
     // 等待关注数据就绪后再消耗一次性标记，避免 hydrated 先到导致错过自动刷新
     if (!follow.consumeInitialAutoRefresh()) return;
-    const hasBiliOrHuya = allStreamers.some((s) => s.platform === "BILIBILI" || s.platform === "HUYA");
+    const hasBiliOrHuya = allStreamers.some(
+      (s) => s.platform === 'BILIBILI' || s.platform === 'HUYA',
+    );
 
     let cancelled = false;
-    const requestIdle = (cb: () => void, timeout = REFRESH_INITIAL_DELAY_MS) => {
-      const ric = (window as any).requestIdleCallback as ((fn: () => void, opts?: { timeout?: number }) => number) | undefined;
-      if (typeof ric === "function") {
+    const requestIdle = (
+      cb: () => void,
+      timeout = REFRESH_INITIAL_DELAY_MS,
+    ) => {
+      const ric = (window as any).requestIdleCallback as
+        | ((fn: () => void, opts?: { timeout?: number }) => number)
+        | undefined;
+      if (typeof ric === 'function') {
         const id = ric(() => cb(), { timeout });
         return () => (window as any).cancelIdleCallback?.(id);
       }
@@ -218,27 +301,32 @@ export function FollowsList() {
         if (!s) continue;
         seen.add(key);
         total += 1;
-        if (s.liveStatus === "LIVE") online += 1;
+        if (s.liveStatus === 'LIVE') online += 1;
       }
       return { online, total };
     },
-    [streamerByKey]
+    [streamerByKey],
   );
 
-  const onItemEnter = useCallback((el: HTMLElement) => {
-    const root = listRef.current;
-    if (!root) return;
-    const rr = root.getBoundingClientRect();
-    const r = el.getBoundingClientRect();
-    hoverYRaw.set(r.top - rr.top + root.scrollTop);
-    hoverHRaw.set(r.height);
-    hoverOpacity.set(1);
-  }, [hoverHRaw, hoverOpacity, hoverYRaw]);
+  const onItemEnter = useCallback(
+    (el: HTMLElement) => {
+      const root = listRef.current;
+      if (!root) return;
+      const rr = root.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      hoverYRaw.set(r.top - rr.top + root.scrollTop);
+      hoverHRaw.set(r.height);
+      hoverOpacity.set(1);
+    },
+    [hoverHRaw, hoverOpacity, hoverYRaw],
+  );
 
   const refreshList = useCallback(async () => {
     if (isRefreshing) return;
     const streamers = follow.followedStreamers;
-    const updatedByKey = new Map<string, FollowedStreamer>(streamers.map((s) => [`${s.platform}:${s.id}`, s]));
+    const updatedByKey = new Map<string, FollowedStreamer>(
+      streamers.map((s) => [`${s.platform}:${s.id}`, s]),
+    );
     setIsRefreshing(true);
     setShowCheckIcon(false);
     setProgressTotal(streamers.length);
@@ -247,42 +335,56 @@ export function FollowsList() {
     try {
       const concurrency = FOLLOW_REFRESH_CONCURRENCY;
       let idx = 0;
-      const workers = Array.from({ length: Math.min(concurrency, streamers.length) }, async () => {
-        while (idx < streamers.length) {
-          const current = streamers[idx];
-          idx += 1;
-          try {
-            const patch = await refreshOne(current);
-            follow.updateStreamer(current.platform, current.id, patch);
-            updatedByKey.set(`${current.platform}:${current.id}`, { ...current, ...patch });
-          } catch {
-            // 刷新失败时，至少不要继续显示“LIVE”（避免误判在线）
-            if (current.liveStatus === "LIVE") {
-              follow.updateStreamer(current.platform, current.id, { liveStatus: "UNKNOWN" });
-              updatedByKey.set(`${current.platform}:${current.id}`, { ...current, liveStatus: "UNKNOWN" });
+      const workers = Array.from(
+        { length: Math.min(concurrency, streamers.length) },
+        async () => {
+          while (idx < streamers.length) {
+            const current = streamers[idx];
+            idx += 1;
+            try {
+              const patch = await refreshOne(current);
+              follow.updateStreamer(current.platform, current.id, patch);
+              updatedByKey.set(`${current.platform}:${current.id}`, {
+                ...current,
+                ...patch,
+              });
+            } catch {
+              // 刷新失败时，至少不要继续显示“LIVE”（避免误判在线）
+              if (current.liveStatus === 'LIVE') {
+                follow.updateStreamer(current.platform, current.id, {
+                  liveStatus: 'UNKNOWN',
+                });
+                updatedByKey.set(`${current.platform}:${current.id}`, {
+                  ...current,
+                  liveStatus: 'UNKNOWN',
+                });
+              }
+            } finally {
+              setProgressCurrent((v) => v + 1);
             }
-          } finally {
-            setProgressCurrent((v) => v + 1);
           }
-        }
-      });
+        },
+      );
       await Promise.all(workers);
 
       // 对齐老项目：刷新完成后，把“直播中”的主播优先展示（保留同一状态桶内的原相对顺序）
       const baseOrder = listItemsRef.current;
-      const folderItems = baseOrder.filter((x): x is Extract<FollowListItem, { type: "folder" }> => x.type === "folder");
-      const liveItems: Extract<FollowListItem, { type: "streamer" }>[] = [];
-      const restItems: Extract<FollowListItem, { type: "streamer" }>[] = [];
+      const folderItems = baseOrder.filter(
+        (x): x is Extract<FollowListItem, { type: 'folder' }> =>
+          x.type === 'folder',
+      );
+      const liveItems: Extract<FollowListItem, { type: 'streamer' }>[] = [];
+      const restItems: Extract<FollowListItem, { type: 'streamer' }>[] = [];
       const seen = new Set<string>();
 
       for (const item of baseOrder) {
-        if (item.type !== "streamer") continue;
+        if (item.type !== 'streamer') continue;
         const key = `${item.data.platform}:${item.data.id}`;
         if (seen.has(key)) continue;
         seen.add(key);
         const latest = updatedByKey.get(key) ?? item.data;
-        const nextItem = { type: "streamer" as const, data: latest };
-        if (latest.liveStatus === "LIVE") liveItems.push(nextItem);
+        const nextItem = { type: 'streamer' as const, data: latest };
+        if (latest.liveStatus === 'LIVE') liveItems.push(nextItem);
         else restItems.push(nextItem);
       }
 
@@ -301,11 +403,15 @@ export function FollowsList() {
 
     // Set an initial left; re-center precisely after panel is mounted/measured.
     const estimatedPanelWidth = 820;
-    const requestedLeft = centerX != null ? Math.round(centerX - estimatedPanelWidth / 2) : 240;
-    const fallbackMaxLeft = typeof window !== "undefined" ? Math.max(16, window.innerWidth - estimatedPanelWidth - 16) : requestedLeft;
+    const requestedLeft =
+      centerX != null ? Math.round(centerX - estimatedPanelWidth / 2) : 240;
+    const fallbackMaxLeft =
+      typeof window !== 'undefined'
+        ? Math.max(16, window.innerWidth - estimatedPanelWidth - 16)
+        : requestedLeft;
     setOverlayAlignLeft(Math.max(16, Math.min(requestedLeft, fallbackMaxLeft)));
     setOverlayDeleteMode(false);
-    setOverlayFilter("ALL");
+    setOverlayFilter('ALL');
     setOverlayOpen(true);
   }, []);
 
@@ -317,51 +423,53 @@ export function FollowsList() {
   useEffect(() => {
     if (!overlayOpen) return;
     // Re-clamp left based on real panel width (align with old project behavior)
-    const panelWidth = overlayPanelRef.current?.getBoundingClientRect().width ?? 0;
-    if (typeof window !== "undefined" && panelWidth > 0) {
+    const panelWidth =
+      overlayPanelRef.current?.getBoundingClientRect().width ?? 0;
+    if (typeof window !== 'undefined' && panelWidth > 0) {
       const maxLeft = Math.max(16, window.innerWidth - panelWidth - 16);
       const centerX = overlayAnchorCenterXRef.current;
-      const desired = centerX != null ? Math.round(centerX - panelWidth / 2) : null;
+      const desired =
+        centerX != null ? Math.round(centerX - panelWidth / 2) : null;
       setOverlayAlignLeft((v) => Math.max(16, Math.min(desired ?? v, maxLeft)));
     }
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeOverlay();
+      if (e.key === 'Escape') closeOverlay();
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [closeOverlay, overlayOpen]);
 
   const openCreateFolderModal = useCallback(() => {
     const nextName = `新文件夹 ${follow.folders.length + 1}`;
     setFolderNameInput(nextName);
-    setFolderNameModal({ open: true, mode: "create", folderId: null });
+    setFolderNameModal({ open: true, mode: 'create', folderId: null });
   }, [follow.folders.length]);
 
   const openRenameFolderModal = useCallback(
     (folderId: string) => {
       const folder = follow.folders.find((f) => f.id === folderId);
-      setFolderNameInput(folder?.name ?? "");
-      setFolderNameModal({ open: true, mode: "rename", folderId });
+      setFolderNameInput(folder?.name ?? '');
+      setFolderNameModal({ open: true, mode: 'rename', folderId });
     },
-    [follow.folders]
+    [follow.folders],
   );
 
   const submitFolderNameModal = useCallback(() => {
     const trimmed = folderNameInput.trim();
     if (!trimmed) return;
 
-    if (folderNameModal.mode === "create") {
+    if (folderNameModal.mode === 'create') {
       follow.createFolder(trimmed);
     } else if (folderNameModal.folderId) {
       follow.renameFolder(folderNameModal.folderId, trimmed);
     }
-    setFolderNameModal({ open: false, mode: "create", folderId: null });
+    setFolderNameModal({ open: false, mode: 'create', folderId: null });
   }, [follow, folderNameInput, folderNameModal.folderId, folderNameModal.mode]);
 
   const dragRef = useRef<{
     isDragging: boolean;
     draggedIndex: number;
-    draggedItemType: "folder" | "streamer" | null;
+    draggedItemType: 'folder' | 'streamer' | null;
     dragOverFolderId: string | null;
     draggedStreamerKey: string | null;
     draggedFromFolder: boolean;
@@ -377,7 +485,7 @@ export function FollowsList() {
     draggedFromFolder: false,
     sourceFolderId: null,
     startX: 0,
-    startY: 0
+    startY: 0,
   });
 
   const pendingDragRef = useRef<{
@@ -385,10 +493,20 @@ export function FollowsList() {
     timer: number | null;
     startX: number;
     startY: number;
-    payload: null | { type: "folder" | "streamer"; index: number; streamerKey?: string; fromFolder?: boolean; sourceFolderId?: string | null };
+    payload: null | {
+      type: 'folder' | 'streamer';
+      index: number;
+      streamerKey?: string;
+      fromFolder?: boolean;
+      sourceFolderId?: string | null;
+    };
   }>({ active: false, timer: null, startX: 0, startY: 0, payload: null });
 
-  const [dragUi, setDragUi] = useState<{ isDragging: boolean; dragOverFolderId: string | null; draggedItemType: "folder" | "streamer" | null }>({ isDragging: false, dragOverFolderId: null, draggedItemType: null });
+  const [dragUi, setDragUi] = useState<{
+    isDragging: boolean;
+    dragOverFolderId: string | null;
+    draggedItemType: 'folder' | 'streamer' | null;
+  }>({ isDragging: false, dragOverFolderId: null, draggedItemType: null });
   const didDragRef = useRef(false);
 
   const resetDragUi = useCallback(() => {
@@ -401,25 +519,45 @@ export function FollowsList() {
       draggedFromFolder: false,
       sourceFolderId: null,
       startX: 0,
-      startY: 0
+      startY: 0,
     };
-    setDragUi({ isDragging: false, dragOverFolderId: null, draggedItemType: null });
-    document.body.style.userSelect = "";
-    document.removeEventListener("mousemove", handleDragMove as any);
-    document.removeEventListener("mouseup", handleDragUp as any);
+    setDragUi({
+      isDragging: false,
+      dragOverFolderId: null,
+      draggedItemType: null,
+    });
+    document.body.style.userSelect = '';
+    document.removeEventListener('mousemove', handleDragMove as any);
+    document.removeEventListener('mouseup', handleDragUp as any);
   }, []);
 
   const cancelPendingDrag = useCallback(() => {
     const p = pendingDragRef.current;
     if (!p.active) return;
     if (p.timer !== null) window.clearTimeout(p.timer);
-    pendingDragRef.current = { active: false, timer: null, startX: 0, startY: 0, payload: null };
-    document.removeEventListener("mousemove", handlePrepMove as any);
-    document.removeEventListener("mouseup", handlePrepUp as any);
+    pendingDragRef.current = {
+      active: false,
+      timer: null,
+      startX: 0,
+      startY: 0,
+      payload: null,
+    };
+    document.removeEventListener('mousemove', handlePrepMove as any);
+    document.removeEventListener('mouseup', handlePrepUp as any);
   }, []);
 
   // handlers need hoisting for reset/cancel above
-  function beginDrag(payload: { type: "folder" | "streamer"; index: number; streamerKey?: string; fromFolder?: boolean; sourceFolderId?: string | null }, startX: number, startY: number) {
+  function beginDrag(
+    payload: {
+      type: 'folder' | 'streamer';
+      index: number;
+      streamerKey?: string;
+      fromFolder?: boolean;
+      sourceFolderId?: string | null;
+    },
+    startX: number,
+    startY: number,
+  ) {
     cancelPendingDrag();
     if (dragRef.current.isDragging) {
       follow.rollbackTransaction();
@@ -437,10 +575,14 @@ export function FollowsList() {
     dragRef.current.startX = startX;
     dragRef.current.startY = startY;
 
-    document.body.style.userSelect = "none";
-    setDragUi({ isDragging: true, dragOverFolderId: null, draggedItemType: payload.type });
-    document.addEventListener("mousemove", handleDragMove as any);
-    document.addEventListener("mouseup", handleDragUp as any);
+    document.body.style.userSelect = 'none';
+    setDragUi({
+      isDragging: true,
+      dragOverFolderId: null,
+      draggedItemType: payload.type,
+    });
+    document.addEventListener('mousemove', handleDragMove as any);
+    document.addEventListener('mouseup', handleDragUp as any);
   }
 
   function handlePrepMove(e: MouseEvent) {
@@ -458,7 +600,16 @@ export function FollowsList() {
   }
 
   const prepareDrag = useCallback(
-    (payload: { type: "folder" | "streamer"; index: number; streamerKey?: string; fromFolder?: boolean; sourceFolderId?: string | null }, e: React.MouseEvent) => {
+    (
+      payload: {
+        type: 'folder' | 'streamer';
+        index: number;
+        streamerKey?: string;
+        fromFolder?: boolean;
+        sourceFolderId?: string | null;
+      },
+      e: React.MouseEvent,
+    ) => {
       if (e.button !== 0) return;
       if (folderMenu.open) setFolderMenu((m) => ({ ...m, open: false }));
       if (folderNameModal.open) return;
@@ -466,39 +617,63 @@ export function FollowsList() {
       cancelPendingDrag();
       const startX = e.clientX;
       const startY = e.clientY;
-      pendingDragRef.current = { active: true, timer: null, startX, startY, payload };
+      pendingDragRef.current = {
+        active: true,
+        timer: null,
+        startX,
+        startY,
+        payload,
+      };
       pendingDragRef.current.timer = window.setTimeout(() => {
-        if (!pendingDragRef.current.active || !pendingDragRef.current.payload) return;
+        if (!pendingDragRef.current.active || !pendingDragRef.current.payload)
+          return;
         beginDrag(pendingDragRef.current.payload, startX, startY);
         didDragRef.current = true;
       }, DRAG_PREP_DELAY_MS);
 
-      document.addEventListener("mousemove", handlePrepMove as any);
-      document.addEventListener("mouseup", handlePrepUp as any);
+      document.addEventListener('mousemove', handlePrepMove as any);
+      document.addEventListener('mouseup', handlePrepUp as any);
     },
-    [cancelPendingDrag, folderMenu.open, folderNameModal.open, resetDragUi, follow]
+    [
+      cancelPendingDrag,
+      folderMenu.open,
+      folderNameModal.open,
+      resetDragUi,
+      follow,
+    ],
   );
 
   const handleStreamerClick = useCallback(
     (platform: FollowPlatform, id: string) => {
-      if (dragRef.current.isDragging || pendingDragRef.current.active || didDragRef.current) return;
-      playerOverlay.openPlayer({ platform: platform.toLowerCase(), roomId: id });
+      if (
+        dragRef.current.isDragging ||
+        pendingDragRef.current.active ||
+        didDragRef.current
+      )
+        return;
+      playerOverlay.openPlayer({
+        platform: platform.toLowerCase(),
+        roomId: id,
+      });
     },
-    [playerOverlay]
+    [playerOverlay],
   );
 
   const overlayPlatforms = useMemo(() => {
     const present = new Set<FollowPlatform>();
     for (const s of allStreamers) present.add(s.platform);
-    const order: FollowPlatform[] = ["DOUYU", "HUYA", "DOUYIN", "BILIBILI"];
+    const order: FollowPlatform[] = ['DOUYU', 'HUYA', 'DOUYIN', 'BILIBILI'];
     return order.filter((p) => present.has(p));
   }, [allStreamers]);
 
   const overlayItems = useMemo(() => {
-    const base = overlayFilter === "ALL" ? allStreamers : allStreamers.filter((s) => s.platform === overlayFilter);
-    const rank = (status: FollowedStreamer["liveStatus"]) => {
-      if (status === "LIVE") return 0;
-      if (status === "UNKNOWN") return 1;
+    const base =
+      overlayFilter === 'ALL'
+        ? allStreamers
+        : allStreamers.filter((s) => s.platform === overlayFilter);
+    const rank = (status: FollowedStreamer['liveStatus']) => {
+      if (status === 'LIVE') return 0;
+      if (status === 'UNKNOWN') return 1;
       return 2;
     };
     return base
@@ -511,12 +686,12 @@ export function FollowsList() {
       .map((x) => x.s);
   }, [allStreamers, overlayFilter]);
 
-  const platformLabel = useCallback((p: "ALL" | FollowPlatform) => {
-    if (p === "ALL") return "全部";
-    if (p === "DOUYU") return "斗鱼";
-    if (p === "HUYA") return "虎牙";
-    if (p === "DOUYIN") return "抖音";
-    if (p === "BILIBILI") return "B站";
+  const platformLabel = useCallback((p: 'ALL' | FollowPlatform) => {
+    if (p === 'ALL') return '全部';
+    if (p === 'DOUYU') return '斗鱼';
+    if (p === 'HUYA') return '虎牙';
+    if (p === 'DOUYIN') return '抖音';
+    if (p === 'BILIBILI') return 'B站';
     return p;
   }, []);
 
@@ -525,13 +700,23 @@ export function FollowsList() {
     if (!d.isDragging || !d.draggedItemType) return;
 
     // streamer: hover folder detection
-    if (d.draggedItemType === "streamer" && d.draggedStreamerKey) {
-      const el = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
-      const folderEl = el?.closest("[data-folder-id]") as HTMLElement | null;
-      const folderId = folderEl?.getAttribute("data-folder-id") || null;
+    if (d.draggedItemType === 'streamer' && d.draggedStreamerKey) {
+      const el = document.elementFromPoint(
+        e.clientX,
+        e.clientY,
+      ) as HTMLElement | null;
+      const folderEl = el?.closest('[data-folder-id]') as HTMLElement | null;
+      const folderId = folderEl?.getAttribute('data-folder-id') || null;
       if (folderId) {
-        const folder = foldersRef.current.find((f) => f.id === folderId) || null;
-        const exists = folder ? folder.streamerIds.some((x) => normalizeFollowKey(x) === normalizeFollowKey(d.draggedStreamerKey as string)) : false;
+        const folder =
+          foldersRef.current.find((f) => f.id === folderId) || null;
+        const exists = folder
+          ? folder.streamerIds.some(
+              (x) =>
+                normalizeFollowKey(x) ===
+                normalizeFollowKey(d.draggedStreamerKey as string),
+            )
+          : false;
         if (folder && !exists) {
           d.dragOverFolderId = folderId;
           setDragUi((u) => ({ ...u, dragOverFolderId: folderId }));
@@ -553,7 +738,10 @@ export function FollowsList() {
     const currentOrder = listItemsRef.current;
     if (d.draggedIndex >= currentOrder.length) return;
 
-    const folderCount = currentOrder.reduce((acc, item) => (item.type === "folder" ? acc + 1 : acc), 0);
+    const folderCount = currentOrder.reduce(
+      (acc, item) => (item.type === 'folder' ? acc + 1 : acc),
+      0,
+    );
 
     const cursorY = e.clientY;
     let targetIndex = 0;
@@ -565,9 +753,12 @@ export function FollowsList() {
     targetIndex = Math.max(0, Math.min(currentOrder.length - 1, targetIndex));
     if (targetIndex === d.draggedIndex) return;
 
-    if (d.draggedItemType === "folder") {
-      targetIndex = Math.max(0, Math.min(Math.max(0, folderCount - 1), targetIndex));
-    } else if (d.draggedItemType === "streamer") {
+    if (d.draggedItemType === 'folder') {
+      targetIndex = Math.max(
+        0,
+        Math.min(Math.max(0, folderCount - 1), targetIndex),
+      );
+    } else if (d.draggedItemType === 'streamer') {
       // streamers never go above folders
       targetIndex = Math.max(folderCount, targetIndex);
       targetIndex = Math.min(currentOrder.length - 1, targetIndex);
@@ -575,7 +766,11 @@ export function FollowsList() {
     if (targetIndex === d.draggedIndex) return;
 
     const targetItem = currentOrder[targetIndex];
-    if (d.draggedItemType === "streamer" && targetItem?.type === "folder" && targetItem.data.expanded !== false) {
+    if (
+      d.draggedItemType === 'streamer' &&
+      targetItem?.type === 'folder' &&
+      targetItem.data.expanded !== false
+    ) {
       d.dragOverFolderId = targetItem.data.id;
       setDragUi((u) => ({ ...u, dragOverFolderId: targetItem.data.id }));
       return;
@@ -599,20 +794,37 @@ export function FollowsList() {
 
     const movedDist = Math.hypot(ev.clientX - d.startX, ev.clientY - d.startY);
 
-    if (d.draggedItemType === "streamer" && d.draggedStreamerKey && d.dragOverFolderId) {
+    if (
+      d.draggedItemType === 'streamer' &&
+      d.draggedStreamerKey &&
+      d.dragOverFolderId
+    ) {
       follow.moveStreamerToFolder(d.draggedStreamerKey, d.dragOverFolderId);
       follow.commitTransaction();
-    } else if (d.draggedItemType === "streamer" && d.draggedFromFolder) {
+    } else if (d.draggedItemType === 'streamer' && d.draggedFromFolder) {
       let isStillInsideSource = false;
       if (d.sourceFolderId) {
-        const sourceEl = document.querySelector(`[data-folder-id="${d.sourceFolderId}"]`) as HTMLElement | null;
+        const sourceEl = document.querySelector(
+          `[data-folder-id="${d.sourceFolderId}"]`,
+        ) as HTMLElement | null;
         const rect = sourceEl?.getBoundingClientRect();
         if (rect) {
-          isStillInsideSource = ev.clientX >= rect.left && ev.clientX <= rect.right && ev.clientY >= rect.top && ev.clientY <= rect.bottom;
+          isStillInsideSource =
+            ev.clientX >= rect.left &&
+            ev.clientX <= rect.right &&
+            ev.clientY >= rect.top &&
+            ev.clientY <= rect.bottom;
         }
       }
-      if (d.sourceFolderId && movedDist >= DRAG_MIN_PX && !isStillInsideSource) {
-        follow.removeStreamerFromFolderByKey(d.draggedStreamerKey || "", d.sourceFolderId);
+      if (
+        d.sourceFolderId &&
+        movedDist >= DRAG_MIN_PX &&
+        !isStillInsideSource
+      ) {
+        follow.removeStreamerFromFolderByKey(
+          d.draggedStreamerKey || '',
+          d.sourceFolderId,
+        );
         follow.commitTransaction();
       } else {
         follow.rollbackTransaction();
@@ -638,20 +850,31 @@ export function FollowsList() {
     const onVis = () => {
       if (document.hidden) onBlur();
     };
-    window.addEventListener("blur", onBlur);
-    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener('blur', onBlur);
+    document.addEventListener('visibilitychange', onVis);
     return () => {
-      window.removeEventListener("blur", onBlur);
-      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onVis);
     };
   }, [follow, resetDragUi]);
 
   const renderStreamerRow = (
     s: FollowedStreamer,
     itemKey: string,
-    opts: { index: number; fromFolder?: boolean; sourceFolderId?: string | null; onEnter?: (el: HTMLElement) => void; onLeave?: () => void }
+    opts: {
+      index: number;
+      fromFolder?: boolean;
+      sourceFolderId?: string | null;
+      onEnter?: (el: HTMLElement) => void;
+      onLeave?: () => void;
+    },
   ) => {
-    const liveDotClass = s.liveStatus === "LIVE" ? styles.liveDotLive : s.liveStatus === "UNKNOWN" ? styles.liveDotUnknown : styles.liveDotOffline;
+    const liveDotClass =
+      s.liveStatus === 'LIVE'
+        ? styles.liveDotLive
+        : s.liveStatus === 'UNKNOWN'
+          ? styles.liveDotUnknown
+          : styles.liveDotOffline;
     const dragKey = `${s.platform}:${s.id}`;
     const avatarSrc = getAvatarSrc(s.platform, s.avatarUrl);
     const dragEnabled = opts.fromFolder || opts.index >= 0;
@@ -660,20 +883,30 @@ export function FollowsList() {
       <div
         key={itemKey}
         className={styles.listItemWrapper}
-        onMouseEnter={inFolder ? (e) => opts.onEnter?.(e.currentTarget) : (e) => onItemEnter(e.currentTarget)}
+        onMouseEnter={
+          inFolder
+            ? (e) => opts.onEnter?.(e.currentTarget)
+            : (e) => onItemEnter(e.currentTarget)
+        }
         onMouseLeave={inFolder ? () => opts.onLeave?.() : undefined}
         onMouseDown={
           dragEnabled
             ? (e) =>
                 prepareDrag(
-                  { type: "streamer", index: opts.index, streamerKey: dragKey, fromFolder: !!opts.fromFolder, sourceFolderId: opts.sourceFolderId ?? null },
-                  e
+                  {
+                    type: 'streamer',
+                    index: opts.index,
+                    streamerKey: dragKey,
+                    fromFolder: !!opts.fromFolder,
+                    sourceFolderId: opts.sourceFolderId ?? null,
+                  },
+                  e,
                 )
             : undefined
         }
       >
         <div
-          className={`${styles.streamerItem} ${inFolder ? styles.streamerItemInFolder : ""}`}
+          className={`${styles.streamerItem} ${inFolder ? styles.streamerItemInFolder : ''}`}
           role="button"
           tabIndex={0}
           onClick={() => handleStreamerClick(s.platform, s.id)}
@@ -682,19 +915,31 @@ export function FollowsList() {
             <span className={styles.avatar}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               {avatarSrc ? (
-                <img className={styles.avatarImg} src={avatarSrc} alt={s.nickname} loading="lazy" decoding="async" draggable={false} />
+                <img
+                  className={styles.avatarImg}
+                  src={avatarSrc}
+                  alt={s.nickname}
+                  loading="lazy"
+                  decoding="async"
+                  draggable={false}
+                />
               ) : (
-                <span className={styles.avatarFallback}>{(s.nickname || "?").slice(0, 1)}</span>
+                <span className={styles.avatarFallback}>
+                  {(s.nickname || '?').slice(0, 1)}
+                </span>
               )}
             </span>
-            <span className={`${styles.liveDot} ${styles.liveDotOnAvatar} ${liveDotClass}`} aria-hidden="true" />
+            <span
+              className={`${styles.liveDot} ${styles.liveDotOnAvatar} ${liveDotClass}`}
+              aria-hidden="true"
+            />
           </span>
           <div className={styles.meta}>
             <div className={styles.name} title={s.nickname}>
               {s.nickname}
             </div>
-            <div className={styles.sub} title={s.roomTitle || ""}>
-              {s.roomTitle || "暂无直播标题"}
+            <div className={styles.sub} title={s.roomTitle || ''}>
+              {s.roomTitle || '暂无直播标题'}
             </div>
           </div>
         </div>
@@ -711,11 +956,18 @@ export function FollowsList() {
       <div className={styles.listHeader} ref={headerRef} data-tauri-drag-region>
         <div className={styles.headerLeft} data-tauri-drag-region>
           {!isMac ? (
-            <span className={`${styles.actionBtn} ${styles.headerStaticIcon}`} aria-hidden="true">
+            <span
+              className={`${styles.actionBtn} ${styles.headerStaticIcon}`}
+              aria-hidden="true"
+            >
               <Users size={18} />
             </span>
           ) : null}
-          <h3 className={styles.headerTitle} aria-label="关注列表" data-tauri-drag-region>
+          <h3
+            className={styles.headerTitle}
+            aria-label="关注列表"
+            data-tauri-drag-region
+          >
             <span className={styles.headerLabel} data-tauri-drag-region />
           </h3>
         </div>
@@ -773,14 +1025,24 @@ export function FollowsList() {
           style={{ opacity: hoverOpacity, y: hoverY, height: hoverH }}
         />
 
-        <div className={`${styles.streamersList} ${dragUi.isDragging ? styles.draggingList : ""}`} ref={streamersListRef}>
+        <div
+          className={`${styles.streamersList} ${dragUi.isDragging ? styles.draggingList : ''}`}
+          ref={streamersListRef}
+        >
           {listItems.length === 0 ? (
-            <div style={{ padding: 18, color: "var(--secondary-text)", fontWeight: 800, textAlign: "center" }}>
+            <div
+              style={{
+                padding: 18,
+                color: 'var(--secondary-text)',
+                fontWeight: 800,
+                textAlign: 'center',
+              }}
+            >
               暂无关注主播
             </div>
           ) : (
             listItems.map((item, index) => {
-              if (item.type === "streamer") {
+              if (item.type === 'streamer') {
                 const key = `${item.data.platform}:${item.data.id}`;
                 const latest = streamerByKey.get(key) ?? item.data;
                 return renderStreamerRow(latest, key, { index });
@@ -792,27 +1054,42 @@ export function FollowsList() {
               return (
                 <div
                   key={`folder_${folder.id}`}
-                  className={`${styles.listItemWrapper} ${styles.folderItem} ${expanded ? styles.folderItemExpanded : ""} ${
-                    dragUi.dragOverFolderId === folder.id ? styles.folderItemDragOver : ""
+                  className={`${styles.listItemWrapper} ${styles.folderItem} ${expanded ? styles.folderItemExpanded : ''} ${
+                    dragUi.dragOverFolderId === folder.id
+                      ? styles.folderItemDragOver
+                      : ''
                   }`}
                   onMouseEnter={() => clearHoverHighlight()}
                   data-folder-id={folder.id}
-                  onMouseDown={(e) => prepareDrag({ type: "folder", index }, e)}
+                  onMouseDown={(e) => prepareDrag({ type: 'folder', index }, e)}
                 >
                   <div
                     className={styles.folderHeader}
                     role="button"
                     tabIndex={0}
                     onClick={() => {
-                      if (dragRef.current.isDragging || pendingDragRef.current.active || didDragRef.current) return;
+                      if (
+                        dragRef.current.isDragging ||
+                        pendingDragRef.current.active ||
+                        didDragRef.current
+                      )
+                        return;
                       follow.toggleFolderExpanded(folder.id);
                     }}
                     onContextMenu={(e) => {
                       e.preventDefault();
-                      setFolderMenu({ open: true, x: e.clientX, y: e.clientY, folderId: folder.id });
+                      setFolderMenu({
+                        open: true,
+                        x: e.clientX,
+                        y: e.clientY,
+                        folderId: folder.id,
+                      });
                     }}
                   >
-                    <Folder size={16} className={`${styles.folderIcon} ${expanded ? styles.folderIconExpanded : ""}`} />
+                    <Folder
+                      size={16}
+                      className={`${styles.folderIcon} ${expanded ? styles.folderIconExpanded : ''}`}
+                    />
                     <span className={styles.folderName} title={folder.name}>
                       {folder.name}
                     </span>
@@ -836,7 +1113,13 @@ export function FollowsList() {
                     normalizeKey={normalizeFollowKey}
                     streamerByKey={streamerByKey}
                     render={(s, itemKey, handlers) =>
-                      renderStreamerRow(s, itemKey, { index: -1, fromFolder: true, sourceFolderId: folder.id, onEnter: handlers.onEnter, onLeave: handlers.onLeave })
+                      renderStreamerRow(s, itemKey, {
+                        index: -1,
+                        fromFolder: true,
+                        sourceFolderId: folder.id,
+                        onEnter: handlers.onEnter,
+                        onLeave: handlers.onLeave,
+                      })
                     }
                   />
                 </div>
@@ -869,114 +1152,169 @@ export function FollowsList() {
                       transition={{ duration: 0.26, ease: [0.16, 1, 0.3, 1] }}
                       onMouseDown={(e) => e.stopPropagation()}
                     >
-                <button type="button" className={styles.followOverlayCloseBtn} title="关闭" onClick={closeOverlay}>
-                  <X size={18} />
-                </button>
-
-                <div className={styles.followOverlayHeader}>
-                  <div className={styles.followOverlayFilters}>
-                    <button
-                      type="button"
-                      className={`${styles.filterChip} ${overlayFilter === "ALL" ? styles.filterChipActive : ""}`}
-                      onClick={() => setOverlayFilter("ALL")}
-                    >
-                      {platformLabel("ALL")}
-                    </button>
-                    {overlayPlatforms.map((p) => (
                       <button
-                        key={p}
                         type="button"
-                        className={`${styles.filterChip} ${overlayFilter === p ? styles.filterChipActive : ""}`}
-                        onClick={() => setOverlayFilter(p)}
+                        className={styles.followOverlayCloseBtn}
+                        title="关闭"
+                        onClick={closeOverlay}
                       >
-                        {platformLabel(p)}
+                        <X size={18} />
                       </button>
-                    ))}
-                  </div>
-                  <div className={styles.followOverlayActions}>
-                    <button
-                      type="button"
-                      className={`${styles.overlayTextBtn} ${overlayDeleteMode ? styles.overlayTextBtnActive : ""}`}
-                      onClick={() => setOverlayDeleteMode((v) => !v)}
-                    >
-                      {overlayDeleteMode ? "完成" : "管理"}
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.overlayTextBtn} ${isRefreshing ? styles.overlayTextBtnRefreshing : ""}`}
-                      disabled={isRefreshing}
-                      onClick={() => void refreshList()}
-                    >
-                      <span>刷新</span>
-                      <span className={styles.overlaySpinner} aria-hidden="true" />
-                    </button>
-                  </div>
-                </div>
 
-                <div className={styles.followOverlayContent}>
-                  {overlayItems.length === 0 ? (
-                    <div className={styles.followOverlayEmpty}>
-                      <div className={styles.emptyTitle}>暂无关注主播</div>
-                      <div className={styles.emptyText}>当前筛选下暂无关注主播</div>
-                    </div>
-                  ) : (
-                    <div className={styles.followOverlayGrid}>
-                      {overlayItems.map((s) => {
-                        const avatarSrc = getAvatarSrc(s.platform, s.avatarUrl);
-                        const liveDotClass = s.liveStatus === "LIVE" ? styles.liveDotLive : s.liveStatus === "UNKNOWN" ? styles.liveDotUnknown : styles.liveDotOffline;
-                        const liveText = s.liveStatus === "LIVE" ? "直播中" : s.liveStatus === "OFFLINE" ? "离线" : "未知";
-                        const roomTitle = s.roomTitle || "暂无直播标题";
-                        return (
-                          <div
-                            key={`${s.platform}:${s.id}`}
-                            className={`${styles.followOverlayCard} ${overlayDeleteMode ? styles.followOverlayCardManage : ""}`}
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => {
-                              if (overlayDeleteMode) return;
-                              playerOverlay.openPlayer({ platform: s.platform.toLowerCase(), roomId: s.id });
-                              closeOverlay();
-                            }}
+                      <div className={styles.followOverlayHeader}>
+                        <div className={styles.followOverlayFilters}>
+                          <button
+                            type="button"
+                            className={`${styles.filterChip} ${overlayFilter === 'ALL' ? styles.filterChipActive : ''}`}
+                            onClick={() => setOverlayFilter('ALL')}
                           >
-                            {overlayDeleteMode ? (
-                              <button
-                                type="button"
-                                className={styles.followOverlayRemoveBtn}
-                                title="删除"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  follow.unfollowStreamer(s.platform, s.id);
-                                }}
-                              >
-                                ×
-                              </button>
-                            ) : null}
-                            <div className={styles.followOverlayCardTop}>
-                              <div className={styles.resultAvatar}>
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                {avatarSrc ? <img className={styles.resultAvatarImg} src={avatarSrc} alt={s.nickname} /> : <div className={styles.resultAvatarFallback}>{(s.nickname || "?").slice(0, 1)}</div>}
-                                <span className={`${styles.liveDot} ${styles.liveDotOnAvatar} ${liveDotClass}`} aria-hidden="true" />
-                              </div>
-                              <div className={styles.resultMain}>
-                                <div className={styles.resultName} title={s.nickname}>
-                                  {s.nickname}
-                                </div>
-                              <div className={styles.resultTitle} title={`${platformLabel(s.platform)} · ${liveText} · ${roomTitle}`}>
-                                {platformLabel(s.platform)} · {liveText} · {roomTitle}
-                              </div>
+                            {platformLabel('ALL')}
+                          </button>
+                          {overlayPlatforms.map((p) => (
+                            <button
+                              key={p}
+                              type="button"
+                              className={`${styles.filterChip} ${overlayFilter === p ? styles.filterChipActive : ''}`}
+                              onClick={() => setOverlayFilter(p)}
+                            >
+                              {platformLabel(p)}
+                            </button>
+                          ))}
+                        </div>
+                        <div className={styles.followOverlayActions}>
+                          <button
+                            type="button"
+                            className={`${styles.overlayTextBtn} ${overlayDeleteMode ? styles.overlayTextBtnActive : ''}`}
+                            onClick={() => setOverlayDeleteMode((v) => !v)}
+                          >
+                            {overlayDeleteMode ? '完成' : '管理'}
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.overlayTextBtn} ${isRefreshing ? styles.overlayTextBtnRefreshing : ''}`}
+                            disabled={isRefreshing}
+                            onClick={() => void refreshList()}
+                          >
+                            <span>刷新</span>
+                            <span
+                              className={styles.overlaySpinner}
+                              aria-hidden="true"
+                            />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className={styles.followOverlayContent}>
+                        {overlayItems.length === 0 ? (
+                          <div className={styles.followOverlayEmpty}>
+                            <div className={styles.emptyTitle}>
+                              暂无关注主播
+                            </div>
+                            <div className={styles.emptyText}>
+                              当前筛选下暂无关注主播
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                    </div>
-                  )}
-                </div>
+                        ) : (
+                          <div className={styles.followOverlayGrid}>
+                            {overlayItems.map((s) => {
+                              const avatarSrc = getAvatarSrc(
+                                s.platform,
+                                s.avatarUrl,
+                              );
+                              const liveDotClass =
+                                s.liveStatus === 'LIVE'
+                                  ? styles.liveDotLive
+                                  : s.liveStatus === 'UNKNOWN'
+                                    ? styles.liveDotUnknown
+                                    : styles.liveDotOffline;
+                              const liveText =
+                                s.liveStatus === 'LIVE'
+                                  ? '直播中'
+                                  : s.liveStatus === 'OFFLINE'
+                                    ? '离线'
+                                    : '未知';
+                              const roomTitle = s.roomTitle || '暂无直播标题';
+                              return (
+                                <div
+                                  key={`${s.platform}:${s.id}`}
+                                  className={`${styles.followOverlayCard} ${overlayDeleteMode ? styles.followOverlayCardManage : ''}`}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => {
+                                    if (overlayDeleteMode) return;
+                                    playerOverlay.openPlayer({
+                                      platform: s.platform.toLowerCase(),
+                                      roomId: s.id,
+                                    });
+                                    closeOverlay();
+                                  }}
+                                >
+                                  {overlayDeleteMode ? (
+                                    <button
+                                      type="button"
+                                      className={styles.followOverlayRemoveBtn}
+                                      title="删除"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        follow.unfollowStreamer(
+                                          s.platform,
+                                          s.id,
+                                        );
+                                      }}
+                                    >
+                                      ×
+                                    </button>
+                                  ) : null}
+                                  <div className={styles.followOverlayCardTop}>
+                                    <div className={styles.resultAvatar}>
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      {avatarSrc ? (
+                                        <img
+                                          className={styles.resultAvatarImg}
+                                          src={avatarSrc}
+                                          alt={s.nickname}
+                                        />
+                                      ) : (
+                                        <div
+                                          className={
+                                            styles.resultAvatarFallback
+                                          }
+                                        >
+                                          {(s.nickname || '?').slice(0, 1)}
+                                        </div>
+                                      )}
+                                      <span
+                                        className={`${styles.liveDot} ${styles.liveDotOnAvatar} ${liveDotClass}`}
+                                        aria-hidden="true"
+                                      />
+                                    </div>
+                                    <div className={styles.resultMain}>
+                                      <div
+                                        className={styles.resultName}
+                                        title={s.nickname}
+                                      >
+                                        {s.nickname}
+                                      </div>
+                                      <div
+                                        className={styles.resultTitle}
+                                        title={`${platformLabel(s.platform)} · ${liveText} · ${roomTitle}`}
+                                      >
+                                        {platformLabel(s.platform)} · {liveText}{' '}
+                                        · {roomTitle}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </m.div>
                   </div>
                 </m.div>
               ) : null}
             </AnimatePresence>,
-            portalTarget
+            portalTarget,
           )
         : null}
 
@@ -989,7 +1327,13 @@ export function FollowsList() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onMouseDown={() => setFolderNameModal({ open: false, mode: "create", folderId: null })}
+                  onMouseDown={() =>
+                    setFolderNameModal({
+                      open: false,
+                      mode: 'create',
+                      folderId: null,
+                    })
+                  }
                 >
                   <m.div
                     className={styles.modalPanel}
@@ -999,38 +1343,72 @@ export function FollowsList() {
                     transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                     onMouseDown={(e) => e.stopPropagation()}
                   >
-              <div className={styles.modalHeader}>
-                <div className={styles.modalTitle}>{folderNameModal.mode === "create" ? "新建文件夹" : "重命名文件夹"}</div>
-                <button type="button" className={styles.miniBtn} title="关闭" onClick={() => setFolderNameModal({ open: false, mode: "create", folderId: null })}>
-                  <X size={14} />
-                </button>
-              </div>
-              <div className={styles.modalBody}>
-                <input
-                  className={styles.textInput}
-                  value={folderNameInput}
-                  autoFocus
-                  placeholder="输入文件夹名称"
-                  onChange={(e) => setFolderNameInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") submitFolderNameModal();
-                    if (e.key === "Escape") setFolderNameModal({ open: false, mode: "create", folderId: null });
-                  }}
-                />
-              </div>
-              <div className={styles.modalFooter}>
-                <button type="button" className={styles.secondaryBtn} onClick={() => setFolderNameModal({ open: false, mode: "create", folderId: null })}>
-                  取消
-                </button>
-                <button type="button" className={styles.primaryBtn} onClick={submitFolderNameModal}>
-                  确定
-                </button>
-              </div>
+                    <div className={styles.modalHeader}>
+                      <div className={styles.modalTitle}>
+                        {folderNameModal.mode === 'create'
+                          ? '新建文件夹'
+                          : '重命名文件夹'}
+                      </div>
+                      <button
+                        type="button"
+                        className={styles.miniBtn}
+                        title="关闭"
+                        onClick={() =>
+                          setFolderNameModal({
+                            open: false,
+                            mode: 'create',
+                            folderId: null,
+                          })
+                        }
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <div className={styles.modalBody}>
+                      <input
+                        className={styles.textInput}
+                        value={folderNameInput}
+                        autoFocus
+                        placeholder="输入文件夹名称"
+                        onChange={(e) => setFolderNameInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') submitFolderNameModal();
+                          if (e.key === 'Escape')
+                            setFolderNameModal({
+                              open: false,
+                              mode: 'create',
+                              folderId: null,
+                            });
+                        }}
+                      />
+                    </div>
+                    <div className={styles.modalFooter}>
+                      <button
+                        type="button"
+                        className={styles.secondaryBtn}
+                        onClick={() =>
+                          setFolderNameModal({
+                            open: false,
+                            mode: 'create',
+                            folderId: null,
+                          })
+                        }
+                      >
+                        取消
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.primaryBtn}
+                        onClick={submitFolderNameModal}
+                      >
+                        确定
+                      </button>
+                    </div>
                   </m.div>
                 </m.div>
               ) : null}
             </AnimatePresence>,
-            portalTarget
+            portalTarget,
           )
         : null}
 
@@ -1056,7 +1434,8 @@ export function FollowsList() {
                 type="button"
                 className={styles.menuItem}
                 onClick={() => {
-                  if (folderMenu.folderId) openRenameFolderModal(folderMenu.folderId);
+                  if (folderMenu.folderId)
+                    openRenameFolderModal(folderMenu.folderId);
                   setFolderMenu((m) => ({ ...m, open: false }));
                 }}
               >
@@ -1066,7 +1445,10 @@ export function FollowsList() {
                 type="button"
                 className={`${styles.menuItem} ${styles.menuDanger}`}
                 onClick={() => {
-                  setFolderDeleteConfirm({ open: true, folderId: folderMenu.folderId });
+                  setFolderDeleteConfirm({
+                    open: true,
+                    folderId: folderMenu.folderId,
+                  });
                   setFolderMenu((m) => ({ ...m, open: false }));
                 }}
               >
@@ -1086,7 +1468,9 @@ export function FollowsList() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onMouseDown={() => setFolderDeleteConfirm({ open: false, folderId: null })}
+                  onMouseDown={() =>
+                    setFolderDeleteConfirm({ open: false, folderId: null })
+                  }
                 >
                   <m.div
                     className={styles.modalPanel}
@@ -1096,35 +1480,64 @@ export function FollowsList() {
                     transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
                     onMouseDown={(e) => e.stopPropagation()}
                   >
-              <div className={styles.modalHeader}>
-                <div className={styles.modalTitle}>删除文件夹</div>
-                <button type="button" className={styles.miniBtn} title="关闭" onClick={() => setFolderDeleteConfirm({ open: false, folderId: null })}>
-                  <X size={14} />
-                </button>
-              </div>
-              <div className={styles.modalBody} style={{ color: "var(--secondary-text)", fontWeight: 800 }}>
-                删除后，文件夹里的主播会回到主列表。
-              </div>
-              <div className={styles.modalFooter}>
-                <button type="button" className={styles.secondaryBtn} onClick={() => setFolderDeleteConfirm({ open: false, folderId: null })}>
-                  取消
-                </button>
-                <button
-                  type="button"
-                  className={styles.dangerBtn}
-                  onClick={() => {
-                    if (folderDeleteConfirm.folderId) follow.deleteFolder(folderDeleteConfirm.folderId);
-                    setFolderDeleteConfirm({ open: false, folderId: null });
-                  }}
-                >
-                  删除
-                </button>
-              </div>
+                    <div className={styles.modalHeader}>
+                      <div className={styles.modalTitle}>删除文件夹</div>
+                      <button
+                        type="button"
+                        className={styles.miniBtn}
+                        title="关闭"
+                        onClick={() =>
+                          setFolderDeleteConfirm({
+                            open: false,
+                            folderId: null,
+                          })
+                        }
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <div
+                      className={styles.modalBody}
+                      style={{
+                        color: 'var(--secondary-text)',
+                        fontWeight: 800,
+                      }}
+                    >
+                      删除后，文件夹里的主播会回到主列表。
+                    </div>
+                    <div className={styles.modalFooter}>
+                      <button
+                        type="button"
+                        className={styles.secondaryBtn}
+                        onClick={() =>
+                          setFolderDeleteConfirm({
+                            open: false,
+                            folderId: null,
+                          })
+                        }
+                      >
+                        取消
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.dangerBtn}
+                        onClick={() => {
+                          if (folderDeleteConfirm.folderId)
+                            follow.deleteFolder(folderDeleteConfirm.folderId);
+                          setFolderDeleteConfirm({
+                            open: false,
+                            folderId: null,
+                          });
+                        }}
+                      >
+                        删除
+                      </button>
+                    </div>
                   </m.div>
                 </m.div>
               ) : null}
             </AnimatePresence>,
-            portalTarget
+            portalTarget,
           )
         : null}
     </div>
@@ -1137,14 +1550,18 @@ function FolderChildren({
   streamerKeys,
   normalizeKey,
   streamerByKey,
-  render
+  render,
 }: {
   expanded: boolean;
   folderId: string;
   streamerKeys: string[];
   normalizeKey: (key: string) => string;
   streamerByKey: Map<string, FollowedStreamer>;
-  render: (s: FollowedStreamer, itemKey: string, handlers: { onEnter: (el: HTMLElement) => void; onLeave: () => void }) => React.ReactNode;
+  render: (
+    s: FollowedStreamer,
+    itemKey: string,
+    handlers: { onEnter: (el: HTMLElement) => void; onLeave: () => void },
+  ) => React.ReactNode;
 }) {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -1153,8 +1570,16 @@ function FolderChildren({
   const hoverOpacity = useMotionValue(0);
   const hoverYRaw = useMotionValue(0);
   const hoverHRaw = useMotionValue(38);
-  const hoverY = useSpring(hoverYRaw, { stiffness: 520, damping: 44, mass: 0.7 });
-  const hoverH = useSpring(hoverHRaw, { stiffness: 520, damping: 44, mass: 0.7 });
+  const hoverY = useSpring(hoverYRaw, {
+    stiffness: 520,
+    damping: 44,
+    mass: 0.7,
+  });
+  const hoverH = useSpring(hoverHRaw, {
+    stiffness: 520,
+    damping: 44,
+    mass: 0.7,
+  });
 
   const orderedStreamerKeys = useMemo(() => {
     const live: string[] = [];
@@ -1162,7 +1587,7 @@ function FolderChildren({
     for (const key of streamerKeys) {
       const normKey = normalizeKey(key);
       const s = streamerByKey.get(normKey);
-      if (s?.liveStatus === "LIVE") live.push(key);
+      if (s?.liveStatus === 'LIVE') live.push(key);
       else rest.push(key);
     }
     return [...live, ...rest];
@@ -1181,8 +1606,8 @@ function FolderChildren({
 
     const update = () => {
       const s = window.getComputedStyle(panel);
-      const padTop = Number.parseFloat(s.paddingTop || "0") || 0;
-      const padBottom = Number.parseFloat(s.paddingBottom || "0") || 0;
+      const padTop = Number.parseFloat(s.paddingTop || '0') || 0;
+      const padBottom = Number.parseFloat(s.paddingBottom || '0') || 0;
       setHeight(el.scrollHeight + padTop + padBottom);
     };
     update();
@@ -1192,15 +1617,18 @@ function FolderChildren({
     return () => ro.disconnect();
   }, [expanded, hoverOpacity]);
 
-  const onEnter = useCallback((el: HTMLElement) => {
-    const root = panelRef.current;
-    if (!root) return;
-    const rr = root.getBoundingClientRect();
-    const r = el.getBoundingClientRect();
-    hoverYRaw.set(r.top - rr.top + root.scrollTop);
-    hoverHRaw.set(r.height);
-    hoverOpacity.set(1);
-  }, [hoverHRaw, hoverOpacity, hoverYRaw]);
+  const onEnter = useCallback(
+    (el: HTMLElement) => {
+      const root = panelRef.current;
+      if (!root) return;
+      const rr = root.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      hoverYRaw.set(r.top - rr.top + root.scrollTop);
+      hoverHRaw.set(r.height);
+      hoverOpacity.set(1);
+    },
+    [hoverHRaw, hoverOpacity, hoverYRaw],
+  );
 
   const onLeave = useCallback(() => {
     hoverOpacity.set(0);
@@ -1214,9 +1642,21 @@ function FolderChildren({
           ref={panelRef}
           initial={{ height: 0, opacity: 0 }}
           animate={{ height, opacity: 1 }}
-          exit={{ height: 0, opacity: 0, transition: { type: "tween", duration: 0.24, ease: [0.64, 0, 0.78, 0.39] } }}
-          transition={{ type: "tween", duration: 0.24, ease: [0.22, 0.61, 0.36, 1] }}
-          style={{ overflow: "hidden" }}
+          exit={{
+            height: 0,
+            opacity: 0,
+            transition: {
+              type: 'tween',
+              duration: 0.24,
+              ease: [0.64, 0, 0.78, 0.39],
+            },
+          }}
+          transition={{
+            type: 'tween',
+            duration: 0.24,
+            ease: [0.22, 0.61, 0.36, 1],
+          }}
+          style={{ overflow: 'hidden' }}
           onMouseLeave={onLeave}
         >
           <m.div

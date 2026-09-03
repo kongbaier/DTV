@@ -1,22 +1,25 @@
 @font-face {
-  font-family: "OPPO Sans";
-  src: url("/fonts/OPPOSans-Regular-subset.woff2") format("woff2");
+  font-family: 'OPPO Sans';
+  src: url('/fonts/OPPOSans-Regular-subset.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "OPPO Sans";
-  src: url("/fonts/OPPOSans-Bold-subset.woff2") format("woff2");
+  font-family: 'OPPO Sans';
+  src: url('/fonts/OPPOSans-Bold-subset.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
-  --font-sans: "OPPO Sans", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans:
+    'OPPO Sans', 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
 
   /* Typography */
   --text-xs: 12px;
@@ -94,7 +97,11 @@
   --secondary-bg: var(--bg-secondary);
   --tertiary-bg: var(--bg-tertiary);
   --accent-color: var(--accent);
-  --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  --accent-gradient: linear-gradient(
+    135deg,
+    var(--accent),
+    var(--accent-hover)
+  );
   --accent-text: #ffffff;
   --primary-text: var(--text-primary);
   --secondary-text: var(--text-secondary);
@@ -110,12 +117,21 @@
   --card-shadow: var(--shadow-low);
   --card-shadow-hover: var(--shadow-md);
   --hover-bg: rgba(0, 0, 0, 0.04);
-  --page-mesh: radial-gradient(at 0% 0%, rgba(0, 0, 0, 0.06) 0px, transparent 50%),
+  --page-mesh:
+    radial-gradient(at 0% 0%, rgba(0, 0, 0, 0.06) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.04) 0px, transparent 50%);
-  --ambient-bg-image: linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.55) 100%);
+  --ambient-bg-image: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.18) 0%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
   --ambient-bg-opacity: 1;
   --ambient-bg-filter: none;
-  --sidebar-overlay: linear-gradient(0deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.82));
+  --sidebar-overlay: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.82),
+    rgba(255, 255, 255, 0.82)
+  );
   --sidebar-overlay-opacity: 0.98;
   --status-live: #ff3e3e;
   --status-offline: #86868b;
@@ -123,7 +139,7 @@
   --status-warning: #f59e0b;
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   /* vibestream-night */
   /* main panel slightly lighter than sidebar */
   --bg-primary: #1a1a1a;
@@ -149,7 +165,11 @@
   --secondary-bg: var(--bg-secondary);
   --tertiary-bg: var(--bg-tertiary);
   --accent-color: var(--accent);
-  --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  --accent-gradient: linear-gradient(
+    135deg,
+    var(--accent),
+    var(--accent-hover)
+  );
   --accent-text: #ffffff;
   --primary-text: var(--text-primary);
   --secondary-text: var(--text-secondary);
@@ -165,12 +185,21 @@
   --card-shadow: var(--shadow-md);
   --card-shadow-hover: var(--shadow-lg);
   --hover-bg: rgba(255, 255, 255, 0.06);
-  --page-mesh: radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.02) 0px, transparent 50%),
+  --page-mesh:
+    radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.02) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.35) 0px, transparent 50%);
-  --ambient-bg-image: linear-gradient(0deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.18));
+  --ambient-bg-image: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.18),
+    rgba(255, 255, 255, 0.18)
+  );
   --ambient-bg-opacity: 1;
   --ambient-bg-filter: none;
-  --sidebar-overlay: linear-gradient(0deg, rgba(3, 5, 6, 0.94), rgba(3, 5, 6, 0.9));
+  --sidebar-overlay: linear-gradient(
+    0deg,
+    rgba(3, 5, 6, 0.94),
+    rgba(3, 5, 6, 0.9)
+  );
   --sidebar-overlay-opacity: 0.84;
   --status-live: #ff3e3e;
   --status-offline: #525c53;
@@ -209,7 +238,7 @@ body {
   color: inherit;
 }
 
-:where(a, button, [role="button"], input, textarea, select, summary) {
+:where(a, button, [role='button'], input, textarea, select, summary) {
   transition:
     background-color var(--dur-3) var(--ease-out),
     color var(--dur-2) var(--ease-out),
@@ -223,7 +252,7 @@ body {
   outline-offset: 2px;
 }
 
-button:not(.button):not([data-slot="button"]) {
+button:not(.button):not([data-slot='button']) {
   border: none;
   background: none;
   cursor: pointer;
@@ -259,7 +288,7 @@ ul {
   border-radius: 10px;
 }
 
-[data-theme="dark"] ::-webkit-scrollbar-thumb {
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
 }
 
@@ -268,7 +297,7 @@ ul {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :where(a, button, [role="button"], input, textarea, select, summary) {
+  :where(a, button, [role='button'], input, textarea, select, summary) {
     transition-duration: 1ms !important;
   }
 }
@@ -285,7 +314,9 @@ ul {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-low);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .fluent-card:hover {
@@ -335,20 +366,20 @@ ul {
   color: #fff;
 }
 
-[data-theme="dark"] .win-control-btn:hover {
+[data-theme='dark'] .win-control-btn:hover {
   background: rgba(255, 255, 255, 0.08);
 }
 
-[data-theme="dark"] .win-control-btn:active {
+[data-theme='dark'] .win-control-btn:active {
   background: rgba(255, 255, 255, 0.12);
 }
 
-[data-theme="dark"] .win-control-btn.close:hover {
+[data-theme='dark'] .win-control-btn.close:hover {
   background: #e81123;
   color: #fff;
 }
 
-[data-theme="dark"] .win-control-btn.close:active {
+[data-theme='dark'] .win-control-btn.close:active {
   background: #c50f1f;
   color: #fff;
 }

@@ -6,19 +6,22 @@ export async function getDouyuStreamConfig(
   roomId: string,
   quality: string = '原画',
   line?: string | null,
-): Promise<{ streamUrl: string, streamType: string | undefined }> {
+): Promise<{ streamUrl: string; streamType: string | undefined }> {
   let finalStreamUrl: string | null = null;
   let streamType: string | undefined = undefined;
   const MAX_STREAM_FETCH_ATTEMPTS = 2;
 
   for (let attempt = 1; attempt <= MAX_STREAM_FETCH_ATTEMPTS; attempt++) {
     try {
-      const streamUrl = await invoke<string>('get_stream_url_with_quality_cmd', {
-        roomId: roomId,
-        quality: quality,
-        line: line ?? null,
-      });
-      
+      const streamUrl = await invoke<string>(
+        'get_stream_url_with_quality_cmd',
+        {
+          roomId: roomId,
+          quality: quality,
+          line: line ?? null,
+        },
+      );
+
       if (streamUrl) {
         finalStreamUrl = enforceHttps(streamUrl);
         streamType = 'flv';
@@ -27,7 +30,10 @@ export async function getDouyuStreamConfig(
         throw new Error('斗鱼直播流地址获取为空。');
       }
     } catch (e: any) {
-      console.error(`[DouyuPlayerHelper] 获取斗鱼直播流失败 (尝试 ${attempt}/${MAX_STREAM_FETCH_ATTEMPTS}):`, e.message);
+      console.error(
+        `[DouyuPlayerHelper] 获取斗鱼直播流失败 (尝试 ${attempt}/${MAX_STREAM_FETCH_ATTEMPTS}):`,
+        e.message,
+      );
       const offlineOrInvalidRoomMessages = [
         '主播未开播',
         '房间不存在',
@@ -38,17 +44,23 @@ export async function getDouyuStreamConfig(
       ];
 
       const errorMessageLowerCase = e.message?.toLowerCase() || '';
-      const isDefinitivelyOffline = offlineOrInvalidRoomMessages.some(msg => errorMessageLowerCase.includes(msg.toLowerCase()));
+      const isDefinitivelyOffline = offlineOrInvalidRoomMessages.some((msg) =>
+        errorMessageLowerCase.includes(msg.toLowerCase()),
+      );
 
       if (isDefinitivelyOffline) {
-        console.warn(`[DouyuPlayerHelper] Streamer for room ${roomId} is definitively offline or room is invalid. Aborting retries.`);
+        console.warn(
+          `[DouyuPlayerHelper] Streamer for room ${roomId} is definitively offline or room is invalid. Aborting retries.`,
+        );
         throw e;
       }
 
       if (attempt === MAX_STREAM_FETCH_ATTEMPTS) {
-        throw new Error(`获取斗鱼直播流失败 (尝试 ${MAX_STREAM_FETCH_ATTEMPTS} 次后): ${e.message}`);
+        throw new Error(
+          `获取斗鱼直播流失败 (尝试 ${MAX_STREAM_FETCH_ATTEMPTS} 次后): ${e.message}`,
+        );
       }
-      await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); 
+      await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
     }
   }
 

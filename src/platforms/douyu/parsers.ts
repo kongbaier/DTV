@@ -1,14 +1,31 @@
-import type { StreamerDetails, StreamPlaybackDetails, CommonCategoryGroup, CommonPlatformCategory } from '../common/types';
+import type {
+  StreamerDetails,
+  StreamPlaybackDetails,
+  CommonCategoryGroup,
+  CommonPlatformCategory,
+} from '../common/types';
 import { CommonDanmakuMessage } from '../common/types';
 import { v4 as uuidv4 } from 'uuid';
-import { DouyuRawCategoriesResponseData, DouyuRawCategoryGroup, DouyuRawGameCategory, DouyuRoomInfo } from './types';
+import {
+  DouyuRawCategoriesResponseData,
+  DouyuRawCategoryGroup,
+  DouyuRawGameCategory,
+  DouyuRoomInfo,
+} from './types';
 
 /**
  * Parses raw Douyu room data (DouyuRoomInfo) into the common StreamerDetails format.
  */
-export function parseDouyuRoomDataToStreamerDetails(roomId: string, data: DouyuRoomInfo): StreamerDetails {
+export function parseDouyuRoomDataToStreamerDetails(
+  roomId: string,
+  data: DouyuRoomInfo,
+): StreamerDetails {
   if (!data || !data.room_id) {
-    console.error('[Douyu Parser] Invalid data provided to parseDouyuRoomDataToStreamerDetails for room:', roomId, data);
+    console.error(
+      '[Douyu Parser] Invalid data provided to parseDouyuRoomDataToStreamerDetails for room:',
+      roomId,
+      data,
+    );
     return {
       roomId: roomId,
       platform: 'douyu',
@@ -22,8 +39,16 @@ export function parseDouyuRoomDataToStreamerDetails(roomId: string, data: DouyuR
     };
   }
 
-  const { room_name, nickname, show_status, videoLoop, avatar_mid, cate_name, online_num } = data;
-  
+  const {
+    room_name,
+    nickname,
+    show_status,
+    videoLoop,
+    avatar_mid,
+    cate_name,
+    online_num,
+  } = data;
+
   const showStatusNum = Number(show_status);
   const videoLoopNum = Number(videoLoop);
 
@@ -43,7 +68,9 @@ export function parseDouyuRoomDataToStreamerDetails(roomId: string, data: DouyuR
   };
 }
 
-export function parseDouyuDanmakuMessage(rawPayload: any): CommonDanmakuMessage | null {
+export function parseDouyuDanmakuMessage(
+  rawPayload: any,
+): CommonDanmakuMessage | null {
   if (!rawPayload || !rawPayload.type) {
     // console.warn('[Douyu Parser] Received danmaku payload without type:', rawPayload);
     return null; // Or handle as a generic system message
@@ -91,7 +118,9 @@ export function parseDouyuDanmakuMessage(rawPayload: any): CommonDanmakuMessage 
       nickname: rawPayload.nickname || '未知用户',
       level: rawPayload.level ? parseInt(rawPayload.level, 10) : undefined,
       badgeName: rawPayload.badgeName,
-      badgeLevel: rawPayload.badgeLevel ? parseInt(rawPayload.badgeLevel, 10) : undefined,
+      badgeLevel: rawPayload.badgeLevel
+        ? parseInt(rawPayload.badgeLevel, 10)
+        : undefined,
     },
     content: content,
     timestamp: Date.now(), // Use current time as received time
@@ -105,15 +134,21 @@ export function parseDouyuDanmakuMessage(rawPayload: any): CommonDanmakuMessage 
  * Currently, this is a simple wrapper as Douyu typically provides a direct M3U8 or FLV URL.
  * This function can be expanded if Douyu starts providing multiple quality options or more complex data.
  */
-export function parseDouyuStreamDataToPlaybackDetails(roomId: string, rawUrl: string): StreamPlaybackDetails {
+export function parseDouyuStreamDataToPlaybackDetails(
+  roomId: string,
+  rawUrl: string,
+): StreamPlaybackDetails {
   if (!rawUrl) {
-    console.error('[Douyu Parser] Invalid rawUrl provided to parseDouyuStreamDataToPlaybackDetails for room:', roomId);
+    console.error(
+      '[Douyu Parser] Invalid rawUrl provided to parseDouyuStreamDataToPlaybackDetails for room:',
+      roomId,
+    );
     // Consider a more robust error object or a specific error state
     return {
       platform: 'douyu',
       roomId: roomId,
       primaryUrl: '', // Indicate error with empty URL
-      format: 'other', 
+      format: 'other',
       qualityOptions: [],
     };
   }
@@ -141,21 +176,32 @@ export function parseDouyuStreamDataToPlaybackDetails(roomId: string, rawUrl: st
 /**
  * Parses raw Douyu categories data into an array of common category groups.
  */
-export function parseDouyuCategories(rawData: DouyuRawCategoriesResponseData): CommonCategoryGroup[] {
-  if (!rawData || !rawData.category_groups || !Array.isArray(rawData.category_groups)) {
-    console.warn('[Douyu Parser] Invalid or empty category_groups in rawData for parseDouyuCategories:', rawData);
+export function parseDouyuCategories(
+  rawData: DouyuRawCategoriesResponseData,
+): CommonCategoryGroup[] {
+  if (
+    !rawData ||
+    !rawData.category_groups ||
+    !Array.isArray(rawData.category_groups)
+  ) {
+    console.warn(
+      '[Douyu Parser] Invalid or empty category_groups in rawData for parseDouyuCategories:',
+      rawData,
+    );
     return [];
   }
 
   return rawData.category_groups.map((group: DouyuRawCategoryGroup) => {
-    const commonCategories: CommonPlatformCategory[] = group.list.map((game: DouyuRawGameCategory) => ({
-      id: game.cate_id, // Assuming cate_id is the primary identifier
-      name: game.game_name,
-      platform: 'douyu',
-      iconUrl: game.game_icon, // Use game_icon, might need a default if not present
-      // parentId: group.tag_id, // Optionally link category to its group ID if needed
-      // any other common fields like game_type, short_name etc.
-    }));
+    const commonCategories: CommonPlatformCategory[] = group.list.map(
+      (game: DouyuRawGameCategory) => ({
+        id: game.cate_id, // Assuming cate_id is the primary identifier
+        name: game.game_name,
+        platform: 'douyu',
+        iconUrl: game.game_icon, // Use game_icon, might need a default if not present
+        // parentId: group.tag_id, // Optionally link category to its group ID if needed
+        // any other common fields like game_type, short_name etc.
+      }),
+    );
 
     return {
       groupName: group.tag_name,
@@ -165,4 +211,4 @@ export function parseDouyuCategories(rawData: DouyuRawCategoriesResponseData): C
   });
 }
 
-// Add other Douyu specific parsers here 
+// Add other Douyu specific parsers here

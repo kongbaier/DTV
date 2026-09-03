@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { type UnlistenFn } from "@tauri-apps/api/event";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type UnlistenFn } from '@tauri-apps/api/event';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   ensureBilibiliCookieBootstrap,
@@ -9,13 +9,13 @@ import {
   extractRequiredFlags,
   getBilibiliCookies,
   hasRequiredCookies,
-  sleep
-} from "@/platforms/bilibili/cookieHelper";
+  sleep,
+} from '@/platforms/bilibili/cookieHelper';
 
-const STORAGE_KEY = "bilibili_cookie";
+const STORAGE_KEY = 'bilibili_cookie';
 
 function normalizeCookie(raw: string | null | undefined) {
-  return String(raw ?? "").trim();
+  return String(raw ?? '').trim();
 }
 
 export type BilibiliCookieState = {
@@ -33,13 +33,13 @@ type Options = {
 export function useBilibiliCookie(options: Options = {}) {
   const { autoBootstrap = true, onChanged } = options;
 
-  const [cookie, setCookie] = useState("");
+  const [cookie, setCookie] = useState('');
   const [hasRequired, setHasRequired] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const mountedRef = useRef(true);
-  const onChangedRef = useRef<Options["onChanged"]>(onChanged);
+  const onChangedRef = useRef<Options['onChanged']>(onChanged);
   useEffect(() => {
     onChangedRef.current = onChanged;
   }, [onChanged]);
@@ -68,7 +68,7 @@ export function useBilibiliCookie(options: Options = {}) {
         // ignore
       }
     },
-    [updateFromRaw]
+    [updateFromRaw],
   );
 
   const loadFromStorage = useCallback(() => {
@@ -94,7 +94,7 @@ export function useBilibiliCookie(options: Options = {}) {
         persist(result.cookie);
       }
     } catch (e) {
-      console.warn("[BilibiliCookie] Bootstrap failed:", e);
+      console.warn('[BilibiliCookie] Bootstrap failed:', e);
     }
   }, [autoBootstrap, hasRequired, persist]);
 
@@ -117,7 +117,7 @@ export function useBilibiliCookie(options: Options = {}) {
       const loginWindow = await ensureBilibiliLoginWindow();
       let windowClosed = false;
 
-      unlisten = await loginWindow.listen("tauri://close-requested", () => {
+      unlisten = await loginWindow.listen('tauri://close-requested', () => {
         windowClosed = true;
       });
 
@@ -132,7 +132,10 @@ export function useBilibiliCookie(options: Options = {}) {
           try {
             await loginWindow.close();
           } catch (closeErr) {
-            console.warn("[BilibiliCookie] Failed to close login window:", closeErr);
+            console.warn(
+              '[BilibiliCookie] Failed to close login window:',
+              closeErr,
+            );
           }
           return;
         }
@@ -140,13 +143,13 @@ export function useBilibiliCookie(options: Options = {}) {
       }
 
       if (windowClosed) {
-        throw new Error("登录窗口已关闭，未完成登录");
+        throw new Error('登录窗口已关闭，未完成登录');
       }
-      throw new Error("登录超时，请重试");
+      throw new Error('登录超时，请重试');
     } catch (e: any) {
-      const msg = e?.message || "登录失败，请重试";
+      const msg = e?.message || '登录失败，请重试';
       if (mountedRef.current) setError(msg);
-      console.error("[BilibiliCookie] Login failed:", e);
+      console.error('[BilibiliCookie] Login failed:', e);
     } finally {
       if (unlisten) {
         try {
@@ -169,6 +172,6 @@ export function useBilibiliCookie(options: Options = {}) {
     persist,
     bootstrap,
     login,
-    logout
+    logout,
   };
 }

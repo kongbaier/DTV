@@ -1,16 +1,26 @@
-"use client";
+'use client';
 
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { AnimatePresence, m } from "framer-motion";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { AnimatePresence, m } from 'framer-motion';
 
-import styles from "./CommonCategory.module.css";
-import type { Category1, Category2, CategorySelectedEvent } from "@/platforms/common/categoryTypes";
+import styles from './CommonCategory.module.css';
+import type {
+  Category1,
+  Category2,
+  CategorySelectedEvent,
+} from '@/platforms/common/categoryTypes';
 
 export function CommonCategory({
   categoriesData,
   onCategorySelected,
-  actions
+  actions,
 }: {
   categoriesData: Category1[];
   onCategorySelected: (event: CategorySelectedEvent) => void;
@@ -18,8 +28,12 @@ export function CommonCategory({
 }) {
   const [cate1List, setCate1List] = useState<Category1[]>([]);
 
-  const [selectedCate1Href, setSelectedCate1Href] = useState<string | null>(null);
-  const [selectedCate2Href, setSelectedCate2Href] = useState<string | null>(null);
+  const [selectedCate1Href, setSelectedCate1Href] = useState<string | null>(
+    null,
+  );
+  const [selectedCate2Href, setSelectedCate2Href] = useState<string | null>(
+    null,
+  );
   const [expanded, setExpanded] = useState(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const cate2ShellRef = useRef<HTMLDivElement | null>(null);
@@ -57,11 +71,11 @@ export function CommonCategory({
     };
 
     update();
-    window.addEventListener("resize", update);
-    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener('resize', update);
+    window.addEventListener('scroll', onScroll, true);
     return () => {
-      window.removeEventListener("resize", update);
-      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener('resize', update);
+      window.removeEventListener('scroll', onScroll, true);
       if (raf) window.cancelAnimationFrame(raf);
     };
   }, [expanded]);
@@ -81,11 +95,11 @@ export function CommonCategory({
       emittedKeyRef.current = `${selectedCate1Href}:${cate2.href}`;
     }
     onCategorySelected({
-      type: "cate2",
+      type: 'cate2',
       cate1Href: selectedCate1.href,
       cate2Href: cate2.href,
       cate1Name: selectedCate1.title,
-      cate2Name: cate2.title
+      cate2Name: cate2.title,
     });
   };
 
@@ -104,7 +118,10 @@ export function CommonCategory({
   useEffect(() => {
     if (!selectedCate1Href) return;
     if (currentCate2List.length === 0) return;
-    if (!selectedCate2Href || !currentCate2List.some((x) => x.href === selectedCate2Href)) {
+    if (
+      !selectedCate2Href ||
+      !currentCate2List.some((x) => x.href === selectedCate2Href)
+    ) {
       emitCate2(currentCate2List[0]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,22 +130,32 @@ export function CommonCategory({
   useEffect(() => {
     if (!selectedCate1Href || !selectedCate2Href) return;
     const selectedCate1 = cate1List.find((c1) => c1.href === selectedCate1Href);
-    const selectedCate2 = currentCate2List.find((c2) => c2.href === selectedCate2Href);
+    const selectedCate2 = currentCate2List.find(
+      (c2) => c2.href === selectedCate2Href,
+    );
     if (!selectedCate1 || !selectedCate2) return;
     const key = `${selectedCate1Href}:${selectedCate2Href}`;
     if (emittedKeyRef.current === key) return;
     emittedKeyRef.current = key;
     onCategorySelected({
-      type: "cate2",
+      type: 'cate2',
       cate1Href: selectedCate1.href,
       cate2Href: selectedCate2.href,
       cate1Name: selectedCate1.title,
-      cate2Name: selectedCate2.title
+      cate2Name: selectedCate2.title,
     });
-  }, [cate1List, currentCate2List, onCategorySelected, selectedCate1Href, selectedCate2Href]);
+  }, [
+    cate1List,
+    currentCate2List,
+    onCategorySelected,
+    selectedCate1Href,
+    selectedCate2Href,
+  ]);
 
   return (
-    <div className={`${styles.categoryList} ${expanded ? styles.categoryListExpanded : ""}`}>
+    <div
+      className={`${styles.categoryList} ${expanded ? styles.categoryListExpanded : ''}`}
+    >
       {cate1List.length > 0 ? (
         <>
           <div className={styles.cate1ListContainer}>
@@ -139,7 +166,7 @@ export function CommonCategory({
                   return (
                     <li
                       key={c1.href}
-                      className={`${styles.cate1Item} ${selected ? styles.cate1ItemSelected : ""}`}
+                      className={`${styles.cate1Item} ${selected ? styles.cate1ItemSelected : ''}`}
                       onClick={() => {
                         if (selectedCate1Href === c1.href) return;
                         setSelectedCate1Href(c1.href);
@@ -166,7 +193,7 @@ export function CommonCategory({
                       <button
                         key={c2.href}
                         type="button"
-                        className={`${styles.cate2Card} ${active ? styles.cate2CardActive : ""}`}
+                        className={`${styles.cate2Card} ${active ? styles.cate2CardActive : ''}`}
                         aria-pressed={active}
                         onClick={() => {
                           emitCate2(c2);
@@ -210,8 +237,12 @@ export function CommonCategory({
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    style={overlayMaxHeight ? { maxHeight: overlayMaxHeight } : undefined}
+                    transition={{ duration: 0.2, ease: 'easeOut' }}
+                    style={
+                      overlayMaxHeight
+                        ? { maxHeight: overlayMaxHeight }
+                        : undefined
+                    }
                   >
                     <div className={styles.cate2OverlayBody}>
                       <div className={styles.cate2OverlayGrid}>
@@ -221,7 +252,7 @@ export function CommonCategory({
                             <button
                               key={`overlay_${c2.href}`}
                               type="button"
-                              className={`${styles.cate2Card} ${active ? styles.cate2CardActive : ""}`}
+                              className={`${styles.cate2Card} ${active ? styles.cate2CardActive : ''}`}
                               aria-pressed={active}
                               onClick={() => {
                                 emitCate2(c2);

@@ -1,7 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
 import type { DouyuRoomInfo, DouyuRawCategoriesResponseData } from './types';
 
-export async function fetchDouyuRoomInfo(roomId: string): Promise<DouyuRoomInfo> {
+export async function fetchDouyuRoomInfo(
+  roomId: string,
+): Promise<DouyuRoomInfo> {
   if (!roomId) {
     console.warn('fetchDouyuRoomInfo: roomId is not provided.');
     return Promise.reject('Room ID is required.');
@@ -12,8 +14,12 @@ export async function fetchDouyuRoomInfo(roomId: string): Promise<DouyuRoomInfo>
     if (response && typeof response === 'object') {
       // Standard Douyu API practice: check for an error code in the response.
       // The actual key for error might be 'error' or 'code'. Adjust if necessary.
-      if (('error' in response && response.error !== 0) || ('code' in response && response.code !== 0)) {
-        const errorCode = response.error !== undefined ? response.error : response.code;
+      if (
+        ('error' in response && response.error !== 0) ||
+        ('code' in response && response.code !== 0)
+      ) {
+        const errorCode =
+          response.error !== undefined ? response.error : response.code;
         const errorMessage = `Douyu API returned an error for room ${roomId}: (code ${errorCode}) ${response.msg || response.message || 'Unknown API error'}`;
         console.error(errorMessage, response);
         throw new Error(errorMessage);
@@ -23,11 +29,21 @@ export async function fetchDouyuRoomInfo(roomId: string): Promise<DouyuRoomInfo>
       // Inspect the actual API response of `https://www.douyu.com/betard/{roomId}` to confirm.
       let actualRoomData: DouyuRoomInfo | undefined = undefined;
 
-      if ('data' in response && typeof response.data === 'object' && response.data !== null) {
+      if (
+        'data' in response &&
+        typeof response.data === 'object' &&
+        response.data !== null
+      ) {
         actualRoomData = response.data as DouyuRoomInfo;
-      } else if ('room' in response && typeof response.room === 'object' && response.room !== null) { // Another common key
+      } else if (
+        'room' in response &&
+        typeof response.room === 'object' &&
+        response.room !== null
+      ) {
+        // Another common key
         actualRoomData = response.room as DouyuRoomInfo;
-      } else if ('room_id' in response) { // Fallback: maybe the top level IS the room info
+      } else if ('room_id' in response) {
+        // Fallback: maybe the top level IS the room info
         actualRoomData = response as DouyuRoomInfo;
       } else {
         // If none of the above, the structure is unexpected.
@@ -35,17 +51,22 @@ export async function fetchDouyuRoomInfo(roomId: string): Promise<DouyuRoomInfo>
         console.error(errorMessage, response);
         throw new Error(errorMessage);
       }
-      
+
       // After potentially extracting, validate if we have the necessary fields (e.g., room_id)
       // The parser function will do more thorough checks, but a basic one here is good.
       if (actualRoomData && typeof actualRoomData.room_id !== 'undefined') {
         return actualRoomData;
       } else {
         const errorMessage = `Extracted room data is invalid or missing room_id for room ${roomId}.`;
-        console.error(errorMessage, 'Extracted:', actualRoomData, 'Full Response:', response);
+        console.error(
+          errorMessage,
+          'Extracted:',
+          actualRoomData,
+          'Full Response:',
+          response,
+        );
         throw new Error(errorMessage);
       }
-
     } else {
       const errorMessage = `Unexpected or non-object response from fetch_douyu_room_info for room ${roomId}.`;
       console.error(errorMessage, response);
@@ -70,11 +91,13 @@ export async function startDouyuDanmakuListener(roomId: string): Promise<void> {
   try {
     await invoke<void>('start_danmaku_listener', { roomId });
   } catch (error) {
-    console.error(`Error starting Douyu danmaku listener for ${roomId}:`, error);
+    console.error(
+      `Error starting Douyu danmaku listener for ${roomId}:`,
+      error,
+    );
     throw error; // Re-throw to be handled by the caller
   }
 }
-
 
 export async function fetchDouyuStreamUrlRaw(roomId: string): Promise<string> {
   if (!roomId) {
@@ -83,14 +106,19 @@ export async function fetchDouyuStreamUrlRaw(roomId: string): Promise<string> {
   }
   try {
     // Assuming get_stream_url_cmd returns a simple string URL
-    const url = await invoke<string>('get_stream_url_cmd', { roomId }); 
+    const url = await invoke<string>('get_stream_url_cmd', { roomId });
     if (!url) {
-      console.error(`[Douyu API] fetchDouyuStreamUrlRaw: Received empty URL for room ${roomId}`);
+      console.error(
+        `[Douyu API] fetchDouyuStreamUrlRaw: Received empty URL for room ${roomId}`,
+      );
       return Promise.reject('Empty stream URL received');
     }
     return url;
   } catch (error) {
-    console.error(`[Douyu API] Error fetching Douyu stream URL for ${roomId}:`, error);
+    console.error(
+      `[Douyu API] Error fetching Douyu stream URL for ${roomId}:`,
+      error,
+    );
     throw error;
   }
 }
@@ -100,20 +128,25 @@ export async function fetchDouyuStreamUrlRaw(roomId: string): Promise<string> {
  */
 export async function fetchDouyuCategoriesRaw(): Promise<DouyuRawCategoriesResponseData> {
   try {
-    const rawData = await invoke<DouyuRawCategoriesResponseData>('fetch_douyu_categories_cmd');
+    const rawData = await invoke<DouyuRawCategoriesResponseData>(
+      'fetch_douyu_categories_cmd',
+    );
     if (typeof rawData !== 'object' || rawData === null) {
-        console.error('[Douyu API] fetchDouyuCategoriesRaw: Received non-object data:', rawData);
-        throw new Error('Invalid category data received from backend');
+      console.error(
+        '[Douyu API] fetchDouyuCategoriesRaw: Received non-object data:',
+        rawData,
+      );
+      throw new Error('Invalid category data received from backend');
     }
     return rawData; // This should be DouyuRawCategoriesResponseData (containing category_groups)
   } catch (error) {
     console.error('[Douyu API] Error fetching Douyu categories raw:', error);
     if (typeof error === 'string') {
-        throw new Error(error);
+      throw new Error(error);
     }
-    throw error; 
+    throw error;
   }
 }
 
 // Douyu specific API calls will go here
-export {}; 
+export {};

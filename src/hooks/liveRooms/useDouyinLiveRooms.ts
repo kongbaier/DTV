@@ -1,11 +1,14 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import type { CommonStreamer } from "@/platforms/common/streamerTypes";
-import { logger } from "@/utils/logger";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import type { CommonStreamer } from '@/platforms/common/streamerTypes';
+import { logger } from '@/utils/logger';
 
-export function useDouyinLiveRooms(partitionId: string | null, partitionTypeId: string | null) {
+export function useDouyinLiveRooms(
+  partitionId: string | null,
+  partitionTypeId: string | null,
+) {
   const [rooms, setRooms] = useState<CommonStreamer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -14,37 +17,49 @@ export function useDouyinLiveRooms(partitionId: string | null, partitionTypeId: 
   const [hasMore, setHasMore] = useState(true);
   const msTokenRef = useRef<string | null>(null);
 
-  const canFetch = useMemo(() => !!partitionId && !!partitionTypeId, [partitionId, partitionTypeId]);
+  const canFetch = useMemo(
+    () => !!partitionId && !!partitionTypeId,
+    [partitionId, partitionTypeId],
+  );
 
   const fetchAndSetMsToken = useCallback(async (): Promise<string | null> => {
     try {
-      const token = await invoke<string>("generate_douyin_ms_token");
+      const token = await invoke<string>('generate_douyin_ms_token');
       msTokenRef.current = token;
       return token;
     } catch (e) {
-      console.error("[useDouyinLiveRooms] Failed to fetch msToken:", e);
-      setError("Failed to initialize session token.");
+      console.error('[useDouyinLiveRooms] Failed to fetch msToken:', e);
+      setError('Failed to initialize session token.');
       msTokenRef.current = null;
       return null;
     }
   }, []);
 
-  const mapRawRoomToCommonStreamer = useCallback((rawRoom: any): CommonStreamer => {
-    const webId = rawRoom.web_rid?.toString?.() || "";
-    return {
-      room_id: webId || `N/A_RID_${Math.random()}`,
-      title: rawRoom.title || "未知标题",
-      nickname: rawRoom.owner_nickname || "未知主播",
-      avatar: rawRoom.avatar_url || "",
-      room_cover: rawRoom.cover_url || "https://via.placeholder.com/320x180.png?text=No+Image",
-      viewer_count_str: rawRoom.user_count_str || "0 人",
-      platform: "douyin",
-      web_id: webId
-    };
-  }, []);
+  const mapRawRoomToCommonStreamer = useCallback(
+    (rawRoom: any): CommonStreamer => {
+      const webId = rawRoom.web_rid?.toString?.() || '';
+      return {
+        room_id: webId || `N/A_RID_${Math.random()}`,
+        title: rawRoom.title || '未知标题',
+        nickname: rawRoom.owner_nickname || '未知主播',
+        avatar: rawRoom.avatar_url || '',
+        room_cover:
+          rawRoom.cover_url ||
+          'https://via.placeholder.com/320x180.png?text=No+Image',
+        viewer_count_str: rawRoom.user_count_str || '0 人',
+        platform: 'douyin',
+        web_id: webId,
+      };
+    },
+    [],
+  );
 
   const fetchRooms = useCallback(
-    async (offset: number, loadMore: boolean, tokenOverride?: string | null) => {
+    async (
+      offset: number,
+      loadMore: boolean,
+      tokenOverride?: string | null,
+    ) => {
       if (!partitionId || !partitionTypeId) {
         setRooms([]);
         setCurrentOffset(0);
@@ -55,7 +70,9 @@ export function useDouyinLiveRooms(partitionId: string | null, partitionTypeId: 
 
       const msToken = tokenOverride ?? msTokenRef.current;
       if (!msToken) {
-        setError("Session token is missing. Please refresh or select category again.");
+        setError(
+          'Session token is missing. Please refresh or select category again.',
+        );
         setHasMore(false);
         return;
       }
@@ -65,16 +82,16 @@ export function useDouyinLiveRooms(partitionId: string | null, partitionTypeId: 
       setError(null);
 
       try {
-        logger.debug("[useDouyinLiveRooms] fetch rooms", {
+        logger.debug('[useDouyinLiveRooms] fetch rooms', {
           partition: partitionId,
           partition_type: partitionTypeId,
-          offset
+          offset,
         });
-        const response = await invoke<any>("fetch_douyin_partition_rooms", {
+        const response = await invoke<any>('fetch_douyin_partition_rooms', {
           partition: partitionId,
           partitionType: partitionTypeId,
           offset,
-          msToken: msToken
+          msToken: msToken,
         });
 
         if (response && Array.isArray(response.rooms)) {
@@ -82,19 +99,29 @@ export function useDouyinLiveRooms(partitionId: string | null, partitionTypeId: 
           setRooms((prev) => (loadMore ? [...prev, ...newRooms] : newRooms));
           setHasMore(Boolean(response.has_more));
           const nextOffset = response.next_offset ?? offset + newRooms.length;
-          setCurrentOffset(typeof nextOffset === "string" ? Number(nextOffset) : nextOffset);
+          setCurrentOffset(
+            typeof nextOffset === 'string' ? Number(nextOffset) : nextOffset,
+          );
         } else {
-          logger.warn("[useDouyinLiveRooms] No rooms array in response or invalid structure (expected response.rooms to be an array).");
+          logger.warn(
+            '[useDouyinLiveRooms] No rooms array in response or invalid structure (expected response.rooms to be an array).',
+          );
           if (!loadMore) setRooms([]);
           setHasMore(false);
         }
       } catch (e: any) {
-        logger.error("[useDouyinLiveRooms] Error fetching rooms:", e);
+        logger.error('[useDouyinLiveRooms] Error fetching rooms:', e);
         // 提取更友好的错误信息
-        let errorMsg = typeof e === "string" ? e : (e?.message || "Failed to fetch rooms");
+        let errorMsg =
+          typeof e === 'string' ? e : e?.message || 'Failed to fetch rooms';
         // 如果是抖音 API 的错误，显示更友好的提示
-        if (errorMsg.includes("抖音 API 错误") || errorMsg.includes("抖音 API 返回错误")) {
-          errorMsg = errorMsg + "\n\n可能原因：\n1. Cookie 已过期，需要更新\n2. 网络环境问题\n3. 抖音 API 限制\n\n请尝试：\n- 重新选择分类\n- 检查网络连接\n- 稍后再试";
+        if (
+          errorMsg.includes('抖音 API 错误') ||
+          errorMsg.includes('抖音 API 返回错误')
+        ) {
+          errorMsg =
+            errorMsg +
+            '\n\n可能原因：\n1. Cookie 已过期，需要更新\n2. 网络环境问题\n3. 抖音 API 限制\n\n请尝试：\n- 重新选择分类\n- 检查网络连接\n- 稍后再试';
           // API 错误时设置 hasMore 为 false，避免无限重试
           setHasMore(false);
         }
@@ -108,7 +135,7 @@ export function useDouyinLiveRooms(partitionId: string | null, partitionTypeId: 
         else setIsLoading(false);
       }
     },
-    [mapRawRoomToCommonStreamer, partitionId, partitionTypeId]
+    [mapRawRoomToCommonStreamer, partitionId, partitionTypeId],
   );
 
   const loadInitialRooms = useCallback(async () => {
@@ -140,11 +167,22 @@ export function useDouyinLiveRooms(partitionId: string | null, partitionTypeId: 
       msTokenRef.current = null;
       return;
     }
-    logger.debug("[useDouyinLiveRooms] load initial", { partitionId, partitionTypeId });
+    logger.debug('[useDouyinLiveRooms] load initial', {
+      partitionId,
+      partitionTypeId,
+    });
     msTokenRef.current = null;
     void loadInitialRooms();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partitionId, partitionTypeId, canFetch]);
 
-  return { rooms, isLoading, isLoadingMore, error, hasMore, loadInitialRooms, loadMoreRooms };
+  return {
+    rooms,
+    isLoading,
+    isLoadingMore,
+    error,
+    hasMore,
+    loadInitialRooms,
+    loadMoreRooms,
+  };
 }

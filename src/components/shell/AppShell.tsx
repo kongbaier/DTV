@@ -1,37 +1,47 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { AnimatePresence, m } from "framer-motion";
-import { Spinner } from "@heroui/react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { AnimatePresence, m } from 'framer-motion';
+import { Spinner } from '@heroui/react';
 
-import styles from "./AppShell.module.css";
-import { Sidebar } from "@/components/shell/Sidebar";
-import { Navbar } from "@/components/shell/Navbar";
-import { useTheme } from "@/state/theme/ThemeProvider";
-import { usePlayerUi } from "@/state/playerUi/PlayerUiProvider";
-import { useCustomCategories } from "@/state/customCategories/CustomCategoriesProvider";
-import { PlayerOverlayHost, PlayerOverlayProvider, usePlayerOverlay } from "@/state/playerOverlay/PlayerOverlayProvider";
+import styles from './AppShell.module.css';
+import { Sidebar } from '@/components/shell/Sidebar';
+import { Navbar } from '@/components/shell/Navbar';
+import { useTheme } from '@/state/theme/ThemeProvider';
+import { usePlayerUi } from '@/state/playerUi/PlayerUiProvider';
+import { useCustomCategories } from '@/state/customCategories/CustomCategoriesProvider';
+import {
+  PlayerOverlayHost,
+  PlayerOverlayProvider,
+  usePlayerOverlay,
+} from '@/state/playerOverlay/PlayerOverlayProvider';
 
-type UiPlatform = "douyu" | "douyin" | "huya" | "bilibili" | "custom";
+type UiPlatform = 'douyu' | 'douyin' | 'huya' | 'bilibili' | 'custom';
 
 function normalizePathname(pathname: string) {
-  const raw = String(pathname || "/");
-  if (raw === "/") return "/";
-  return raw.replace(/\/+$/, "");
+  const raw = String(pathname || '/');
+  if (raw === '/') return '/';
+  return raw.replace(/\/+$/, '');
 }
 
 function getActivePlatform(pathname: string): UiPlatform {
   const p = normalizePathname(pathname);
-  if (p.startsWith("/custom")) return "custom";
-  if (p.startsWith("/douyin")) return "douyin";
-  if (p.startsWith("/huya")) return "huya";
-  if (p.startsWith("/bilibili")) return "bilibili";
-  return "douyu";
+  if (p.startsWith('/custom')) return 'custom';
+  if (p.startsWith('/douyin')) return 'douyin';
+  if (p.startsWith('/huya')) return 'huya';
+  if (p.startsWith('/bilibili')) return 'bilibili';
+  return 'douyu';
 }
 
 function isPlayerPath(pathname: string) {
-  return normalizePathname(pathname).startsWith("/player");
+  return normalizePathname(pathname).startsWith('/player');
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -52,10 +62,17 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [isRoutePending, startRouteTransition] = useTransition();
 
-  const normalizedPathname = useMemo(() => normalizePathname(pathname ?? "/"), [pathname]);
-  const activePlatform = useMemo(() => getActivePlatform(normalizedPathname), [normalizedPathname]);
+  const normalizedPathname = useMemo(
+    () => normalizePathname(pathname ?? '/'),
+    [pathname],
+  );
+  const activePlatform = useMemo(
+    () => getActivePlatform(normalizedPathname),
+    [normalizedPathname],
+  );
   const [isSidebarCollapsed] = useState(false);
-  const [optimisticPlatform, setOptimisticPlatform] = useState<UiPlatform>(activePlatform);
+  const [optimisticPlatform, setOptimisticPlatform] =
+    useState<UiPlatform>(activePlatform);
 
   const playerActive = isPlayerPath(normalizedPathname) || playerOverlay.isOpen;
   const shouldHidePlayerChrome = playerActive && isPlayerFullscreen;
@@ -74,32 +91,35 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     if (!custom.hydrated) return;
 
     // 自定义分区：无数据则不显示（避免进入空白页）
-    if (normalizedPathname.startsWith("/custom") && custom.entries.length === 0) {
-      navigate("/", { replace: true });
+    if (
+      normalizedPathname.startsWith('/custom') &&
+      custom.entries.length === 0
+    ) {
+      navigate('/', { replace: true });
       return;
     }
 
     // 仅在本次启动首次落到首页时：如果订阅了分区，默认进入自定义分区页
-    if (custom.entries.length > 0 && normalizedPathname === "/") {
+    if (custom.entries.length > 0 && normalizedPathname === '/') {
       try {
-        const key = "dtv_initial_route_custom_v1";
-        if (window.sessionStorage.getItem(key) === "1") return;
-        window.sessionStorage.setItem(key, "1");
+        const key = 'dtv_initial_route_custom_v1';
+        if (window.sessionStorage.getItem(key) === '1') return;
+        window.sessionStorage.setItem(key, '1');
       } catch {
         // ignore
       }
-      navigate("/custom", { replace: true });
+      navigate('/custom', { replace: true });
     }
   }, [custom.entries.length, custom.hydrated, normalizedPathname, navigate]);
 
   const navigatePlatform = useCallback(
     (p: UiPlatform) => {
       const map: Record<UiPlatform, string> = {
-        douyu: "/",
-        douyin: "/douyin",
-        huya: "/huya",
-        bilibili: "/bilibili",
-        custom: "/custom"
+        douyu: '/',
+        douyin: '/douyin',
+        huya: '/huya',
+        bilibili: '/bilibili',
+        custom: '/custom',
       };
 
       const next = map[p];
@@ -107,14 +127,15 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
 
       setOptimisticPlatform(p);
       startRouteTransition(() => {
-        if (isPlayerPath(pathname ?? "/")) navigate(next, { replace: true });
+        if (isPlayerPath(pathname ?? '/')) navigate(next, { replace: true });
         else navigate(next);
       });
     },
-    [pathname, navigate]
+    [pathname, navigate],
   );
 
-  const showRoutePending = optimisticPlatform !== activePlatform || isRoutePending;
+  const showRoutePending =
+    optimisticPlatform !== activePlatform || isRoutePending;
 
   return (
     <div className={styles.appShell}>
@@ -132,12 +153,14 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         ) : null}
 
         {hydrated ? (
-          <m.main className={`${styles.appBody} ${playerRoute ? styles.appBodyPlayer : ""}`}>
+          <m.main
+            className={`${styles.appBody} ${playerRoute ? styles.appBodyPlayer : ''}`}
+          >
             <div className={styles.appBodyContents}>
               <div className={styles.routeScope}>
                 <div className={styles.routePendingWrap}>
                   <div
-                    className={`${styles.routePendingContents} ${showRoutePending ? styles.routePendingContentsHidden : ""}`}
+                    className={`${styles.routePendingContents} ${showRoutePending ? styles.routePendingContentsHidden : ''}`}
                     aria-hidden={showRoutePending}
                   >
                     <div className={styles.routeContents}>
@@ -148,7 +171,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
                             initial={{ opacity: 0, y: 6 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -4 }}
-                            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                            transition={{
+                              duration: 0.18,
+                              ease: [0.16, 1, 0.3, 1],
+                            }}
                             style={{ flex: 1, minHeight: 0 }}
                           >
                             {children}
@@ -160,8 +186,16 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
                     </div>
                   </div>
                   {showRoutePending ? (
-                    <div className={styles.routePendingOverlay} data-tauri-drag-region="false">
-                      <button type="button" className={styles.routePendingButton} disabled aria-label="正在加载">
+                    <div
+                      className={styles.routePendingOverlay}
+                      data-tauri-drag-region="false"
+                    >
+                      <button
+                        type="button"
+                        className={styles.routePendingButton}
+                        disabled
+                        aria-label="正在加载"
+                      >
                         <Spinner size="lg" />
                       </button>
                     </div>
@@ -174,7 +208,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           <AnimatePresence mode="wait" initial={false}>
             <m.main
               key={normalizedPathname}
-              className={`${styles.appBody} ${playerRoute ? styles.appBodyPlayer : ""}`}
+              className={`${styles.appBody} ${playerRoute ? styles.appBodyPlayer : ''}`}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}

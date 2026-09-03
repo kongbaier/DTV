@@ -1,23 +1,21 @@
-"use client";
+'use client';
 
-import React from "react";
-import styles from "./Sidebar.module.css";
-import { FollowsList } from "@/components/follows/FollowsList";
+import React from 'react';
+import styles from './Sidebar.module.css';
+import { FollowsList } from '@/components/follows/FollowsList';
 
-export function Sidebar({
-  isCollapsed
-}: {
-  isCollapsed: boolean;
-}) {
+export function Sidebar({ isCollapsed }: { isCollapsed: boolean }) {
   return (
     <aside
       className={styles.sidebarShell}
       style={{
-        width: isCollapsed ? "var(--sidebar-collapsed-width)" : "var(--sidebar-width)",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        transition: "none"
+        width: isCollapsed
+          ? 'var(--sidebar-collapsed-width)'
+          : 'var(--sidebar-width)',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'none',
       }}
     >
       {!isCollapsed ? (

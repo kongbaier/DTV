@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React, { memo, useEffect, useState } from "react";
-import styles from "./SmoothImage.module.css";
+import React, { memo, useEffect, useState } from 'react';
+import styles from './SmoothImage.module.css';
 
 export const SmoothImage = memo(function SmoothImage({
   src,
   alt,
   className,
-  loading
+  loading,
 }: {
   src: string;
   alt?: string;
   className?: string;
-  loading?: "eager" | "lazy";
+  loading?: 'eager' | 'lazy';
 }) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
@@ -55,10 +55,10 @@ export const SmoothImage = memo(function SmoothImage({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         key={imgKey}
-        className={`${styles.img} ${loaded ? styles.imgLoaded : ""} ${className ?? ""}`}
+        className={`${styles.img} ${loaded ? styles.imgLoaded : ''} ${className ?? ''}`}
         src={src}
-        alt={alt ?? ""}
-        loading={loading ?? "lazy"}
+        alt={alt ?? ''}
+        loading={loading ?? 'lazy'}
         decoding="async"
         draggable={false}
         onLoad={() => {

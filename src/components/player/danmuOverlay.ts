@@ -5,7 +5,8 @@ import { sanitizeDanmuArea, sanitizeDanmuOpacity } from './constants';
 import type { DanmuOverlayInstance } from './types';
 import type { DanmuUserSettings } from './constants';
 
-const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+const clamp = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value));
 
 const parseFontSizePx = (fontSize: string | undefined) => {
   const parsed = parseInt(String(fontSize ?? ''), 10);
@@ -72,7 +73,9 @@ export const applyDanmuOverlayPreferences = (
   if (!overlay) {
     return;
   }
-  const host = playerRoot?.querySelector('.player-danmu-overlay') as HTMLElement | null;
+  const host = playerRoot?.querySelector(
+    '.player-danmu-overlay',
+  ) as HTMLElement | null;
   const fontSizeValue = parseInt(danmuSettings.fontSize, 10);
   if (!Number.isNaN(fontSizeValue)) {
     try {
@@ -130,7 +133,9 @@ export const syncDanmuEnabledState = (
       overlay.pause?.();
     }
     overlay.setOpacity?.(targetOpacity);
-    const host = playerRoot?.querySelector('.player-danmu-overlay') as HTMLElement | null;
+    const host = playerRoot?.querySelector(
+      '.player-danmu-overlay',
+    ) as HTMLElement | null;
     host?.style.setProperty('--danmu-opacity', String(targetOpacity));
   } catch (error) {
     console.warn('[Player] Failed updating danmu enabled state:', error);
@@ -152,15 +157,23 @@ export const createDanmuOverlay = (
   }
 
   overlayHost.innerHTML = '';
-  overlayHost.style.setProperty('--danmu-stroke-color', danmuSettings.strokeColor);
-  overlayHost.style.setProperty('--danmu-opacity', String(isDanmuEnabled ? sanitizeDanmuOpacity(danmuSettings.opacity) : 0));
+  overlayHost.style.setProperty(
+    '--danmu-stroke-color',
+    danmuSettings.strokeColor,
+  );
+  overlayHost.style.setProperty(
+    '--danmu-opacity',
+    String(isDanmuEnabled ? sanitizeDanmuOpacity(danmuSettings.opacity) : 0),
+  );
 
   try {
     const media = (player as any).video || (player as any).media || undefined;
 
     let currentEnabled = isDanmuEnabled;
     let currentSettings: DanmuUserSettings = { ...danmuSettings };
-    let currentOpacity = currentEnabled ? sanitizeDanmuOpacity(currentSettings.opacity) : 0;
+    let currentOpacity = currentEnabled
+      ? sanitizeDanmuOpacity(currentSettings.opacity)
+      : 0;
 
     const initialFontSizePx = parseFontSizePx(currentSettings.fontSize);
     const initialChannelSize = computeChannelSize(initialFontSizePx);
@@ -171,7 +184,11 @@ export const createDanmuOverlay = (
       containerStyle: { zIndex: 7 },
       player: media,
       comments: [],
-      area: { start: 0, end: initialAreaEnd, lines: computeAreaLines(overlayHost, currentSettings) },
+      area: {
+        start: 0,
+        end: initialAreaEnd,
+        lines: computeAreaLines(overlayHost, currentSettings),
+      },
       channelSize: initialChannelSize,
       mouseControl: false,
       mouseControlPause: false,
@@ -214,9 +231,20 @@ export const createDanmuOverlay = (
             // ignore density checks
           }
 
-          const id = comment.id || `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-          const duration = clamp(Number(comment.duration ?? currentSettings.duration ?? 12000), 5000, 60000);
-          const mode = comment.mode === 'top' || comment.mode === 'bottom' || comment.mode === 'scroll' ? comment.mode : 'scroll';
+          const id =
+            comment.id ||
+            `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+          const duration = clamp(
+            Number(comment.duration ?? currentSettings.duration ?? 12000),
+            5000,
+            60000,
+          );
+          const mode =
+            comment.mode === 'top' ||
+            comment.mode === 'bottom' ||
+            comment.mode === 'scroll'
+              ? comment.mode
+              : 'scroll';
           const fontSizePx = parseFontSizePx(currentSettings.fontSize);
           const mergedStyle = {
             fontSize: `${fontSizePx}px`,
@@ -224,7 +252,13 @@ export const createDanmuOverlay = (
             ...(comment.style ?? {}),
           };
 
-          danmu.sendComment({ id, txt: comment.txt, duration, mode, style: mergedStyle } as any);
+          danmu.sendComment({
+            id,
+            txt: comment.txt,
+            duration,
+            mode,
+            style: mergedStyle,
+          } as any);
         } catch (error) {
           console.warn('[Player] Failed emitting danmu.js comment:', error);
         }
@@ -285,7 +319,10 @@ export const createDanmuOverlay = (
       setOpacity: (opacity: number) => {
         const next = Math.max(0, Math.min(1, opacity));
         currentOpacity = currentEnabled ? next : 0;
-        overlayHost.style.setProperty('--danmu-opacity', String(currentOpacity));
+        overlayHost.style.setProperty(
+          '--danmu-opacity',
+          String(currentOpacity),
+        );
         try {
           danmu.setOpacity?.(currentOpacity);
         } catch {
@@ -302,7 +339,11 @@ export const createDanmuOverlay = (
           // ignore
         }
         try {
-          danmu.setArea?.({ start: 0, end: sanitizeDanmuArea(currentSettings.area), lines: computeAreaLines(overlayHost, currentSettings) });
+          danmu.setArea?.({
+            start: 0,
+            end: sanitizeDanmuArea(currentSettings.area),
+            lines: computeAreaLines(overlayHost, currentSettings),
+          });
         } catch {
           // ignore
         }
@@ -322,7 +363,12 @@ export const createDanmuOverlay = (
         const end = sanitizeDanmuArea(area?.end ?? currentSettings.area);
         currentSettings = { ...currentSettings, area: end };
         try {
-          danmu.setArea?.({ start: 0, end, lines: area?.lines ?? computeAreaLines(overlayHost, currentSettings) });
+          danmu.setArea?.({
+            start: 0,
+            end,
+            lines:
+              area?.lines ?? computeAreaLines(overlayHost, currentSettings),
+          });
         } catch {
           // ignore
         }
@@ -336,8 +382,18 @@ export const createDanmuOverlay = (
       },
     };
 
-    applyDanmuOverlayPreferences(overlay, danmuSettings, isDanmuEnabled, player.root as HTMLElement);
-    syncDanmuEnabledState(overlay, danmuSettings, isDanmuEnabled, player.root as HTMLElement);
+    applyDanmuOverlayPreferences(
+      overlay,
+      danmuSettings,
+      isDanmuEnabled,
+      player.root as HTMLElement,
+    );
+    syncDanmuEnabledState(
+      overlay,
+      danmuSettings,
+      isDanmuEnabled,
+      player.root as HTMLElement,
+    );
 
     if (isDanmuEnabled) {
       ensureStarted();

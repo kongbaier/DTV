@@ -1,8 +1,15 @@
-"use client";
+'use client';
 
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
-import { Platform } from "@/platforms/common/types";
+import { Platform } from '@/platforms/common/types';
 
 export type PlayerIslandState = {
   visible: boolean;
@@ -26,7 +33,9 @@ type PlayerUiContextValue = {
   setFullscreen: (next: boolean) => void;
   danmuPanel: DanmuPanelState;
   setDanmuPanel: (next: DanmuPanelState) => void;
-  registerDanmuPanelSetter: (setter: ((visible: boolean) => void) | null) => void;
+  registerDanmuPanelSetter: (
+    setter: ((visible: boolean) => void) | null,
+  ) => void;
   requestShowDanmuPanel: () => void;
 };
 
@@ -38,18 +47,19 @@ const emptyIsland: PlayerIslandState = {
   roomId: null,
   anchorName: null,
   title: null,
-  avatarUrl: null
+  avatarUrl: null,
 };
 
 const emptyDanmuPanel: DanmuPanelState = {
   available: false,
-  collapsed: true
+  collapsed: true,
 };
 
 export function PlayerUiProvider({ children }: { children: React.ReactNode }) {
   const [island, setIslandState] = useState<PlayerIslandState>(emptyIsland);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [danmuPanel, setDanmuPanelState] = useState<DanmuPanelState>(emptyDanmuPanel);
+  const [danmuPanel, setDanmuPanelState] =
+    useState<DanmuPanelState>(emptyDanmuPanel);
   const danmuSetterRef = useRef<((visible: boolean) => void) | null>(null);
 
   const setIsland = useCallback((next: Partial<PlayerIslandState>) => {
@@ -60,9 +70,12 @@ export function PlayerUiProvider({ children }: { children: React.ReactNode }) {
     setIslandState(emptyIsland);
   }, []);
 
-  const registerDanmuPanelSetter = useCallback((setter: ((visible: boolean) => void) | null) => {
-    danmuSetterRef.current = setter;
-  }, []);
+  const registerDanmuPanelSetter = useCallback(
+    (setter: ((visible: boolean) => void) | null) => {
+      danmuSetterRef.current = setter;
+    },
+    [],
+  );
 
   const requestShowDanmuPanel = useCallback(() => {
     danmuSetterRef.current?.(true);
@@ -82,15 +95,28 @@ export function PlayerUiProvider({ children }: { children: React.ReactNode }) {
       danmuPanel,
       setDanmuPanel,
       registerDanmuPanelSetter,
-      requestShowDanmuPanel
+      requestShowDanmuPanel,
     };
-  }, [clearIsland, danmuPanel, island, isFullscreen, registerDanmuPanelSetter, requestShowDanmuPanel, setDanmuPanel, setIsland]);
+  }, [
+    clearIsland,
+    danmuPanel,
+    island,
+    isFullscreen,
+    registerDanmuPanelSetter,
+    requestShowDanmuPanel,
+    setDanmuPanel,
+    setIsland,
+  ]);
 
-  return <PlayerUiContext.Provider value={value}>{children}</PlayerUiContext.Provider>;
+  return (
+    <PlayerUiContext.Provider value={value}>
+      {children}
+    </PlayerUiContext.Provider>
+  );
 }
 
 export function usePlayerUi() {
   const ctx = useContext(PlayerUiContext);
-  if (!ctx) throw new Error("usePlayerUi must be used within PlayerUiProvider");
+  if (!ctx) throw new Error('usePlayerUi must be used within PlayerUiProvider');
   return ctx;
 }

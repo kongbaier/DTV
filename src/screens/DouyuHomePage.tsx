@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useEffect, useMemo, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { m } from "framer-motion";
+import React, { useEffect, useMemo, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
+import { m } from 'framer-motion';
 
-import { CommonCategory } from "@/components/categories/CommonCategory";
-import { CommonStreamerList } from "@/components/streamers/CommonStreamerList";
-import type { Category1 } from "@/platforms/common/categoryTypes";
-import type { CategorySelectedEvent } from "@/platforms/common/categoryTypes";
-import type { CommonPlatformCategory } from "@/platforms/common/types";
-import { useCustomCategories } from "@/state/customCategories/CustomCategoriesProvider";
+import { CommonCategory } from '@/components/categories/CommonCategory';
+import { CommonStreamerList } from '@/components/streamers/CommonStreamerList';
+import type { Category1 } from '@/platforms/common/categoryTypes';
+import type { CategorySelectedEvent } from '@/platforms/common/categoryTypes';
+import type { CommonPlatformCategory } from '@/platforms/common/types';
+import { useCustomCategories } from '@/state/customCategories/CustomCategoriesProvider';
 
-import styles from "./DouyuHomePage.module.css";
+import styles from './DouyuHomePage.module.css';
 
 interface FrontendCate3Item {
   id: string;
@@ -37,7 +37,9 @@ async function fetchDouyuCategories(): Promise<{
   categories: Category1[];
   cate2IdMap: Record<string, string>;
 }> {
-  const response = (await invoke("fetch_categories")) as FrontendCategoryResponse;
+  const response = (await invoke(
+    'fetch_categories',
+  )) as FrontendCategoryResponse;
   const cate1List = response?.cate1List ?? [];
   const cate2IdMap: Record<string, string> = {};
   const categories = cate1List.map((c1) => ({
@@ -48,7 +50,7 @@ async function fetchDouyuCategories(): Promise<{
       .map((c2) => {
         cate2IdMap[c2.short_name] = c2.id;
         return { title: c2.name, href: c2.short_name };
-      })
+      }),
   }));
   return { categories, cate2IdMap };
 }
@@ -57,20 +59,24 @@ export function DouyuHomePage() {
   const custom = useCustomCategories();
   const [categories, setCategories] = useState<Category1[]>([]);
   const [cate2IdMap, setCate2IdMap] = useState<Record<string, string>>({});
-  const [cate3Map, setCate3Map] = useState<Record<string, FrontendCate3Item[]>>({});
+  const [cate3Map, setCate3Map] = useState<Record<string, FrontendCate3Item[]>>(
+    {},
+  );
   const [selected, setSelected] = useState<CategorySelectedEvent | null>(null);
   const [selectedCate3Id, setSelectedCate3Id] = useState<string | null>(null);
-  const [selectedCate3Name, setSelectedCate3Name] = useState<string | null>(null);
+  const [selectedCate3Name, setSelectedCate3Name] = useState<string | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     try {
-      const raw = window.sessionStorage.getItem("dtv_douyu_cate3_state_v1");
+      const raw = window.sessionStorage.getItem('dtv_douyu_cate3_state_v1');
       if (!raw) return;
       const data = JSON.parse(raw) as any;
-      const id = typeof data?.id === "string" ? data.id : null;
-      const name = typeof data?.name === "string" ? data.name : null;
+      const id = typeof data?.id === 'string' ? data.id : null;
+      const name = typeof data?.name === 'string' ? data.name : null;
       if (id) setSelectedCate3Id(id);
       if (name) setSelectedCate3Name(name);
     } catch {
@@ -88,7 +94,7 @@ export function DouyuHomePage() {
         setCate2IdMap(payload.cate2IdMap);
       })
       .catch((e) => {
-        console.error("[DouyuHomePage] fetch_categories failed:", e);
+        console.error('[DouyuHomePage] fetch_categories failed:', e);
         if (!mounted) return;
         setCategories([]);
         setCate2IdMap({});
@@ -106,7 +112,7 @@ export function DouyuHomePage() {
   const canSubscribe = !!selected?.cate2Href;
   const isSubscribed = useMemo(() => {
     const id = selected?.cate2Href;
-    return !!id && custom.isSubscribed("douyu", id);
+    return !!id && custom.isSubscribed('douyu', id);
   }, [custom, selected?.cate2Href]);
 
   useEffect(() => {
@@ -116,9 +122,12 @@ export function DouyuHomePage() {
   }, [selected?.cate2Href]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     try {
-      window.sessionStorage.setItem("dtv_douyu_cate3_state_v1", JSON.stringify({ id: selectedCate3Id, name: selectedCate3Name }));
+      window.sessionStorage.setItem(
+        'dtv_douyu_cate3_state_v1',
+        JSON.stringify({ id: selectedCate3Id, name: selectedCate3Name }),
+      );
     } catch {
       // ignore
     }
@@ -135,17 +144,22 @@ export function DouyuHomePage() {
     if (!Number.isFinite(tagId)) return;
 
     let mounted = true;
-    invoke<CommonPlatformCategory[]>("fetch_three_cate", { tagId })
+    invoke<CommonPlatformCategory[]>('fetch_three_cate', { tagId })
       .then((list) => {
         if (!mounted) return;
-        const mapped: FrontendCate3Item[] = (Array.isArray(list) ? list : []).map((x) => ({
-          id: String(x.id ?? ""),
-          name: String(x.name ?? "")
+        const mapped: FrontendCate3Item[] = (
+          Array.isArray(list) ? list : []
+        ).map((x) => ({
+          id: String(x.id ?? ''),
+          name: String(x.name ?? ''),
         }));
-        setCate3Map((prev) => ({ ...prev, [cate2ShortName]: mapped.filter((x) => !!x.id && !!x.name) }));
+        setCate3Map((prev) => ({
+          ...prev,
+          [cate2ShortName]: mapped.filter((x) => !!x.id && !!x.name),
+        }));
       })
       .catch((e) => {
-        console.error("[DouyuHomePage] fetch_three_cate failed:", e);
+        console.error('[DouyuHomePage] fetch_three_cate failed:', e);
         if (!mounted) return;
         setCate3Map((prev) => ({ ...prev, [cate2ShortName]: [] }));
       });
@@ -162,14 +176,30 @@ export function DouyuHomePage() {
   }, [cate3Map, selected?.cate2Href]);
 
   const douyuCategory = selectedCate3Id
-    ? { type: "cate3" as const, id: selectedCate3Id, name: selectedCate3Name ?? undefined }
+    ? {
+        type: 'cate3' as const,
+        id: selectedCate3Id,
+        name: selectedCate3Name ?? undefined,
+      }
     : selected?.cate2Href
-      ? { type: "cate2" as const, id: selected.cate2Href, name: selected.cate2Name }
+      ? {
+          type: 'cate2' as const,
+          id: selected.cate2Href,
+          name: selected.cate2Name,
+        }
       : null;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden", background: "transparent" }}>
-      <div style={{ flexShrink: 0, background: "transparent", zIndex: 10 }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        overflow: 'hidden',
+        background: 'transparent',
+      }}
+    >
+      <div style={{ flexShrink: 0, background: 'transparent', zIndex: 10 }}>
         <CommonCategory
           categoriesData={categories}
           onCategorySelected={(e) => setSelected(e)}
@@ -183,11 +213,12 @@ export function DouyuHomePage() {
               onClick={() => {
                 if (!selected?.cate2Href) return;
                 const id = selected.cate2Href;
-                if (custom.isSubscribed("douyu", id)) custom.removeByKey(`douyu:${id}`);
+                if (custom.isSubscribed('douyu', id))
+                  custom.removeByKey(`douyu:${id}`);
                 else custom.addDouyuCate2(id, selected.cate2Name);
               }}
             >
-              {isSubscribed ? "取消订阅" : "订阅分区"}
+              {isSubscribed ? '取消订阅' : '订阅分区'}
             </m.button>
           }
         />
@@ -195,7 +226,7 @@ export function DouyuHomePage() {
           <div className={styles.cate3List}>
             <button
               type="button"
-              className={`${styles.cate3Item} ${!selectedCate3Id ? styles.cate3ItemActive : ""}`}
+              className={`${styles.cate3Item} ${!selectedCate3Id ? styles.cate3ItemActive : ''}`}
               onClick={() => {
                 setSelectedCate3Id(null);
                 setSelectedCate3Name(null);
@@ -209,7 +240,7 @@ export function DouyuHomePage() {
                 <button
                   key={c3.id}
                   type="button"
-                  className={`${styles.cate3Item} ${active ? styles.cate3ItemActive : ""}`}
+                  className={`${styles.cate3Item} ${active ? styles.cate3ItemActive : ''}`}
                   onClick={() => {
                     setSelectedCate3Id(c3.id);
                     setSelectedCate3Name(c3.name);
@@ -223,8 +254,18 @@ export function DouyuHomePage() {
           </div>
         ) : null}
       </div>
-      <div style={{ flex: 1, minHeight: 0, overflow: "hidden", background: "transparent" }}>
-        <CommonStreamerList platformName="douyu" douyuCategory={douyuCategory} />
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
+          background: 'transparent',
+        }}
+      >
+        <CommonStreamerList
+          platformName="douyu"
+          douyuCategory={douyuCategory}
+        />
       </div>
     </div>
   );

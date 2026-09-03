@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 
-let sharedProxyBase = "";
+let sharedProxyBase = '';
 let sharedEnsurePromise: Promise<string> | null = null;
 const sharedSubscribers = new Set<() => void>();
 
@@ -12,7 +12,7 @@ function getSharedProxyBase() {
 }
 
 function setSharedProxyBase(nextBase: string) {
-  const normalized = (nextBase || "").trim();
+  const normalized = (nextBase || '').trim();
   if (normalized === sharedProxyBase) return;
   sharedProxyBase = normalized;
   for (const fn of sharedSubscribers) {
@@ -47,9 +47,9 @@ export function useImageProxy() {
     try {
       if (getSharedProxyBase()) return;
       if (!sharedEnsurePromise) {
-        sharedEnsurePromise = invoke<string>("start_static_proxy_server")
+        sharedEnsurePromise = invoke<string>('start_static_proxy_server')
           .then((base) => {
-            setSharedProxyBase(base || "");
+            setSharedProxyBase(base || '');
             return getSharedProxyBase();
           })
           .catch((e) => {
@@ -59,16 +59,16 @@ export function useImageProxy() {
       }
       await sharedEnsurePromise;
     } catch (e) {
-      console.warn("[useImageProxy] ensureProxyStarted failed:", e);
+      console.warn('[useImageProxy] ensureProxyStarted failed:', e);
     }
   }, []);
 
   const proxify = useCallback((url: string | null | undefined) => {
-    const trimmed = (url || "").trim();
-    if (!trimmed) return "";
+    const trimmed = (url || '').trim();
+    if (!trimmed) return '';
     try {
       const parsed = new URL(trimmed);
-      if (parsed.hostname === "127.0.0.1" || parsed.hostname === "localhost") {
+      if (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost') {
         return trimmed;
       }
     } catch {
@@ -76,7 +76,7 @@ export function useImageProxy() {
     }
     const baseRaw = proxyBaseRef.current;
     if (!baseRaw) return trimmed;
-    const base = baseRaw.endsWith("/") ? baseRaw.slice(0, -1) : baseRaw;
+    const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
     return `${base}/image?url=${encodeURIComponent(trimmed)}`;
   }, []);
 
@@ -84,19 +84,25 @@ export function useImageProxy() {
 
   const getAvatarSrc = useCallback(
     (platform: string, avatarUrl?: string | null) => {
-      const u = avatarUrl || "";
-      if (!u) return "";
-      const p = String(platform || "").toUpperCase();
-      if (p === "BILIBILI" || p === "HUYA") {
+      const u = avatarUrl || '';
+      if (!u) return '';
+      const p = String(platform || '').toUpperCase();
+      if (p === 'BILIBILI' || p === 'HUYA') {
         // Avoid switching src from direct url -> proxied url (causes flicker on re-renders).
         // For these platforms, only render avatar once proxy is ready.
-        if (!proxyReady) return "";
+        if (!proxyReady) return '';
         return proxify(u);
       }
       return u;
     },
-    [proxify, proxyReady]
+    [proxify, proxyReady],
   );
 
-  return { ensureProxyStarted, proxify, getAvatarSrc, proxyBaseRef, proxyReady };
+  return {
+    ensureProxyStarted,
+    proxify,
+    getAvatarSrc,
+    proxyBaseRef,
+    proxyReady,
+  };
 }

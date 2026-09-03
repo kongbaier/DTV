@@ -8,7 +8,11 @@
   width: 10px;
   height: 10px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--accent-color) 70%, var(--secondary-text));
+  background: color-mix(
+    in srgb,
+    var(--accent-color) 70%,
+    var(--secondary-text)
+  );
   animation: dot-bounce 1.1s ease-in-out infinite;
 }
 
@@ -32,4 +36,3 @@
     opacity: 1;
   }
 }
-
