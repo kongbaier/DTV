@@ -8,7 +8,7 @@ import { CustomCategoriesProvider } from "@/state/customCategories/CustomCategor
 import { PlayerUiProvider } from "@/state/playerUi/PlayerUiProvider";
 
 async function maybeCheckForUpdates() {
-  if (process.env.NODE_ENV === "development") return;
+  if (import.meta.env.DEV) return;
   try {
     const { check } = await import("@tauri-apps/plugin-updater");
     const update = await check();

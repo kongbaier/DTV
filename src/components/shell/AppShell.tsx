@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AnimatePresence, m } from "framer-motion";
 import { Spinner } from "@heroui/react";
 
@@ -43,8 +43,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 function AppShellInner({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { effectiveTheme, toggleLightDark } = useTheme();
   const { isFullscreen: isPlayerFullscreen } = usePlayerUi();
   const playerOverlay = usePlayerOverlay();
@@ -75,7 +75,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
 
     // 自定义分区：无数据则不显示（避免进入空白页）
     if (normalizedPathname.startsWith("/custom") && custom.entries.length === 0) {
-      router.replace("/");
+      navigate("/", { replace: true });
       return;
     }
 
@@ -88,18 +88,18 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
       } catch {
         // ignore
       }
-      router.replace("/custom/");
+      navigate("/custom", { replace: true });
     }
-  }, [custom.entries.length, custom.hydrated, normalizedPathname, router]);
+  }, [custom.entries.length, custom.hydrated, normalizedPathname, navigate]);
 
   const navigatePlatform = useCallback(
     (p: UiPlatform) => {
       const map: Record<UiPlatform, string> = {
         douyu: "/",
-        douyin: "/douyin/",
-        huya: "/huya/",
-        bilibili: "/bilibili/",
-        custom: "/custom/"
+        douyin: "/douyin",
+        huya: "/huya",
+        bilibili: "/bilibili",
+        custom: "/custom"
       };
 
       const next = map[p];
@@ -107,27 +107,12 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
 
       setOptimisticPlatform(p);
       startRouteTransition(() => {
-        if (isPlayerPath(pathname ?? "/")) router.replace(next);
-        else router.push(next);
+        if (isPlayerPath(pathname ?? "/")) navigate(next, { replace: true });
+        else navigate(next);
       });
     },
-    [pathname, router]
+    [pathname, navigate]
   );
-
-  useEffect(() => {
-    if (!hydrated) return;
-    // Preload route chunks so tab switching is instant after first paint.
-    // Ignore errors (non-next runtime, prefetch not supported, etc.).
-    try {
-      void router.prefetch("/");
-      void router.prefetch("/douyin/");
-      void router.prefetch("/huya/");
-      void router.prefetch("/bilibili/");
-      if (custom.hydrated && custom.entries.length > 0) void router.prefetch("/custom/");
-    } catch {
-      // ignore
-    }
-  }, [custom.entries.length, custom.hydrated, hydrated, router]);
 
   const showRoutePending = optimisticPlatform !== activePlatform || isRoutePending;
 

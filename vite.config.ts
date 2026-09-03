@@ -9,7 +9,8 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  // React Compiler（原生 oxc，@vitejs/plugin-react v6 / Vite 8 内置路径）
+  plugins: [react({ compiler: true }), tailwindcss()],
 
   resolve: {
     alias: {

@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { listen, type Event as TauriEvent } from "@tauri-apps/api/event";
+import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/core";
 import { v4 as uuidv4 } from "uuid";
 import { AnimatePresence, m } from "framer-motion";
@@ -180,7 +180,7 @@ export function MainPlayer({
   roomId: string;
   onRequestClose?: () => void;
 }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const follow = useFollow();
   const { setIsland, clearIsland, setFullscreen } = usePlayerUi();
   const { ensureProxyStarted, getAvatarSrc } = useImageProxy();
@@ -1223,7 +1223,7 @@ export function MainPlayer({
         void stopAllDanmakuBackends();
         void stopAllProxies();
       };
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         window.setTimeout(stopAll, 200);
       } else {
         stopAll();
@@ -1379,7 +1379,7 @@ export function MainPlayer({
                     aria-label="关闭"
                     onClick={() => {
                       if (onRequestClose) onRequestClose();
-                      else router.back();
+                      else navigate(-1);
                     }}
                   >
                     <svg

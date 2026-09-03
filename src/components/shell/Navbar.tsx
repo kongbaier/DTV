@@ -3,8 +3,8 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, m } from "framer-motion";
 import { ChevronDown, ExternalLink, LayoutGrid, MonitorSmartphone, Moon, Search, Sun, ThumbsUp, X } from "lucide-react";
-import { usePathname } from "next/navigation";
 import { invoke } from "@tauri-apps/api/core";
+import { useLocation } from "react-router-dom";
 
 import styles from "./Navbar.module.css";
 import { LanSyncModal } from "./LanSyncModal";
@@ -82,7 +82,7 @@ export function Navbar({
   onThemeToggle: () => void;
   onPlatformChange: (p: UiPlatform) => void;
 }) {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const [isWindows, setIsWindows] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
 

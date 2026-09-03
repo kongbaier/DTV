@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
 import { invoke } from "@tauri-apps/api/core";
 import { AnimatePresence, m, useMotionValue, useSpring } from "framer-motion";
 import { Check, ChevronDown, Folder, FolderPlus, ListCollapse, RotateCw, Users, X } from "lucide-react";
@@ -101,7 +100,6 @@ async function refreshOne(streamer: FollowedStreamer) {
 }
 
 export function FollowsList() {
-  const pathname = usePathname();
   const follow = useFollow();
   const { ensureProxyStarted, getAvatarSrc } = useImageProxy();
   const playerOverlay = usePlayerOverlay();
