@@ -4,28 +4,41 @@
   "version": "3.0.3",
   "type": "module",
   "scripts": {
-    "dev": "pnpm -C web dev",
-    "build": "pnpm -C web build",
-    "preview": "pnpm -C web start",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "tauri": "tauri"
   },
   "dependencies": {
+    "@heroui/react": "3.0.2",
     "@tauri-apps/api": "^2.7.0",
     "@tauri-apps/plugin-opener": "^2.4.0",
     "@tauri-apps/plugin-os": "^2.3.0",
-    "@tauri-apps/plugin-updater": "^2.3.0"
+    "@tauri-apps/plugin-updater": "^2.3.0",
+    "danmu.js": "1.1.13-douyin-1.5",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.546.0",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.0.0",
+    "tailwindcss": "^4.2.2",
+    "uuid": "^11.1.0",
+    "xgplayer": "3.0.24",
+    "xgplayer-flv": "3.0.24",
+    "xgplayer-hls.js": "3.0.24",
+    "xgplayer-transmuxer": "3.0.24"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
     "@tauri-apps/cli": "^2.7.0",
-    "typescript": "~5.6.2",
+    "@types/node": "^22.17.0",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@types/uuid": "^10.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.8.3",
     "vite": "^6.0.3"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "core-js",
-      "esbuild",
-      "es5-ext",
-      "sharp"
-    ]
   }
 }

@@ -1,12 +1,30 @@
+import { fileURLToPath, URL } from "node:url";
+
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
-import vue from "@vitejs/plugin-vue";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 
 // https://vitejs.dev/config/
-export default defineConfig(async () => ({
-  plugins: [vue()],
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
+
+  css: {
+    // Next (css-loader) exported camelCase keys only. "camelCase" exports both the
+    // as-authored AND the camelCase form — a superset — so every existing
+    // `styles.foo` access keeps working and kebab-authored names stay reachable.
+    modules: {
+      localsConvention: "camelCase",
+    },
+  },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
@@ -29,9 +47,13 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
+
   build: {
+    outDir: "dist",
+    target: "es2022",
   },
+
   // to make use of `TAURI_DEBUG` and other env variables
   // https://tauri.studio/v1/api/config#buildconfig.beforedevcommand
   envPrefix: ["VITE_", "TAURI_"],
-}));
+});

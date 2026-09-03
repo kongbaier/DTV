@@ -40,3 +40,7 @@ pnpm-debug.log*
 
 # Cloudflare Worker (local only)
 cf-worker-version/
+
+# AGENT
+CLAUDE.md
+AGENTS.md
