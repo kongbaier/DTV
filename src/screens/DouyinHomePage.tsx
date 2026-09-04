@@ -31,7 +31,7 @@ export function DouyinHomePage() {
     >
       <div style={{ flexShrink: 0, background: 'transparent', zIndex: 10 }}>
         <CommonCategory
-          categoriesData={douyinCategoriesData as any}
+          categoriesData={douyinCategoriesData}
           onCategorySelected={(e) => setSelected(e)}
           actions={
             <m.button
@@ -69,8 +69,9 @@ export function DouyinHomePage() {
         }}
       >
         <CommonStreamerList
+          key={selected?.cate2Href ?? 'none'}
           selectedCategory={selected}
-          categoriesData={douyinCategoriesData as any}
+          categoriesData={douyinCategoriesData}
           platformName="douyin"
         />
       </div>

@@ -671,7 +671,9 @@ export class DanmuKeywordBlockControl extends Plugin {
         ...(this.current.keywords || []),
         nextValue,
       ]);
-      this.inputEl && (this.inputEl.value = '');
+      if (this.inputEl) {
+        this.inputEl.value = '';
+      }
       this.applyAndEmit({ ...this.current, keywords: nextKeywords });
     };
 

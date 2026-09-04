@@ -31,7 +31,7 @@ export function HuyaHomePage() {
     >
       <div style={{ flexShrink: 0, background: 'transparent', zIndex: 10 }}>
         <CommonCategory
-          categoriesData={huyaCategoriesData as any}
+          categoriesData={huyaCategoriesData}
           onCategorySelected={(e) => setSelected(e)}
           actions={
             <m.button
@@ -69,8 +69,9 @@ export function HuyaHomePage() {
         }}
       >
         <CommonStreamerList
+          key={selected?.cate2Href ?? 'none'}
           selectedCategory={selected}
-          categoriesData={huyaCategoriesData as any}
+          categoriesData={huyaCategoriesData}
           defaultPageSize={120}
           platformName="huya"
         />

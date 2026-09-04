@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import type { CommonStreamer } from '@/platforms/common/streamerTypes';
 
@@ -9,17 +9,17 @@ export function useBilibiliLiveRooms(
   parentCategoryId: string | null,
 ) {
   const [rooms, setRooms] = useState<CommonStreamer[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // 实例生命周期由调用方通过分类 key 约束：切换分类即整体重挂载，
+  // 参数在实例内恒定。只要挂载时参数有效就必然会在 mount effect 里拉取，
+  // 因此初始 isLoading 直接反映「参数是否有效」，避免挂载首帧闪一下空态。
+  const [isLoading, setIsLoading] = useState(
+    () => !!subCategoryId && !!parentCategoryId,
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const proxyBaseRef = useRef<string | null>(null);
-
-  const canFetch = useMemo(
-    () => !!subCategoryId && !!parentCategoryId,
-    [parentCategoryId, subCategoryId],
-  );
 
   const ensureProxyStarted = useCallback(async () => {
     if (proxyBaseRef.current) return;
@@ -60,8 +60,6 @@ export function useBilibiliLiveRooms(
   const fetchPage = useCallback(
     async (page: number, loadMore: boolean) => {
       if (!subCategoryId || !parentCategoryId) {
-        setRooms([]);
-        setHasMore(false);
         return;
       }
       await ensureProxyStarted();
@@ -96,9 +94,6 @@ export function useBilibiliLiveRooms(
   );
 
   const loadInitialRooms = useCallback(async () => {
-    setCurrentPage(1);
-    setRooms([]);
-    setHasMore(true);
     await fetchPage(1, false);
   }, [fetchPage]);
 
@@ -107,14 +102,15 @@ export function useBilibiliLiveRooms(
     await fetchPage(currentPage, true);
   }, [currentPage, fetchPage, hasMore, isLoading, isLoadingMore]);
 
+  // 挂载时拉取第一页；分类切换会经调用方 key 触发整体重挂载，故无需响应参数变化。
+  // set-state-in-effect 规则不追踪跨函数调用的 await，fire-and-forget 调用 loader
+  // 会把它内部任意可达 setState 当成同步 setState；故在 effect 内词法 await 先让出。
   useEffect(() => {
-    if (!canFetch) {
-      setRooms([]);
-      setHasMore(false);
-      return;
-    }
-    void loadInitialRooms();
-  }, [canFetch, loadInitialRooms]);
+    if (!subCategoryId || !parentCategoryId) return;
+    void (async () => {
+      await loadInitialRooms();
+    })();
+  }, [loadInitialRooms, parentCategoryId, subCategoryId]);
 
   return {
     rooms,

@@ -158,6 +158,25 @@ export function LanSyncModal({
 
   const canUseStorage = typeof window !== 'undefined' && !!window.localStorage;
 
+  // open 由关闭切到打开时重置整块弹窗状态。收敛放在 render 阶段（守卫式 setState），
+  // 替代在 effect 里同步重置（否则触发 set-state-in-effect）。
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) {
+      setTab('export');
+      setExportBusy(false);
+      setExportError(null);
+      setJsonExportBusy(false);
+      setJsonExportError(null);
+      setJsonExportPath(null);
+      setImportBusy(false);
+      setImportError(null);
+      setImportResult(null);
+      setManualTarget('');
+    }
+  }
+
   const bestHost = useMemo(() => {
     if (!serverInfo?.hosts?.length) return null;
     return pickBestLanHost(serverInfo.hosts);
@@ -175,17 +194,7 @@ export function LanSyncModal({
   useEffect(() => {
     if (!open) return;
 
-    setTab('export');
-    setExportBusy(false);
-    setExportError(null);
-    setJsonExportBusy(false);
-    setJsonExportError(null);
-    setJsonExportPath(null);
-    setImportBusy(false);
-    setImportError(null);
-    setImportResult(null);
-    setManualTarget('');
-
+    // 重置已在 open 切换的 render 阶段完成；这里仅在每次打开时查询一次共享状态。
     void (async () => {
       try {
         const status = (await invoke<any>(

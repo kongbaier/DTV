@@ -7,7 +7,10 @@ import { Play, Users } from 'lucide-react';
 
 import styles from './CommonStreamerList.module.css';
 import { SmoothImage } from '@/components/common/SmoothImage';
-import type { CategorySelectedEvent } from '@/platforms/common/categoryTypes';
+import type {
+  Category1,
+  CategorySelectedEvent,
+} from '@/platforms/common/categoryTypes';
 import type { CommonStreamer } from '@/platforms/common/streamerTypes';
 import { useHuyaLiveRooms } from '@/hooks/liveRooms/useHuyaLiveRooms';
 import { useDouyinLiveRooms } from '@/hooks/liveRooms/useDouyinLiveRooms';
@@ -29,7 +32,7 @@ export function CommonStreamerList({
   douyuCategory,
 }: {
   selectedCategory?: CategorySelectedEvent | null;
-  categoriesData?: any[];
+  categoriesData?: Category1[];
   platformName?: 'huya' | 'douyin' | 'douyu' | 'bilibili' | string;
   defaultPageSize?: number;
   douyuCategory?: DouyuCategorySelection | null;
@@ -60,8 +63,8 @@ export function CommonStreamerList({
     if (!href || !Array.isArray(data)) return null;
     for (const c1 of data) {
       if (!Array.isArray(c1.subcategories)) continue;
-      const c2 = c1.subcategories.find((s: any) => s.href === href);
-      if (c2 && (c2.id || c2.gid)) return String(c2.id ?? c2.gid);
+      const c2 = c1.subcategories.find((s) => s.href === href);
+      if (c2 && c2.id) return String(c2.id);
     }
     return null;
   }, [categoriesData, selectedCategory?.cate2Href]);
@@ -88,9 +91,8 @@ export function CommonStreamerList({
     if (!href || !Array.isArray(data)) return null;
     for (const c1 of data) {
       if (!Array.isArray(c1.subcategories)) continue;
-      const c2 = c1.subcategories.find((s: any) => s.href === href);
-      if (c2 && (c2.parent_id || c2.parentId || c1.id))
-        return String(c2.parent_id ?? c2.parentId ?? c1.id);
+      const c2 = c1.subcategories.find((s) => s.href === href);
+      if (c2 && (c2.parent_id || c1.id)) return String(c2.parent_id ?? c1.id);
     }
     return null;
   }, [categoriesData, selectedCategory?.cate2Href]);

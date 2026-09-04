@@ -17,12 +17,12 @@ function safeString(v: unknown) {
   return typeof v === 'string' ? v : v == null ? '' : String(v);
 }
 
-function toBool(v: unknown) {
-  if (typeof v === 'boolean') return v;
-  if (typeof v === 'number') return v !== 0;
-  if (typeof v === 'string') return v === '1' || v.toLowerCase() === 'true';
-  return false;
-}
+// function toBool(v: unknown) {
+//   if (typeof v === 'boolean') return v;
+//   if (typeof v === 'number') return v !== 0;
+//   if (typeof v === 'string') return v === '1' || v.toLowerCase() === 'true';
+//   return false;
+// }
 
 function parseDouyuSearch(raw: string): SearchAnchorResult[] {
   try {

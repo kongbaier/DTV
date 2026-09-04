@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import type { CommonStreamer } from '@/platforms/common/streamerTypes';
 import { logger } from '@/utils/logger';
@@ -10,17 +10,16 @@ export function useDouyinLiveRooms(
   partitionTypeId: string | null,
 ) {
   const [rooms, setRooms] = useState<CommonStreamer[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // 实例生命周期由调用方通过分类 key 约束（切换分类即重挂载），参数在实例内恒定；
+  // 参数有效则挂载即拉取，故初始 isLoading 直接反映参数是否有效，避免首帧闪空态。
+  const [isLoading, setIsLoading] = useState(
+    () => !!partitionId && !!partitionTypeId,
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentOffset, setCurrentOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const msTokenRef = useRef<string | null>(null);
-
-  const canFetch = useMemo(
-    () => !!partitionId && !!partitionTypeId,
-    [partitionId, partitionTypeId],
-  );
 
   const fetchAndSetMsToken = useCallback(async (): Promise<string | null> => {
     try {
@@ -138,13 +137,9 @@ export function useDouyinLiveRooms(
     [mapRawRoomToCommonStreamer, partitionId, partitionTypeId],
   );
 
+  // 不重置的首次装载：实例刚挂载时 rooms 已为空、isLoading 已为 true；
+  // 重试场景下 fetchRooms 会在取到 token 后（异步）把 isLoading 置 true。
   const loadInitialRooms = useCallback(async () => {
-    setCurrentOffset(0);
-    setHasMore(true);
-    setIsLoading(true);
-    setError(null);
-    setRooms([]);
-
     const token = await fetchAndSetMsToken();
     if (!token) {
       setIsLoading(false);
@@ -159,22 +154,19 @@ export function useDouyinLiveRooms(
     await fetchRooms(currentOffset, true);
   }, [currentOffset, fetchRooms, hasMore, isLoading, isLoadingMore]);
 
+  // 挂载时拉取第一页；分类切换会经调用方 key 整体重挂载，无需响应参数变化。
+  // set-state-in-effect 规则不追踪跨函数调用的 await，fire-and-forget 调用 loader
+  // 会把它内部任意可达 setState 当成同步 setState；故在 effect 内词法 await 先让出。
   useEffect(() => {
-    if (!canFetch) {
-      setRooms([]);
-      setHasMore(false);
-      setError(null);
-      msTokenRef.current = null;
-      return;
-    }
+    if (!partitionId || !partitionTypeId) return;
     logger.debug('[useDouyinLiveRooms] load initial', {
       partitionId,
       partitionTypeId,
     });
-    msTokenRef.current = null;
-    void loadInitialRooms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [partitionId, partitionTypeId, canFetch]);
+    void (async () => {
+      await loadInitialRooms();
+    })();
+  }, [loadInitialRooms, partitionId, partitionTypeId]);
 
   return {
     rooms,

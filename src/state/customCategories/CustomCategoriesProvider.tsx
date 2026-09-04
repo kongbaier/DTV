@@ -70,13 +70,12 @@ export function CustomCategoriesProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [entries, setEntries] = useState<CustomCategoryEntry[]>([]);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    setEntries(loadEntries());
-    setHydrated(true);
-  }, []);
+  // 首次渲染即从 localStorage 同步水合（纯客户端应用无 SSR），
+  // 无需挂载 effect 再 setState；后续变更统一在下方持久化 effect 里写回。
+  const [entries, setEntries] = useState<CustomCategoryEntry[]>(() =>
+    typeof window === 'undefined' ? [] : loadEntries(),
+  );
+  const [hydrated] = useState(true);
 
   useEffect(() => {
     persistEntries(entries);

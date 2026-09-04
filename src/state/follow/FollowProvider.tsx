@@ -154,12 +154,100 @@ function normalizeListOrder(order: FollowListItem[]): FollowListItem[] {
   return [...nextFolders, ...nextStreamers];
 }
 
+function hydrateFollowState(): {
+  followedStreamers: FollowedStreamer[];
+  listOrder: FollowListItem[];
+} {
+  const follows = loadJson<FollowedStreamer[]>('followedStreamers', []);
+  const loadedFolders = loadJson<FollowFolder[]>('followFolders', []);
+  const loadedOrder = loadJson<FollowListItem[]>('followListOrder', []);
+
+  const byKey = new Map<string, FollowedStreamer>();
+
+  for (const s of Array.isArray(follows) ? follows : []) {
+    if (!s?.platform || !s?.id) continue;
+    byKey.set(`${s.platform}:${s.id}`, s);
+  }
+
+  for (const item of Array.isArray(loadedOrder) ? loadedOrder : []) {
+    if (item?.type !== 'streamer') continue;
+    const s = item.data as FollowedStreamer;
+    if (!s?.platform || !s?.id) continue;
+    byKey.set(`${s.platform}:${s.id}`, s);
+  }
+
+  const folderSources = [
+    ...(Array.isArray(loadedFolders) ? loadedFolders : []),
+    ...(Array.isArray(loadedOrder) ? loadedOrder : [])
+      .filter(
+        (x): x is Extract<FollowListItem, { type: 'folder' }> =>
+          x?.type === 'folder',
+      )
+      .map((x) => x.data),
+  ];
+  for (const folder of folderSources) {
+    for (const rawKey of folder?.streamerIds ?? []) {
+      const norm = normalizeStreamerKey(rawKey);
+      if (!norm.id || !isKnownPlatform(norm.platform)) continue;
+      const key = `${norm.platform}:${norm.id}`;
+      if (byKey.has(key)) continue;
+      byKey.set(key, {
+        id: norm.id,
+        platform: norm.platform,
+        nickname: norm.id,
+        avatarUrl: '',
+        roomTitle: '',
+        currentRoomId: norm.id,
+        liveStatus: 'UNKNOWN',
+      });
+    }
+  }
+
+  const followedStreamers = Array.from(byKey.values());
+
+  let listOrder: FollowListItem[];
+  if (loadedOrder.length > 0) {
+    listOrder = loadedOrder;
+  } else if (loadedFolders.length > 0) {
+    const folderItems: FollowListItem[] = loadedFolders.map((f) => ({
+      type: 'folder' as const,
+      data: f,
+    }));
+    const folderStreamerKeys = new Set(
+      loadedFolders.flatMap((f) => f.streamerIds),
+    );
+    const topLevelStreamers = followedStreamers.filter(
+      (s) => !folderStreamerKeys.has(`${s.platform}:${s.id}`),
+    );
+    listOrder = [
+      ...folderItems,
+      ...topLevelStreamers.map((s) => ({
+        type: 'streamer' as const,
+        data: s,
+      })),
+    ];
+  } else {
+    listOrder = followedStreamers.map((s) => ({
+      type: 'streamer' as const,
+      data: s,
+    }));
+  }
+
+  return {
+    followedStreamers,
+    listOrder: normalizeListOrder(listOrder),
+  };
+}
+
 export function FollowProvider({ children }: { children: React.ReactNode }) {
+  // 关注数据在 useState 惰性初始化阶段一次性从 localStorage 同步水合
+  // （纯客户端无 SSR），首帧即为持久化内容；无需在挂载 effect 里同步 setState。
+  const boot = useMemo(() => hydrateFollowState(), []);
   const [followedStreamers, setFollowedStreamers] = useState<
     FollowedStreamer[]
-  >([]);
-  const [listOrder, setListOrder] = useState<FollowListItem[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  >(boot.followedStreamers);
+  const [listOrder, setListOrder] = useState<FollowListItem[]>(boot.listOrder);
+  const [hydrated] = useState(true);
   const snapshotRef = useRef<{
     followedStreamers: FollowedStreamer[];
     listOrder: FollowListItem[];
@@ -176,87 +264,6 @@ export function FollowProvider({ children }: { children: React.ReactNode }) {
         .map((x) => x.data),
     [listOrder],
   );
-
-  useEffect(() => {
-    const follows = loadJson<FollowedStreamer[]>('followedStreamers', []);
-    const loadedFolders = loadJson<FollowFolder[]>('followFolders', []);
-    const loadedOrder = loadJson<FollowListItem[]>('followListOrder', []);
-
-    let nextOrder: FollowListItem[] = [];
-    const byKey = new Map<string, FollowedStreamer>();
-
-    for (const s of Array.isArray(follows) ? follows : []) {
-      if (!s?.platform || !s?.id) continue;
-      byKey.set(`${s.platform}:${s.id}`, s);
-    }
-
-    for (const item of Array.isArray(loadedOrder) ? loadedOrder : []) {
-      if (item?.type !== 'streamer') continue;
-      const s = item.data as FollowedStreamer;
-      if (!s?.platform || !s?.id) continue;
-      byKey.set(`${s.platform}:${s.id}`, s);
-    }
-
-    const folderSources = [
-      ...(Array.isArray(loadedFolders) ? loadedFolders : []),
-      ...(Array.isArray(loadedOrder) ? loadedOrder : [])
-        .filter(
-          (x): x is Extract<FollowListItem, { type: 'folder' }> =>
-            x?.type === 'folder',
-        )
-        .map((x) => x.data),
-    ];
-    for (const folder of folderSources) {
-      for (const rawKey of folder?.streamerIds ?? []) {
-        const norm = normalizeStreamerKey(rawKey);
-        if (!norm.id || !isKnownPlatform(norm.platform)) continue;
-        const key = `${norm.platform}:${norm.id}`;
-        if (byKey.has(key)) continue;
-        byKey.set(key, {
-          id: norm.id,
-          platform: norm.platform,
-          nickname: norm.id,
-          avatarUrl: '',
-          roomTitle: '',
-          currentRoomId: norm.id,
-          liveStatus: 'UNKNOWN',
-        });
-      }
-    }
-
-    const nextFollowedStreamers = Array.from(byKey.values());
-    setFollowedStreamers(nextFollowedStreamers);
-
-    if (loadedOrder.length > 0) {
-      nextOrder = loadedOrder;
-    } else if (loadedFolders.length > 0) {
-      const folderItems: FollowListItem[] = loadedFolders.map((f) => ({
-        type: 'folder' as const,
-        data: f,
-      }));
-      const folderStreamerKeys = new Set(
-        loadedFolders.flatMap((f) => f.streamerIds),
-      );
-      const topLevelStreamers = nextFollowedStreamers.filter(
-        (s) => !folderStreamerKeys.has(`${s.platform}:${s.id}`),
-      );
-      nextOrder = [
-        ...folderItems,
-        ...topLevelStreamers.map((s) => ({
-          type: 'streamer' as const,
-          data: s,
-        })),
-      ];
-    } else {
-      nextOrder = nextFollowedStreamers.map((s) => ({
-        type: 'streamer' as const,
-        data: s,
-      }));
-    }
-
-    setListOrder(normalizeListOrder(nextOrder));
-    setHydrated(true);
-  }, []);
 
   useEffect(() => {
     if (!hydrated) return;

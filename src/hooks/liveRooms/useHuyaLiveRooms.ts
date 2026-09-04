@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import type { CommonStreamer } from '@/platforms/common/streamerTypes';
 import { useImageProxy } from '@/hooks/useImageProxy';
@@ -14,18 +14,18 @@ export function useHuyaLiveRooms(
   options: UseHuyaLiveRoomsOptions = { defaultPageSize: 120 },
 ) {
   const [rooms, setRooms] = useState<CommonStreamer[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // 实例生命周期由调用方通过分类 key 约束（切换分类即重挂载），参数在实例内恒定；
+  // 参数有效则挂载即拉取，故初始 isLoading 直接反映参数是否有效，避免首帧闪空态。
+  const [isLoading, setIsLoading] = useState(() => !!gid);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const pageSize = options.defaultPageSize ?? 120;
-  const lastInitialKeyRef = useRef<string | null>(null);
+  // 对相同 (gid, page, pageSize) 的并发请求去重（防止 loadMore 抖动重复发起）。
   const inflightRef = useRef<Map<string, Promise<void>>>(new Map());
 
   const { proxify, ensureProxyStarted } = useImageProxy();
-
-  const canFetch = useMemo(() => !!gid, [gid]);
 
   const huyaCoverParams =
     'x-oss-process=image/resize,limit_0,m_fill,w_338,h_190/sharpen,80/format,jpg/interlace,1/quality,q_90';
@@ -70,10 +70,8 @@ export function useHuyaLiveRooms(
       if (existing) return existing;
 
       const task = (async () => {
-        if (loadMore) setIsLoadingMore(true);
-        else setIsLoading(true);
-        setError(null);
-
+        // loading 标志由入口设置：挂载路径初始 isLoading 已为 true，
+        // 重试/loadMore 分别在 loadInitialRooms/loadMoreRooms（事件路径）置位。
         await ensureProxyStarted();
 
         try {
@@ -116,6 +114,7 @@ export function useHuyaLiveRooms(
     [ensureProxyStarted, gid, mapHuyaItemToCommonStreamer, pageSize],
   );
 
+  // 重试入口（事件路径，覆盖错误残留时才需要重置 + 置 loading）。
   const loadInitialRooms = useCallback(async () => {
     setRooms([]);
     setHasMore(true);
@@ -127,21 +126,21 @@ export function useHuyaLiveRooms(
 
   const loadMoreRooms = useCallback(async () => {
     if (!hasMore || isLoading || isLoadingMore) return;
+    setError(null);
+    setIsLoadingMore(true);
     await fetchRooms(currentPage, true);
   }, [currentPage, fetchRooms, hasMore, isLoading, isLoadingMore]);
 
+  // 挂载时直接走 fetchRooms（不重置）：实例刚挂载，rooms 为空、isLoading 已为 true；
+  // 重试按钮才走 loadInitialRooms（事件路径）。
+  // set-state-in-effect 规则不追踪跨函数调用的 await，fire-and-forget 调用 loader
+  // 会把它内部任意可达 setState 当成同步 setState；故在 effect 内词法 await 先让出。
   useEffect(() => {
-    if (!canFetch) {
-      setRooms([]);
-      setHasMore(false);
-      return;
-    }
-    // Dedup: 避免路由/分类状态短时间内抖动导致重复拉取第一页
-    const key = `${gid}:${pageSize}`;
-    if (lastInitialKeyRef.current === key) return;
-    lastInitialKeyRef.current = key;
-    void loadInitialRooms();
-  }, [canFetch, gid, loadInitialRooms, pageSize]);
+    if (!gid) return;
+    void (async () => {
+      await fetchRooms(1, false);
+    })();
+  }, [fetchRooms, gid]);
 
   return {
     rooms,

@@ -39,17 +39,25 @@ function getSystemTheme(): EffectiveTheme {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [userPreference, setUserPreferenceState] =
-    useState<ThemePreference>('system');
-  const [systemTheme, setSystemTheme] = useState<EffectiveTheme>('light');
+  // 偏好与系统主题都在 useState 惰性初始化阶段从存储 / matchMedia 读取，
+  // 首帧即拿到正确主题，避免在挂载 effect 里同步 setState 造成的闪变与告警。
+  const [userPreference, setUserPreferenceState] = useState<ThemePreference>(
+    () => {
+      try {
+        const stored = window.localStorage.getItem(STORE_KEY);
+        if (stored === 'light' || stored === 'dark' || stored === 'system')
+          return stored;
+      } catch {
+        // ignore
+      }
+      return 'system';
+    },
+  );
+  const [systemTheme, setSystemTheme] =
+    useState<EffectiveTheme>(getSystemTheme);
 
+  // 仅订阅系统主题变化（事件驱动，非同步 setState）。
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORE_KEY);
-    if (stored === 'light' || stored === 'dark' || stored === 'system') {
-      setUserPreferenceState(stored);
-    }
-    setSystemTheme(getSystemTheme());
-
     const media = window.matchMedia?.('(prefers-color-scheme: dark)');
     if (!media) return;
 

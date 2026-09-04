@@ -67,26 +67,11 @@ export function DouyuHomePage() {
   const [selectedCate3Name, setSelectedCate3Name] = useState<string | null>(
     null,
   );
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const raw = window.sessionStorage.getItem('dtv_douyu_cate3_state_v1');
-      if (!raw) return;
-      const data = JSON.parse(raw) as any;
-      const id = typeof data?.id === 'string' ? data.id : null;
-      const name = typeof data?.name === 'string' ? data.name : null;
-      if (id) setSelectedCate3Id(id);
-      if (name) setSelectedCate3Name(name);
-    } catch {
-      // ignore
-    }
-  }, []);
+  // 初始拉分类期间视为 busy（订阅按钮禁用），loading 由初始值承担、结束后复位。
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
-    setLoading(true);
     fetchDouyuCategories()
       .then((payload) => {
         if (!mounted) return;
@@ -114,12 +99,6 @@ export function DouyuHomePage() {
     const id = selected?.cate2Href;
     return !!id && custom.isSubscribed('douyu', id);
   }, [custom, selected?.cate2Href]);
-
-  useEffect(() => {
-    // 切换二级分类时：默认回到“全部”（即 cate2 维度）
-    setSelectedCate3Id(null);
-    setSelectedCate3Name(null);
-  }, [selected?.cate2Href]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -202,7 +181,15 @@ export function DouyuHomePage() {
       <div style={{ flexShrink: 0, background: 'transparent', zIndex: 10 }}>
         <CommonCategory
           categoriesData={categories}
-          onCategorySelected={(e) => setSelected(e)}
+          onCategorySelected={(e) => {
+            setSelected(e);
+            // 真正的二级分类切换时默认回到“全部”（cate3 维度）。
+            // 在产生选择的事件里一并清理，避免 effect 里同步 setState。
+            if (selected?.cate2Href !== e.cate2Href) {
+              setSelectedCate3Id(null);
+              setSelectedCate3Name(null);
+            }
+          }}
           actions={
             <m.button
               type="button"
@@ -263,6 +250,9 @@ export function DouyuHomePage() {
         }}
       >
         <CommonStreamerList
+          key={
+            douyuCategory ? `${douyuCategory.type}:${douyuCategory.id}` : 'none'
+          }
           platformName="douyu"
           douyuCategory={douyuCategory}
         />

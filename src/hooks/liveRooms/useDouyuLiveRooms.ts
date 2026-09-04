@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import type { CommonStreamer } from '@/platforms/common/streamerTypes';
 
@@ -33,7 +33,11 @@ export function useDouyuLiveRooms(
   categoryId: string | null,
 ) {
   const [rooms, setRooms] = useState<CommonStreamer[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // 实例生命周期由调用方通过分类 key 约束（切换分类即重挂载），参数在实例内恒定；
+  // 参数有效则挂载即拉取，故初始 isLoading 直接反映参数是否有效，避免首帧闪空态。
+  const [isLoading, setIsLoading] = useState(
+    () => !!categoryType && !!categoryId,
+  );
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
@@ -53,11 +57,6 @@ export function useDouyuLiveRooms(
     [],
   );
 
-  const canFetch = useMemo(
-    () => !!categoryType && !!categoryId,
-    [categoryType, categoryId],
-  );
-
   const fetchRooms = useCallback(
     async (pageToFetch: number, loadMore: boolean) => {
       if (!categoryType || !categoryId) {
@@ -67,9 +66,8 @@ export function useDouyuLiveRooms(
         return;
       }
 
-      if (loadMore) setIsLoadingMore(true);
-      else setIsLoading(true);
-
+      // loading 标志不在这里同步设置：由挂载（初始 isLoading 已为 true）或
+      // 事件入口（loadInitialRooms/loadMoreRooms）设置，避免挂载 effect 同步 setState。
       let command = '';
       let params: Record<string, unknown> = {};
       if (categoryType === 'cate2') {
@@ -122,26 +120,27 @@ export function useDouyuLiveRooms(
     [categoryId, categoryType, mapDouyuItemToCommon],
   );
 
+  // 不重置的首次装载：实例刚挂载时 rooms 已为空、isLoading 已为 true。
   const loadInitialRooms = useCallback(async () => {
-    setRooms([]);
-    setHasMore(true);
-    setCurrentPage(0);
     await fetchRooms(0, false);
   }, [fetchRooms]);
 
   const loadMoreRooms = useCallback(async () => {
     if (!hasMore || isLoading || isLoadingMore) return;
+    setIsLoadingMore(true);
     await fetchRooms(currentPage + 1, true);
   }, [currentPage, fetchRooms, hasMore, isLoading, isLoadingMore]);
 
+  // 挂载时拉取第一页；分类切换（含 cate2/cate3 维度）会经调用方 key 整体重挂载，
+  // 参数在实例内恒定，无需响应参数变化，参数为空的实例也不会发起任何请求。
+  // set-state-in-effect 规则不追踪跨函数调用的 await，fire-and-forget 调用 loader
+  // 会把它内部任意可达 setState 当成同步 setState；故在 effect 内词法 await 先让出。
   useEffect(() => {
-    if (!canFetch) {
-      setRooms([]);
-      setHasMore(false);
-      return;
-    }
-    void loadInitialRooms();
-  }, [canFetch, loadInitialRooms]);
+    if (!categoryType || !categoryId) return;
+    void (async () => {
+      await loadInitialRooms();
+    })();
+  }, [categoryId, categoryType, loadInitialRooms]);
 
   return {
     rooms,

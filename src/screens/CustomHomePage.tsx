@@ -24,48 +24,46 @@ function platformLabel(p: string) {
 
 export function CustomHomePage() {
   const { entries } = useCustomCategories();
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+  // 持久化上次选择：惰性初始化直接从 sessionStorage 读取，首次渲染即拿到值。
+  const [selectedKey, setSelectedKey] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
     try {
-      const saved = window.sessionStorage.getItem('dtv_custom_selected_key_v1');
-      if (saved) setSelectedKey(saved);
+      return window.sessionStorage.getItem('dtv_custom_selected_key_v1');
     } catch {
-      // ignore
+      return null;
     }
-  }, []);
+  });
 
-  useEffect(() => {
-    if (!entries.length) {
-      setSelectedKey(null);
-      return;
-    }
-    if (!selectedKey || !entries.some((e) => e.key === selectedKey)) {
-      setSelectedKey(entries[0].key);
-    }
+  // 选择必须是 entries 内的有效 key：无存储 / 已失效 / 分区被移除时回退第一个分区。
+  // 收敛放在 render 阶段（守卫式 setState），避免在 effect 里同步 setState。
+  const selected = useMemo(() => {
+    if (selectedKey && entries.some((e) => e.key === selectedKey))
+      return selectedKey;
+    return entries[0]?.key ?? null;
   }, [entries, selectedKey]);
 
+  if (selected !== selectedKey) setSelectedKey(selected);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!selectedKey) return;
+    if (!selected) return;
     try {
-      window.sessionStorage.setItem('dtv_custom_selected_key_v1', selectedKey);
+      window.sessionStorage.setItem('dtv_custom_selected_key_v1', selected);
     } catch {
       // ignore
     }
-  }, [selectedKey]);
+  }, [selected]);
 
   const selectedEntry: CustomCategoryEntry | null = useMemo(() => {
-    return entries.find((e) => e.key === selectedKey) ?? null;
-  }, [entries, selectedKey]);
+    return entries.find((e) => e.key === selected) ?? null;
+  }, [entries, selected]);
 
   const selectedPlatform = selectedEntry?.platform ?? 'douyu';
 
   const selectedCategoriesData = useMemo(() => {
-    if (selectedPlatform === 'douyin') return douyinCategoriesData as any;
-    if (selectedPlatform === 'huya') return huyaCategoriesData as any;
-    if (selectedPlatform === 'bilibili') return biliCategoriesData as any;
+    if (selectedPlatform === 'douyin') return douyinCategoriesData;
+    if (selectedPlatform === 'huya') return huyaCategoriesData;
+    if (selectedPlatform === 'bilibili') return biliCategoriesData;
     return undefined;
   }, [selectedPlatform]);
 
@@ -100,7 +98,7 @@ export function CustomHomePage() {
       {entries.length ? (
         <div className={styles.list}>
           {entries.map((entry) => {
-            const active = entry.key === selectedKey;
+            const active = entry.key === selected;
             const platformClass =
               entry.platform === 'douyu'
                 ? styles.platformDouyu
@@ -131,6 +129,7 @@ export function CustomHomePage() {
       <div className={styles.streamerList}>
         {selectedEntry ? (
           <CommonStreamerList
+            key={selected}
             selectedCategory={selectedCategory}
             categoriesData={selectedCategoriesData}
             douyuCategory={selectedDouyuCategory}

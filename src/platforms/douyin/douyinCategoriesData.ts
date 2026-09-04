@@ -1,4 +1,7 @@
-export const douyinCategoriesData = [
+import type { Category1 } from '@/platforms/common/categoryTypes';
+
+// 抖音直播分区。与通用 Category1 完全一致（不带 id/parent_id，分区靠 href 推导）。
+export const douyinCategoriesData: Category1[] = [
   {
     title: '射击游戏',
     href: '/category/1_1',

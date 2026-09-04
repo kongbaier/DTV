@@ -32,7 +32,7 @@ export function BilibiliHomePage() {
     >
       <div style={{ flexShrink: 0, background: 'transparent', zIndex: 10 }}>
         <CommonCategory
-          categoriesData={biliCategoriesData as any}
+          categoriesData={biliCategoriesData}
           onCategorySelected={(e) => setSelected(e)}
           actions={
             <div
@@ -75,8 +75,9 @@ export function BilibiliHomePage() {
         }}
       >
         <CommonStreamerList
+          key={selected?.cate2Href || 'none'}
           selectedCategory={selected}
-          categoriesData={biliCategoriesData as any}
+          categoriesData={biliCategoriesData}
           platformName="bilibili"
         />
       </div>

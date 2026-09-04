@@ -1,9 +1,9 @@
 'use client';
 
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useState } from 'react';
 import styles from './SmoothImage.module.css';
 
-export const SmoothImage = memo(function SmoothImage({
+function SmoothImageInner({
   src,
   alt,
   className,
@@ -17,20 +17,8 @@ export const SmoothImage = memo(function SmoothImage({
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    setLoaded(false);
-    setError(false);
-  }, [src]);
-
-  // Some browsers defer `load` events for lazy images; ensure we don't get stuck on a placeholder
-  // when the resource is already in cache / completes synchronously.
-  const [imgKey, setImgKey] = useState(0);
-  useEffect(() => {
-    setImgKey((k) => k + 1);
-  }, [src]);
-
   return (
-    <div className={styles.wrapper}>
+    <>
       {!loaded && !error ? <div className={styles.placeholder} /> : null}
       {error ? (
         <div className={styles.error} aria-hidden="true">
@@ -54,7 +42,6 @@ export const SmoothImage = memo(function SmoothImage({
       ) : null}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        key={imgKey}
         className={`${styles.img} ${loaded ? styles.imgLoaded : ''} ${className ?? ''}`}
         src={src}
         alt={alt ?? ''}
@@ -75,6 +62,32 @@ export const SmoothImage = memo(function SmoothImage({
             setLoaded(true);
           }
         }}
+      />
+    </>
+  );
+}
+
+export const SmoothImage = memo(function SmoothImage({
+  src,
+  alt,
+  className,
+  loading,
+}: {
+  src: string;
+  alt?: string;
+  className?: string;
+  loading?: 'eager' | 'lazy';
+}) {
+  return (
+    <div className={styles.wrapper}>
+      {/* src 变化时通过 key 重挂载内层，加载状态随实例自然重置，
+          无需在 effect 里同步 setState；className 等变化则保留加载状态。 */}
+      <SmoothImageInner
+        key={src}
+        src={src}
+        alt={alt}
+        className={className}
+        loading={loading}
       />
     </div>
   );

@@ -1566,6 +1566,13 @@ function FolderChildren({
   const panelRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState(0);
+  // 折叠时把高度归零，供下次展开从 0 动画到实际内容高度。
+  // 收敛放在 render 阶段（守卫式 setState），避免在 layout effect 里同步 setState。
+  const [prevExpanded, setPrevExpanded] = useState(expanded);
+  if (expanded !== prevExpanded) {
+    setPrevExpanded(expanded);
+    if (!expanded) setHeight(0);
+  }
 
   const hoverOpacity = useMotionValue(0);
   const hoverYRaw = useMotionValue(0);
@@ -1595,7 +1602,6 @@ function FolderChildren({
 
   useLayoutEffect(() => {
     if (!expanded) {
-      setHeight(0);
       hoverOpacity.set(0);
       return;
     }

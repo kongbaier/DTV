@@ -59,7 +59,6 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const { isFullscreen: isPlayerFullscreen } = usePlayerUi();
   const playerOverlay = usePlayerOverlay();
   const custom = useCustomCategories();
-  const [hydrated, setHydrated] = useState(false);
   const [isRoutePending, startRouteTransition] = useTransition();
 
   const normalizedPathname = useMemo(
@@ -73,19 +72,19 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
   const [isSidebarCollapsed] = useState(false);
   const [optimisticPlatform, setOptimisticPlatform] =
     useState<UiPlatform>(activePlatform);
+  // activePlatform 由 pathname 派生，会随前进/后退/重定向而变化；optimistic 需跟随同步。
+  // 收敛放在 render 阶段（守卫式 setState），替代在 effect 里同步 setState。
+  const [lastActivePlatform, setLastActivePlatform] =
+    useState<UiPlatform>(activePlatform);
+  if (lastActivePlatform !== activePlatform) {
+    setLastActivePlatform(activePlatform);
+    setOptimisticPlatform(activePlatform);
+  }
 
   const playerActive = isPlayerPath(normalizedPathname) || playerOverlay.isOpen;
   const shouldHidePlayerChrome = playerActive && isPlayerFullscreen;
   const playerRoute = isPlayerPath(normalizedPathname);
   // 避免 `/huya` vs `/huya/` 这种规范化抖动导致的重复挂载/重复请求
-
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    setOptimisticPlatform(activePlatform);
-  }, [activePlatform]);
 
   useEffect(() => {
     if (!custom.hydrated) return;
@@ -152,72 +151,57 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           />
         ) : null}
 
-        {hydrated ? (
-          <m.main
-            className={`${styles.appBody} ${playerRoute ? styles.appBodyPlayer : ''}`}
-          >
-            <div className={styles.appBodyContents}>
-              <div className={styles.routeScope}>
-                <div className={styles.routePendingWrap}>
-                  <div
-                    className={`${styles.routePendingContents} ${showRoutePending ? styles.routePendingContentsHidden : ''}`}
-                    aria-hidden={showRoutePending}
-                  >
-                    <div className={styles.routeContents}>
-                      {playerRoute ? (
-                        <AnimatePresence mode="wait" initial={false}>
-                          <m.div
-                            key={normalizedPathname}
-                            initial={{ opacity: 0, y: 6 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -4 }}
-                            transition={{
-                              duration: 0.18,
-                              ease: [0.16, 1, 0.3, 1],
-                            }}
-                            style={{ flex: 1, minHeight: 0 }}
-                          >
-                            {children}
-                          </m.div>
-                        </AnimatePresence>
-                      ) : (
-                        children
-                      )}
-                    </div>
+        <m.main
+          className={`${styles.appBody} ${playerRoute ? styles.appBodyPlayer : ''}`}
+        >
+          <div className={styles.appBodyContents}>
+            <div className={styles.routeScope}>
+              <div className={styles.routePendingWrap}>
+                <div
+                  className={`${styles.routePendingContents} ${showRoutePending ? styles.routePendingContentsHidden : ''}`}
+                  aria-hidden={showRoutePending}
+                >
+                  <div className={styles.routeContents}>
+                    {playerRoute ? (
+                      <AnimatePresence mode="wait" initial={false}>
+                        <m.div
+                          key={normalizedPathname}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{
+                            duration: 0.18,
+                            ease: [0.16, 1, 0.3, 1],
+                          }}
+                          style={{ flex: 1, minHeight: 0 }}
+                        >
+                          {children}
+                        </m.div>
+                      </AnimatePresence>
+                    ) : (
+                      children
+                    )}
                   </div>
-                  {showRoutePending ? (
-                    <div
-                      className={styles.routePendingOverlay}
-                      data-tauri-drag-region="false"
-                    >
-                      <button
-                        type="button"
-                        className={styles.routePendingButton}
-                        disabled
-                        aria-label="正在加载"
-                      >
-                        <Spinner size="lg" />
-                      </button>
-                    </div>
-                  ) : null}
                 </div>
+                {showRoutePending ? (
+                  <div
+                    className={styles.routePendingOverlay}
+                    data-tauri-drag-region="false"
+                  >
+                    <button
+                      type="button"
+                      className={styles.routePendingButton}
+                      disabled
+                      aria-label="正在加载"
+                    >
+                      <Spinner size="lg" />
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
-          </m.main>
-        ) : (
-          <AnimatePresence mode="wait" initial={false}>
-            <m.main
-              key={normalizedPathname}
-              className={`${styles.appBody} ${playerRoute ? styles.appBodyPlayer : ''}`}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {children}
-            </m.main>
-          </AnimatePresence>
-        )}
+          </div>
+        </m.main>
 
         <PlayerOverlayHost />
       </div>
