@@ -9,8 +9,11 @@
   "rules": {
     // Rules of React：hook 必须无条件、按固定顺序在顶层调用
     "react/rules-of-hooks": "error",
-    // 依赖数组需完整；缺失依赖会让 React Compiler 无法生成正确 memo 代码
-    "react/exhaustive-deps": "warn",
+    // 记忆化劝导（useCallback/useMemo 依赖、“changes every render”提示）已由
+    // React Compiler 自动记忆化接管，关闭；但 compiler 不会替 useEffect 补依赖，
+    // effect 缺依赖仍是正确性契约，用 exhaustive-effect-dependencies 单独保留。
+    "react/exhaustive-deps": "off",
+    "react/exhaustive-effect-dependencies": "warn",
     // 以下为 React Compiler / Rules-of-React 的细化规则，先以 warn 观察，修复后可视需要提为 error
     "react/purity": "warn",
     "react/refs": "warn",

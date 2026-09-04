@@ -509,7 +509,7 @@ export function FollowsList() {
   }>({ isDragging: false, dragOverFolderId: null, draggedItemType: null });
   const didDragRef = useRef(false);
 
-  const resetDragUi = useCallback(() => {
+  const resetDragUi = () => {
     dragRef.current = {
       isDragging: false,
       draggedIndex: -1,
@@ -527,9 +527,9 @@ export function FollowsList() {
       draggedItemType: null,
     });
     document.body.style.userSelect = '';
-    document.removeEventListener('mousemove', handleDragMove as any);
-    document.removeEventListener('mouseup', handleDragUp as any);
-  }, []);
+    document.removeEventListener('mousemove', handleDragMove);
+    document.removeEventListener('mouseup', handleDragUp);
+  };
 
   const cancelPendingDrag = useCallback(() => {
     const p = pendingDragRef.current;
@@ -542,8 +542,8 @@ export function FollowsList() {
       startY: 0,
       payload: null,
     };
-    document.removeEventListener('mousemove', handlePrepMove as any);
-    document.removeEventListener('mouseup', handlePrepUp as any);
+    document.removeEventListener('mousemove', handlePrepMove);
+    document.removeEventListener('mouseup', handlePrepUp);
   }, []);
 
   // handlers need hoisting for reset/cancel above
@@ -595,53 +595,44 @@ export function FollowsList() {
     }
   }
 
-  function handlePrepUp() {
+  const handlePrepUp = useCallback(() => {
     cancelPendingDrag();
-  }
+  }, [cancelPendingDrag]);
 
-  const prepareDrag = useCallback(
-    (
-      payload: {
-        type: 'folder' | 'streamer';
-        index: number;
-        streamerKey?: string;
-        fromFolder?: boolean;
-        sourceFolderId?: string | null;
-      },
-      e: React.MouseEvent,
-    ) => {
-      if (e.button !== 0) return;
-      if (folderMenu.open) setFolderMenu((m) => ({ ...m, open: false }));
-      if (folderNameModal.open) return;
-
-      cancelPendingDrag();
-      const startX = e.clientX;
-      const startY = e.clientY;
-      pendingDragRef.current = {
-        active: true,
-        timer: null,
-        startX,
-        startY,
-        payload,
-      };
-      pendingDragRef.current.timer = window.setTimeout(() => {
-        if (!pendingDragRef.current.active || !pendingDragRef.current.payload)
-          return;
-        beginDrag(pendingDragRef.current.payload, startX, startY);
-        didDragRef.current = true;
-      }, DRAG_PREP_DELAY_MS);
-
-      document.addEventListener('mousemove', handlePrepMove as any);
-      document.addEventListener('mouseup', handlePrepUp as any);
+  const prepareDrag = (
+    payload: {
+      type: 'folder' | 'streamer';
+      index: number;
+      streamerKey?: string;
+      fromFolder?: boolean;
+      sourceFolderId?: string | null;
     },
-    [
-      cancelPendingDrag,
-      folderMenu.open,
-      folderNameModal.open,
-      resetDragUi,
-      follow,
-    ],
-  );
+    e: React.MouseEvent,
+  ) => {
+    if (e.button !== 0) return;
+    if (folderMenu.open) setFolderMenu((m) => ({ ...m, open: false }));
+    if (folderNameModal.open) return;
+
+    cancelPendingDrag();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    pendingDragRef.current = {
+      active: true,
+      timer: null,
+      startX,
+      startY,
+      payload,
+    };
+    pendingDragRef.current.timer = window.setTimeout(() => {
+      if (!pendingDragRef.current.active || !pendingDragRef.current.payload)
+        return;
+      beginDrag(pendingDragRef.current.payload, startX, startY);
+      didDragRef.current = true;
+    }, DRAG_PREP_DELAY_MS);
+
+    document.addEventListener('mousemove', handlePrepMove as any);
+    document.addEventListener('mouseup', handlePrepUp as any);
+  };
 
   const handleStreamerClick = useCallback(
     (platform: FollowPlatform, id: string) => {

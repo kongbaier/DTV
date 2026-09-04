@@ -11,7 +11,6 @@ import { listen, type Event as TauriEvent } from '@tauri-apps/api/event';
 import { useNavigate } from 'react-router-dom';
 import { invoke } from '@tauri-apps/api/core';
 import { v4 as uuidv4 } from 'uuid';
-import { AnimatePresence, m } from 'framer-motion';
 import { POSITIONS } from 'xgplayer/es/plugin/plugin.js';
 
 import 'xgplayer/dist/index.min.css';
@@ -1454,6 +1453,7 @@ export function MainPlayer({
       roomId,
       stopAllDanmakuBackends,
       stopAllProxies,
+      startDanmaku,
     ],
   );
 

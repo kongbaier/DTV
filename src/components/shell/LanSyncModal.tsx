@@ -177,10 +177,11 @@ export function LanSyncModal({
     }
   }
 
+  const hosts = serverInfo?.hosts;
   const bestHost = useMemo(() => {
-    if (!serverInfo?.hosts?.length) return null;
-    return pickBestLanHost(serverInfo.hosts);
-  }, [serverInfo?.hosts]);
+    if (!hosts?.length) return null;
+    return pickBestLanHost(hosts);
+  }, [hosts]);
 
   const shareImportUrl = useMemo(() => {
     const port = serverInfo?.port || FIXED_PORT;

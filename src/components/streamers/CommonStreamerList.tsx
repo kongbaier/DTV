@@ -210,7 +210,7 @@ export function CommonStreamerList({
         // Keep this raf block to avoid spamming state updates during fast scroll.
       });
     },
-    [hasMore, isLoading, isLoadingMore, markScrolling, selected],
+    [markScrolling],
   );
 
   const listKey = useMemo(() => {

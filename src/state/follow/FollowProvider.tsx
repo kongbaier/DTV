@@ -626,7 +626,7 @@ export function FollowProvider({ children }: { children: React.ReactNode }) {
       },
       updateStreamer,
     };
-  }, [followedStreamers, folders, hydrated, listOrder]);
+  }, [followedStreamers, folders, hydrated, listOrder, updateStreamer]);
 
   return (
     <FollowContext.Provider value={value}>{children}</FollowContext.Provider>
