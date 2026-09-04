@@ -1535,6 +1535,31 @@ export function FollowsList() {
   );
 }
 
+// 每个文件夹子项通过真实子组件元素渲染，而不是在 FolderChildren 渲染期同步调用
+// 外部传入的 render prop。后者会让 react/refs 误判 onEnter（其内部读 panelRef.current）
+// 可能在渲染期被同步调用；改成元素后 onEnter/onLeave 只是该子组件的 props，是渲染边界。
+type RenderRowFn = (
+  s: FollowedStreamer,
+  itemKey: string,
+  handlers: { onEnter: (el: HTMLElement) => void; onLeave: () => void },
+) => React.ReactNode;
+
+function FolderChildRow({
+  s,
+  itemKey,
+  onEnter,
+  onLeave,
+  render,
+}: {
+  s: FollowedStreamer;
+  itemKey: string;
+  onEnter: (el: HTMLElement) => void;
+  onLeave: () => void;
+  render: RenderRowFn;
+}) {
+  return render(s, itemKey, { onEnter, onLeave });
+}
+
 function FolderChildren({
   expanded,
   folderId,
@@ -1548,11 +1573,7 @@ function FolderChildren({
   streamerKeys: string[];
   normalizeKey: (key: string) => string;
   streamerByKey: Map<string, FollowedStreamer>;
-  render: (
-    s: FollowedStreamer,
-    itemKey: string,
-    handlers: { onEnter: (el: HTMLElement) => void; onLeave: () => void },
-  ) => React.ReactNode;
+  render: RenderRowFn;
 }) {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const innerRef = useRef<HTMLDivElement | null>(null);
@@ -1666,7 +1687,16 @@ function FolderChildren({
               const s = streamerByKey.get(normKey);
               if (!s) return null;
               const itemKey = `${normKey}@folder:${folderId}`;
-              return render(s, itemKey, { onEnter, onLeave });
+              return (
+                <FolderChildRow
+                  key={itemKey}
+                  s={s}
+                  itemKey={itemKey}
+                  onEnter={onEnter}
+                  onLeave={onLeave}
+                  render={render}
+                />
+              );
             })}
           </div>
         </m.div>
