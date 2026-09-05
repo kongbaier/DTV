@@ -16,6 +16,7 @@ import { Sidebar } from '@/components/shell/Sidebar';
 import { Navbar } from '@/components/shell/Navbar';
 import { useTheme } from '@/state/theme/ThemeProvider';
 import { usePlayerUi } from '@/state/playerUi/PlayerUiProvider';
+import { useWindowDrag } from '@/hooks/useWindowDrag';
 import { useCustomCategories } from '@/state/customCategories/CustomCategoriesProvider';
 import {
   PlayerOverlayHost,
@@ -53,6 +54,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 function AppShellInner({ children }: { children: React.ReactNode }) {
+  // 全应用 chrome 区域的窗口拖拽：data-drag-region 标记（Navbar/FollowsList 头等），单实例即可
+  useWindowDrag('drag-region');
+
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { effectiveTheme, toggleLightDark } = useTheme();
@@ -186,7 +190,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
                 {showRoutePending ? (
                   <div
                     className={styles.routePendingOverlay}
-                    data-tauri-drag-region="false"
+                    data-drag-region="false"
                   >
                     <button
                       type="button"

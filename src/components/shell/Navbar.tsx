@@ -549,7 +549,7 @@ export function Navbar({
 
   // 搜索框本体（含结果下拉）。searchCentered 时放入中部弹性轨道，否则留在右侧按钮簇首位。
   const renderSearchBox = () => (
-    <div className={styles.searchContainer} data-tauri-drag-region="false">
+    <div className={styles.searchContainer} data-drag-region="false">
       {isPlayerRoute && !playerSearchOpen ? (
         <m.button
           type="button"
@@ -744,15 +744,15 @@ export function Navbar({
     <nav
       ref={navRef}
       className={`${styles.navbar} ${theme === 'dark' ? styles.navbarDark : ''}`}
-      data-tauri-drag-region
+      data-drag-region
       data-nav-compact={navCompact ? 'true' : 'false'}
       data-nav-search-center={searchCentered ? 'true' : 'false'}
     >
-      <div className={styles.platformTabsWrap} data-tauri-drag-region>
+      <div className={styles.platformTabsWrap} data-drag-region>
         <div
           className={styles.platformTabs}
           ref={containerRef}
-          data-tauri-drag-region
+          data-drag-region
         >
           <m.div
             className={styles.platformHighlight}
@@ -768,7 +768,7 @@ export function Navbar({
           {visiblePlatforms.map((p) => (
             <button
               // eslint-disable-next-line react/no-unknown-property
-              data-tauri-drag-region="false"
+              data-drag-region="false"
               key={p.id}
               type="button"
               className={`${styles.platformTab} ${activePlatform === p.id ? styles.platformTabActive : ''}`}
@@ -796,7 +796,7 @@ export function Navbar({
         (playerUi.danmuPanel.collapsed || !playerUi.danmuPanel.available) ? (
           <m.div
             className={styles.playerIsland}
-            data-tauri-drag-region="false"
+            data-drag-region="false"
             initial={{ opacity: 0, y: -10, scale: 0.985 }}
             animate={{
               opacity: 1,
@@ -901,7 +901,7 @@ export function Navbar({
         ) : null}
       </AnimatePresence>
 
-      <div className={styles.actions} data-tauri-drag-region>
+      <div className={styles.actions} data-drag-region>
         {/* 播放页 / 自定义分区：搜索仍位于右侧按钮簇首位 */}
         {!searchCentered && activePlatform !== 'custom'
           ? renderSearchBox()
@@ -915,7 +915,7 @@ export function Navbar({
             <Dropdown.Trigger
               type="button"
               className={styles.navIconBtn}
-              data-tauri-drag-region="false"
+              data-drag-region="false"
               aria-label="更多"
             >
               {hasUpdate ? (
@@ -989,7 +989,7 @@ export function Navbar({
             <button
               type="button"
               // eslint-disable-next-line react/no-unknown-property
-              data-tauri-drag-region="false"
+              data-drag-region="false"
               className={styles.versionBtn}
               title="版本信息"
               aria-label="版本信息"
@@ -1002,7 +1002,7 @@ export function Navbar({
             <button
               type="button"
               // eslint-disable-next-line react/no-unknown-property
-              data-tauri-drag-region="false"
+              data-drag-region="false"
               className={styles.navIconBtn}
               title="打赏支持"
               aria-label="打赏"
@@ -1014,7 +1014,7 @@ export function Navbar({
             <button
               type="button"
               // eslint-disable-next-line react/no-unknown-property
-              data-tauri-drag-region="false"
+              data-drag-region="false"
               className={styles.navIconBtn}
               title="Data Sync"
               aria-label="Data Sync"
@@ -1026,7 +1026,7 @@ export function Navbar({
             <button
               type="button"
               // eslint-disable-next-line react/no-unknown-property
-              data-tauri-drag-region="false"
+              data-drag-region="false"
               className={`${styles.themeToggle} ${theme === 'dark' ? styles.themeToggleDark : styles.themeToggleLight}`}
               onClick={onThemeToggle}
               aria-label={theme === 'dark' ? '切换到浅色' : '切换到深色'}
@@ -1039,7 +1039,7 @@ export function Navbar({
         {isWindows ? (
           <div
             className={styles.winControls}
-            data-tauri-drag-region="false"
+            data-drag-region="false"
             aria-label="Window controls"
           >
             <button
@@ -1079,7 +1079,7 @@ export function Navbar({
           <m.div
             className={styles.overlayBackdrop}
             // eslint-disable-next-line react/no-unknown-property
-            data-tauri-drag-region="false"
+            data-drag-region="false"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1127,7 +1127,7 @@ export function Navbar({
           <m.div
             className={styles.overlayBackdrop}
             // eslint-disable-next-line react/no-unknown-property
-            data-tauri-drag-region="false"
+            data-drag-region="false"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

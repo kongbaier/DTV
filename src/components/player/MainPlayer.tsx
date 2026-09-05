@@ -1,12 +1,6 @@
 'use client';
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { listen, type Event as TauriEvent } from '@tauri-apps/api/event';
 import { useNavigate } from 'react-router-dom';
 import { invoke } from '@tauri-apps/api/core';
@@ -48,6 +42,7 @@ import { fetchAndPrepareDouyinStreamConfig } from '@/platforms/douyin/playerHelp
 import { getHuyaStreamConfig } from '@/platforms/huya/playerHelper';
 import { getBilibiliStreamConfig } from '@/platforms/bilibili/playerHelper';
 import { useImageProxy } from '@/hooks/useImageProxy';
+import { useWindowDrag } from '@/hooks/useWindowDrag';
 import {
   useFollow,
   type FollowedStreamer,
@@ -215,13 +210,17 @@ export function MainPlayer({
   const follow = useFollow();
   const { setIsland, clearIsland, setFullscreen } = usePlayerUi();
   const { ensureProxyStarted, getAvatarSrc } = useImageProxy();
+
+  // 整页窗口拖拽：就近挂载 useWindowDrag，用独立的 data-player-drag 标记把播放页从
+  // chrome 的 data-drag-region（带双击最大化）中切出去。播放页的双击语义交给 xgplayer
+  // （视频双击=全屏），故 doubleClick:false；xgplayer 内部控件/弹层打不了属性，
+  // 只能经 PLAYER_DRAG_EXCLUDED_SELECTOR 排除。threshold 沿用旧自研逻辑的 6px。
+  useWindowDrag('player-drag', {
+    doubleClick: false,
+    threshold: 6,
+    exclude: PLAYER_DRAG_EXCLUDED_SELECTOR,
+  });
   const pageRef = useRef<HTMLDivElement | null>(null);
-  const dragStartArmedRef = useRef(false);
-  const dragCandidateRef = useRef<null | {
-    pointerId: number;
-    x: number;
-    y: number;
-  }>(null);
 
   const playerContainerRef = useRef<HTMLDivElement | null>(null);
   const playerRef = useRef<any>(null);
@@ -438,83 +437,6 @@ export function MainPlayer({
     } catch {
       // ignore
     }
-  }, []);
-
-  const startWindowDragging = useCallback(async () => {
-    try {
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      await getCurrentWindow().startDragging();
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const isDragExcludedTarget = useCallback((target: HTMLElement) => {
-    return !!target.closest(PLAYER_DRAG_EXCLUDED_SELECTOR);
-  }, []);
-
-  const onPlayerPointerDownCapture = useCallback(
-    (e: React.PointerEvent) => {
-      if (e.button !== 0) return;
-      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-
-      const root = pageRef.current;
-      if (!root || !root.contains(target)) return;
-      if (isDragExcludedTarget(target)) return;
-
-      // Defer dragging until the pointer moves a bit, so normal "click-to-toggle" behaviors still work.
-      dragCandidateRef.current = {
-        pointerId: e.pointerId,
-        x: e.clientX,
-        y: e.clientY,
-      };
-    },
-    [isDragExcludedTarget],
-  );
-
-  const onPlayerPointerMoveCapture = useCallback(
-    (e: React.PointerEvent) => {
-      const candidate = dragCandidateRef.current;
-      if (!candidate) return;
-      if (candidate.pointerId !== e.pointerId) return;
-      if (dragStartArmedRef.current) return;
-
-      const dx = e.clientX - candidate.x;
-      const dy = e.clientY - candidate.y;
-      if (dx * dx + dy * dy < 36) return; // 6px threshold
-
-      const target = e.target as HTMLElement | null;
-      const root = pageRef.current;
-      if (!target || !root || !root.contains(target)) {
-        dragCandidateRef.current = null;
-        return;
-      }
-
-      if (isDragExcludedTarget(target)) {
-        dragCandidateRef.current = null;
-        return;
-      }
-
-      dragStartArmedRef.current = true;
-      dragCandidateRef.current = null;
-      e.preventDefault();
-
-      void startWindowDragging().finally(() => {
-        window.setTimeout(() => {
-          dragStartArmedRef.current = false;
-        }, 300);
-      });
-    },
-    [isDragExcludedTarget, startWindowDragging],
-  );
-
-  const onPlayerPointerUpCapture = useCallback((e: React.PointerEvent) => {
-    const candidate = dragCandidateRef.current;
-    if (!candidate) return;
-    if (candidate.pointerId !== e.pointerId) return;
-    dragCandidateRef.current = null;
   }, []);
 
   useEffect(() => {
@@ -1592,21 +1514,18 @@ export function MainPlayer({
     <div
       className={`player-page${chromeHiddenClass}`}
       ref={pageRef}
-      onPointerDownCapture={onPlayerPointerDownCapture}
-      onPointerMoveCapture={onPlayerPointerMoveCapture}
-      onPointerUpCapture={onPlayerPointerUpCapture}
-      onPointerCancelCapture={onPlayerPointerUpCapture}
+      data-player-drag
     >
       {isWindows ? (
         <div
           className="player-window-controls"
-          data-tauri-drag-region="false"
+          data-player-drag="false"
           aria-label="窗口控制"
         >
           <button
             type="button"
             className="window-btn"
-            data-tauri-drag-region="false"
+            data-player-drag="false"
             aria-label="最小化"
             onClick={() => void minimizeWindow()}
           >
@@ -1622,7 +1541,7 @@ export function MainPlayer({
           <button
             type="button"
             className="window-btn"
-            data-tauri-drag-region="false"
+            data-player-drag="false"
             aria-label={isMaximized ? '还原' : '最大化'}
             onClick={() => void toggleMaximizeWindow()}
           >
@@ -1661,7 +1580,7 @@ export function MainPlayer({
           <button
             type="button"
             className="window-btn window-btn--close"
-            data-tauri-drag-region="false"
+            data-player-drag="false"
             aria-label="关闭软件"
             onClick={() => void closeWindow()}
           >

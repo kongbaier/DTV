@@ -944,8 +944,8 @@ export function FollowsList() {
 
   return (
     <div className={styles.followList}>
-      <div className={styles.listHeader} ref={headerRef} data-tauri-drag-region>
-        <div className={styles.headerLeft} data-tauri-drag-region>
+      <div className={styles.listHeader} ref={headerRef} data-drag-region>
+        <div className={styles.headerLeft} data-drag-region>
           {!isMac ? (
             <span
               className={`${styles.actionBtn} ${styles.headerStaticIcon}`}
@@ -957,17 +957,17 @@ export function FollowsList() {
           <h3
             className={styles.headerTitle}
             aria-label="关注列表"
-            data-tauri-drag-region
+            data-drag-region
           >
-            <span className={styles.headerLabel} data-tauri-drag-region />
+            <span className={styles.headerLabel} data-drag-region />
           </h3>
         </div>
-        <div className={styles.headerActions} data-tauri-drag-region="false">
+        <div className={styles.headerActions} data-drag-region="false">
           {!isRefreshing ? (
             <button
               type="button"
               className={`${styles.actionBtn} ${styles.refreshBtn}`}
-              data-tauri-drag-region="false"
+              data-drag-region="false"
               title="刷新列表"
               onClick={() => void refreshList()}
             >
@@ -985,7 +985,7 @@ export function FollowsList() {
           <button
             type="button"
             className={`${styles.actionBtn} ${styles.folderBtn}`}
-            data-tauri-drag-region="false"
+            data-drag-region="false"
             title="新建文件夹"
             onClick={openCreateFolderModal}
           >
@@ -995,7 +995,7 @@ export function FollowsList() {
           <button
             type="button"
             className={`${styles.actionBtn} ${styles.expandBtn}`}
-            data-tauri-drag-region="false"
+            data-drag-region="false"
             title="展开关注列表"
             ref={expandBtnRef}
             onClick={openOverlay}

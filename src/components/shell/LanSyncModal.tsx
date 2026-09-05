@@ -448,7 +448,7 @@ export function LanSyncModal({
       <m.div
         className={styles.overlayBackdrop}
         // eslint-disable-next-line react/no-unknown-property
-        data-tauri-drag-region="false"
+        data-drag-region="false"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
