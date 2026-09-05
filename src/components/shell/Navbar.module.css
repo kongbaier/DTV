@@ -8,7 +8,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  gap: 32px;
+  gap: 16px;
   background: var(--glass-bg);
   backdrop-filter: blur(28px) saturate(220%);
   -webkit-backdrop-filter: blur(28px) saturate(220%);
@@ -115,6 +115,33 @@
 
 .navbar[data-nav-compact='true'] .actions {
   flex-shrink: 1;
+}
+
+/* 搜索居中模式：actions 无需 margin-left:auto 再顶到最右 */
+.navbar[data-nav-search-center='true'] .actions {
+  margin-left: 0;
+}
+
+/* 中部弹性轨道：搜索移出右按钮簇后在此居中，左右留白由 flex 弹性等分。
+   不设可压缩（flex-shrink:0），宽度不足时溢出交由折叠判定接管 */
+.navCenterTrack {
+  flex: 1 0 auto;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 展开态：轨道内搜索保持固定宽度（默认 .searchShell 的 300px），其自然宽度参与
+   “能否展开/折叠”的溢出测量，阈值稳定。折叠（更多）态：中部空间被按钮换出后变宽，
+   但极端窄窗口下仍可能不足——这里把轨道自身作为 size container，用 clamp() 参照轨道
+   实时宽度（cqw）收敛搜索宽，任意窄窗口都居中且不溢出，无需 JS 测量。 */
+.navbar[data-nav-compact='true'] .navCenterTrack {
+  container-type: inline-size;
+}
+
+.navbar[data-nav-compact='true'] .navCenterTrack .searchShell {
+  width: clamp(0px, calc(100cqw - 16px), 300px);
 }
 
 .actionsWindows {
@@ -360,7 +387,7 @@
 
 .searchShell {
   height: 38px;
-  width: 160px;
+  width: 300px;
   max-width: 36vw;
   display: inline-flex;
   align-items: center;

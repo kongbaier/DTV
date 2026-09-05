@@ -1,6 +1,6 @@
 'use client';
 
-import React, {
+import {
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -507,13 +507,16 @@ export function Navbar({
   }, [updateNavCompact]);
 
   // 版本文本 / NEW 徽标 / 自定义标签 / 搜索下拉开关等变化不改 nav 自身尺寸
-  // （ResizeObserver 不触发），在这些时刻也需要重测一次折叠状态
+  // （ResizeObserver 不触发），在这些时刻也需要重测一次折叠状态。
+  // 路由/平台切换会改变内容宽度（搜索居中↔右侧、播放岛、自定义分区无搜索），同样需要重测。
   useLayoutEffect(() => {
     updateNavCompact();
   }, [
     hasUpdate,
     localVersion,
     navSearchOpenNow,
+    isPlayerRoute,
+    activePlatform,
     updateNavCompact,
     visiblePlatforms.length,
   ]);
@@ -537,12 +540,213 @@ export function Navbar({
 
   const showResults = isSearchFocused && !!searchQuery.trim();
 
+  // 搜索框布局：浏览页（非播放路由、非自定义分区）居中显示在平台标签与右按钮簇之间，
+  // 左右留白由 flex 弹性等分；折叠成“更多”后仍保持居中，不回落到右侧。播放页 / 自定义分区维持右侧布局。
+  const searchCentered = !isPlayerRoute && activePlatform !== 'custom';
+
+  // 搜索框本体（含结果下拉）。searchCentered 时放入中部弹性轨道，否则留在右侧按钮簇首位。
+  const renderSearchBox = () => (
+    <div className={styles.searchContainer} data-tauri-drag-region="false">
+      {isPlayerRoute && !playerSearchOpen ? (
+        <m.button
+          type="button"
+          className={styles.searchIconBtn}
+          aria-label="打开搜索"
+          title="搜索"
+          whileHover={{ y: -1 }}
+          whileTap={{ scale: 0.96 }}
+          transition={{
+            type: 'spring',
+            stiffness: 520,
+            damping: 40,
+            mass: 0.7,
+          }}
+          onClick={openPlayerSearch}
+        >
+          <Search size={16} />
+        </m.button>
+      ) : null}
+
+      <m.div
+        className={`${styles.searchShell} ${isSearchFocused ? styles.searchShellFocused : ''}`}
+        initial={false}
+        animate={
+          isPlayerRoute
+            ? {
+                width: playerSearchOpen ? 320 : 36,
+                opacity: playerSearchOpen ? 1 : 0,
+              }
+            : undefined
+        }
+        transition={
+          isPlayerRoute
+            ? { type: 'spring', stiffness: 520, damping: 44, mass: 0.7 }
+            : undefined
+        }
+        style={
+          isPlayerRoute
+            ? {
+                maxWidth: '36vw',
+                overflow: 'hidden',
+                display: playerSearchOpen ? 'inline-flex' : 'none',
+              }
+            : undefined
+        }
+      >
+        <input
+          ref={searchInputRef}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={placeholderText}
+          className={styles.searchInput}
+          onFocus={() => setIsSearchFocused(true)}
+          onBlur={() => {
+            setIsSearchFocused(false);
+            if (!isPlayerRoute) return;
+            if (searchQuery.trim()) return;
+            window.setTimeout(() => setPlayerSearchOpen(false), 80);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              if (!isPlayerRoute) return;
+              setSearchQuery('');
+              setSearchResults([]);
+              setSearchError(null);
+              setIsSearchFocused(false);
+              setPlayerSearchOpen(false);
+              return;
+            }
+            if (e.key !== 'Enter') return;
+            const trimmed = searchQuery.trim();
+            if (!trimmed) return;
+            if (/^\d+$/.test(trimmed)) {
+              navigateToPlayer(activePlatform, trimmed);
+            }
+          }}
+        />
+        {searchQuery ? (
+          <button
+            type="button"
+            className={styles.searchIconBtn}
+            aria-label="清除搜索"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setSearchQuery('');
+              setSearchResults([]);
+              setSearchError(null);
+            }}
+          >
+            <X size={14} />
+          </button>
+        ) : null}
+        <button
+          type="button"
+          className={styles.searchIconBtn}
+          aria-label="搜索"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => {
+            const trimmed = searchQuery.trim();
+            if (!trimmed) return;
+            if (/^\d+$/.test(trimmed)) {
+              navigateToPlayer(activePlatform, trimmed);
+            }
+          }}
+        >
+          <Search size={15} />
+        </button>
+      </m.div>
+
+      {showResults ? (
+        <div className={styles.searchResultsWrapper}>
+          {isLoadingSearch ? (
+            <div className={styles.searchMeta}>搜索中...</div>
+          ) : null}
+          {!isLoadingSearch && searchError ? (
+            <div className={styles.searchMeta}>{searchError}</div>
+          ) : null}
+          {!isLoadingSearch && !searchError && searchResults.length ? (
+            <div className={styles.searchResultsList}>
+              {searchResults.map((anchor) => (
+                <div
+                  key={`${anchor.platform}-${anchor.roomId}`}
+                  className={styles.searchResultItem}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    navigateToPlayer(anchor.platform, anchor.roomId);
+                  }}
+                >
+                  <div className={styles.resultAvatar}>
+                    {anchor.avatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        className={styles.resultAvatarImg}
+                        src={
+                          anchor.platform === 'bilibili' ||
+                          anchor.platform === 'huya'
+                            ? proxify(anchor.avatar)
+                            : anchor.avatar
+                        }
+                        alt={anchor.userName}
+                      />
+                    ) : (
+                      <div className={styles.resultAvatarFallback}>
+                        {(anchor.userName || '?').slice(0, 1)}
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.resultMain}>
+                    <div
+                      className={styles.resultName}
+                      title={anchor.userName}
+                    >
+                      {anchor.userName}
+                    </div>
+                    <div
+                      className={styles.resultTitle}
+                      title={anchor.roomTitle}
+                    >
+                      {anchor.roomTitle}
+                    </div>
+                  </div>
+                  <span
+                    className={`${styles.liveDot} ${anchor.liveStatus ? styles.liveDotOn : ''}`}
+                    aria-hidden="true"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {!isLoadingSearch && !searchError && !searchResults.length ? (
+            <div className={styles.searchMeta}>
+              未找到结果
+              {searchQuery.trim() && /^\d+$/.test(searchQuery.trim()) ? (
+                <button
+                  type="button"
+                  className={styles.searchFallbackBtn}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    const rid = searchQuery.trim();
+                    navigateToPlayer(activePlatform, rid);
+                  }}
+                >
+                  进入房间 {searchQuery.trim()}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
     <nav
       ref={navRef}
       className={`${styles.navbar} ${theme === 'dark' ? styles.navbarDark : ''}`}
       data-tauri-drag-region
       data-nav-compact={navCompact ? 'true' : 'false'}
+      data-nav-search-center={searchCentered ? 'true' : 'false'}
     >
       <div className={styles.platformTabsWrap} data-tauri-drag-region>
         <div
@@ -578,6 +782,12 @@ export function Navbar({
           ))}
         </div>
       </div>
+
+      {/* 浏览页：搜索移出右按钮簇，置于中部弹性轨道，左右留白由 flex 弹性等分。
+         折叠（更多）态下的宽度收缩交给 CSS 的 container query + clamp，无需 JS 测量 */}
+      {searchCentered ? (
+        <div className={styles.navCenterTrack}>{renderSearchBox()}</div>
+      ) : null}
 
       <AnimatePresence initial={false}>
         {isPlayerRoute &&
@@ -692,202 +902,9 @@ export function Navbar({
       </AnimatePresence>
 
       <div className={styles.actions} data-tauri-drag-region>
-        {activePlatform !== 'custom' ? (
-          <div
-            className={styles.searchContainer}
-            data-tauri-drag-region="false"
-          >
-            {isPlayerRoute && !playerSearchOpen ? (
-              <m.button
-                type="button"
-                className={styles.searchIconBtn}
-                aria-label="打开搜索"
-                title="搜索"
-                whileHover={{ y: -1 }}
-                whileTap={{ scale: 0.96 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 520,
-                  damping: 40,
-                  mass: 0.7,
-                }}
-                onClick={openPlayerSearch}
-              >
-                <Search size={16} />
-              </m.button>
-            ) : null}
-
-            <m.div
-              className={`${styles.searchShell} ${isSearchFocused ? styles.searchShellFocused : ''}`}
-              initial={false}
-              animate={
-                isPlayerRoute
-                  ? {
-                      width: playerSearchOpen ? 320 : 36,
-                      opacity: playerSearchOpen ? 1 : 0,
-                    }
-                  : undefined
-              }
-              transition={
-                isPlayerRoute
-                  ? { type: 'spring', stiffness: 520, damping: 44, mass: 0.7 }
-                  : undefined
-              }
-              style={
-                isPlayerRoute
-                  ? {
-                      maxWidth: '36vw',
-                      overflow: 'hidden',
-                      display: playerSearchOpen ? 'inline-flex' : 'none',
-                    }
-                  : undefined
-              }
-            >
-              <input
-                ref={searchInputRef}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={placeholderText}
-                className={styles.searchInput}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => {
-                  setIsSearchFocused(false);
-                  if (!isPlayerRoute) return;
-                  if (searchQuery.trim()) return;
-                  window.setTimeout(() => setPlayerSearchOpen(false), 80);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    if (!isPlayerRoute) return;
-                    setSearchQuery('');
-                    setSearchResults([]);
-                    setSearchError(null);
-                    setIsSearchFocused(false);
-                    setPlayerSearchOpen(false);
-                    return;
-                  }
-                  if (e.key !== 'Enter') return;
-                  const trimmed = searchQuery.trim();
-                  if (!trimmed) return;
-                  if (/^\d+$/.test(trimmed)) {
-                    navigateToPlayer(activePlatform, trimmed);
-                  }
-                }}
-              />
-              {searchQuery ? (
-                <button
-                  type="button"
-                  className={styles.searchIconBtn}
-                  aria-label="清除搜索"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSearchResults([]);
-                    setSearchError(null);
-                  }}
-                >
-                  <X size={14} />
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className={styles.searchIconBtn}
-                aria-label="搜索"
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  const trimmed = searchQuery.trim();
-                  if (!trimmed) return;
-                  if (/^\d+$/.test(trimmed)) {
-                    navigateToPlayer(activePlatform, trimmed);
-                  }
-                }}
-              >
-                <Search size={15} />
-              </button>
-            </m.div>
-
-            {showResults ? (
-              <div className={styles.searchResultsWrapper}>
-                {isLoadingSearch ? (
-                  <div className={styles.searchMeta}>搜索中...</div>
-                ) : null}
-                {!isLoadingSearch && searchError ? (
-                  <div className={styles.searchMeta}>{searchError}</div>
-                ) : null}
-                {!isLoadingSearch && !searchError && searchResults.length ? (
-                  <div className={styles.searchResultsList}>
-                    {searchResults.map((anchor) => (
-                      <div
-                        key={`${anchor.platform}-${anchor.roomId}`}
-                        className={styles.searchResultItem}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          navigateToPlayer(anchor.platform, anchor.roomId);
-                        }}
-                      >
-                        <div className={styles.resultAvatar}>
-                          {anchor.avatar ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              className={styles.resultAvatarImg}
-                              src={
-                                anchor.platform === 'bilibili' ||
-                                anchor.platform === 'huya'
-                                  ? proxify(anchor.avatar)
-                                  : anchor.avatar
-                              }
-                              alt={anchor.userName}
-                            />
-                          ) : (
-                            <div className={styles.resultAvatarFallback}>
-                              {(anchor.userName || '?').slice(0, 1)}
-                            </div>
-                          )}
-                        </div>
-                        <div className={styles.resultMain}>
-                          <div
-                            className={styles.resultName}
-                            title={anchor.userName}
-                          >
-                            {anchor.userName}
-                          </div>
-                          <div
-                            className={styles.resultTitle}
-                            title={anchor.roomTitle}
-                          >
-                            {anchor.roomTitle}
-                          </div>
-                        </div>
-                        <span
-                          className={`${styles.liveDot} ${anchor.liveStatus ? styles.liveDotOn : ''}`}
-                          aria-hidden="true"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-
-                {!isLoadingSearch && !searchError && !searchResults.length ? (
-                  <div className={styles.searchMeta}>
-                    未找到结果
-                    {searchQuery.trim() && /^\d+$/.test(searchQuery.trim()) ? (
-                      <button
-                        type="button"
-                        className={styles.searchFallbackBtn}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          const rid = searchQuery.trim();
-                          navigateToPlayer(activePlatform, rid);
-                        }}
-                      >
-                        进入房间 {searchQuery.trim()}
-                      </button>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
+        {/* 播放页 / 自定义分区：搜索仍位于右侧按钮簇首位 */}
+        {!searchCentered && activePlatform !== 'custom' ? (
+          renderSearchBox()
         ) : null}
 
         {navCompact ? (
