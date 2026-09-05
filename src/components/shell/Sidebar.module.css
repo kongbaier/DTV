@@ -1,5 +1,4 @@
 .sidebarShell {
-  z-index: 100;
   background-color: var(--bg-primary);
   border-right: 1px solid var(--border);
 }

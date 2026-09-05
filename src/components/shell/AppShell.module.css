@@ -32,35 +32,6 @@
   overflow: hidden;
 }
 
-.appBodyContents {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.routeScope {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.routeContents {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.routePendingWrap {
-  position: relative;
-  min-height: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
 .routePendingContents {
   min-height: 0;
   flex: 1;

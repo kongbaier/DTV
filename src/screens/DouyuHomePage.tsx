@@ -178,7 +178,7 @@ export function DouyuHomePage() {
         background: 'transparent',
       }}
     >
-      <div style={{ flexShrink: 0, background: 'transparent', zIndex: 10 }}>
+      <div style={{ flexShrink: 0 }}>
         <CommonCategory
           categoriesData={categories}
           onCategorySelected={(e) => {

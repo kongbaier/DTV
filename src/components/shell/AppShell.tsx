@@ -158,53 +158,45 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         <m.main
           className={`${styles.appBody} ${playerRoute ? styles.appBodyPlayer : ''}`}
         >
-          <div className={styles.appBodyContents}>
-            <div className={styles.routeScope}>
-              <div className={styles.routePendingWrap}>
-                <div
-                  className={`${styles.routePendingContents} ${showRoutePending ? styles.routePendingContentsHidden : ''}`}
-                  aria-hidden={showRoutePending}
+          <div
+            className={`${styles.routePendingContents} ${showRoutePending ? styles.routePendingContentsHidden : ''}`}
+            aria-hidden={showRoutePending}
+          >
+            {playerRoute ? (
+              <AnimatePresence mode="wait" initial={false}>
+                <m.div
+                  key={normalizedPathname}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{
+                    duration: 0.18,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  style={{ flex: 1, minHeight: 0 }}
                 >
-                  <div className={styles.routeContents}>
-                    {playerRoute ? (
-                      <AnimatePresence mode="wait" initial={false}>
-                        <m.div
-                          key={normalizedPathname}
-                          initial={{ opacity: 0, y: 6 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -4 }}
-                          transition={{
-                            duration: 0.18,
-                            ease: [0.16, 1, 0.3, 1],
-                          }}
-                          style={{ flex: 1, minHeight: 0 }}
-                        >
-                          {children}
-                        </m.div>
-                      </AnimatePresence>
-                    ) : (
-                      children
-                    )}
-                  </div>
-                </div>
-                {showRoutePending ? (
-                  <div
-                    className={styles.routePendingOverlay}
-                    data-drag-region="false"
-                  >
-                    <button
-                      type="button"
-                      className={styles.routePendingButton}
-                      disabled
-                      aria-label="正在加载"
-                    >
-                      <Spinner size="lg" />
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-            </div>
+                  {children}
+                </m.div>
+              </AnimatePresence>
+            ) : (
+              children
+            )}
           </div>
+          {showRoutePending ? (
+            <div
+              className={styles.routePendingOverlay}
+              data-drag-region="false"
+            >
+              <button
+                type="button"
+                className={styles.routePendingButton}
+                disabled
+                aria-label="正在加载"
+              >
+                <Spinner size="lg" />
+              </button>
+            </div>
+          ) : null}
         </m.main>
 
         <PlayerOverlayHost />
