@@ -923,10 +923,7 @@ export function Navbar({
               ) : null}
               <MoreHorizontal size={18} />
             </Dropdown.Trigger>
-            <Dropdown.Popover
-              placement="bottom end"
-              className={styles.morePopover}
-            >
+            <Dropdown.Popover placement="bottom end">
               <Dropdown.Menu
                 aria-label="更多操作"
                 onAction={(key) => {
@@ -954,8 +951,8 @@ export function Navbar({
                   textValue="打赏支持"
                   className={styles.moreItem}
                 >
-                  <span className={styles.moreItemIcon}>
-                    <ThumbsUp size={15} />
+                  <span>
+                    <ThumbsUp size={15} className={styles.moreItemIcon} />
                   </span>
                   打赏支持
                 </Dropdown.Item>
