@@ -2,28 +2,28 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use reqwest;
-use std::panic;
 use std::env;
+use std::panic;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
-use tokio::sync::oneshot;
 #[cfg(target_os = "macos")]
 use tauri::Manager;
 use tauri_plugin_opener::OpenerExt;
-mod logging;
+use tokio::sync::oneshot;
 mod config_transfer;
 mod lan_sync;
-mod sync_transfer;
+mod logging;
 mod platforms;
 mod proxy;
+mod sync_transfer;
 mod version_check;
 use platforms::common::{DouyinDanmakuState, FollowHttpClient, HuyaDanmakuState};
 use platforms::douyin::danmu::signature::generate_douyin_ms_token;
 use platforms::douyin::fetch_douyin_partition_rooms;
 use platforms::douyin::fetch_douyin_room_info;
 use platforms::douyin::fetch_douyin_streamer_info;
-use platforms::douyin::{start_douyin_danmu_listener, stop_douyin_danmu_listener};
 use platforms::douyin::{get_douyin_live_stream_url, get_douyin_live_stream_url_with_quality};
+use platforms::douyin::{start_douyin_danmu_listener, stop_douyin_danmu_listener};
 use platforms::douyu::fetch_categories;
 use platforms::douyu::fetch_douyu_room_info;
 use platforms::douyu::fetch_three_cate;
@@ -191,92 +191,96 @@ fn main() {
     let follow_http_client = FollowHttpClient::new().expect("Failed to create follow http client");
 
     tauri::Builder::default()
-            .plugin(tauri_plugin_os::init())
-            .plugin(tauri_plugin_opener::init())
-            .plugin(tauri_plugin_window_state::Builder::default()
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
                 .with_state_flags(
                     tauri_plugin_window_state::StateFlags::SIZE
                         | tauri_plugin_window_state::StateFlags::POSITION
                         | tauri_plugin_window_state::StateFlags::MAXIMIZED
+                        | tauri_plugin_window_state::StateFlags::VISIBLE,
                 )
-                .build())
-            .setup(|_app| {
-                // Apply macOS vibrancy to the main window when running on macOS
-                #[cfg(target_os = "macos")]
-                {
-                    use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
-                    if let Some(window) = _app.get_webview_window("main") {
-                        match apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None) {
-                            Ok(_) => println!("vibrancy applied successfully"),
-                            Err(e) => eprintln!("vibrancy error: {:?}", e),
-                        }
+                .with_denylist(&["bilibili-silent-bootstrap"])
+                .build(),
+        )
+        .setup(|_app| {
+            // Apply macOS vibrancy to the main window when running on macOS
+            #[cfg(target_os = "macos")]
+            {
+                use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+                if let Some(window) = _app.get_webview_window("main") {
+                    match apply_vibrancy(&window, NSVisualEffectMaterial::HudWindow, None, None) {
+                        Ok(_) => println!("vibrancy applied successfully"),
+                        Err(e) => eprintln!("vibrancy error: {:?}", e),
                     }
                 }
-                Ok(())
-            })
-            .manage(client) // Manage the reqwest client
-            .manage(follow_http_client) // 专用关注刷新客户端，避免占用默认连接池
-            .manage(DouyuDanmakuHandles::default()) // Manage new DouyuDanmakuHandles
-            .manage(DouyinDanmakuState::default()) // Manage DouyinDanmakuState
-            .manage(HuyaDanmakuState::default()) // Manage HuyaDanmakuState
-            .manage(platforms::common::BilibiliDanmakuState::default()) // Manage BilibiliDanmakuState
-            .manage(StreamUrlStore::default())
-            .manage(proxy::ProxyServerHandle::default())
-            .manage(platforms::bilibili::state::BilibiliState::default())
-            .manage(lan_sync::LanSyncServerState::default())
-            .invoke_handler(tauri::generate_handler![
-                get_stream_url_cmd,
-                get_stream_url_with_quality_cmd,
-                set_stream_url_cmd,
-                search_anchor,
-                config_transfer::save_config_export,
-                config_transfer::pick_config_import,
-                sync_transfer::export_lan_sync_json_to_desktop,
-                sync_transfer::pick_lan_sync_json_import,
-                sync_transfer::import_latest_lan_sync_json_from_desktop,
-                lan_sync::lan_sync_start_server,
-                lan_sync::lan_sync_stop_server,
-                lan_sync::lan_sync_status,
-                lan_sync::lan_sync_token,
-                lan_sync::lan_sync_discover,
-                lan_sync::lan_sync_fetch_manifest,
-                lan_sync::lan_sync_fetch_payload,
-                start_danmaku_listener,      // Douyu danmaku start
-                stop_danmaku_listener,       // Douyu danmaku stop
-                start_douyin_danmu_listener, // Added Douyin danmaku listener command
-                stop_douyin_danmu_listener,  // Added Douyin danmaku stop command
-                start_huya_danmaku_listener, // Added Huya danmaku listener command
-                stop_huya_danmaku_listener,  // Added Huya danmaku stop command
-                platforms::bilibili::danmaku::start_bilibili_danmaku_listener,
-                platforms::bilibili::danmaku::stop_bilibili_danmaku_listener,
-                proxy::start_proxy,
-                proxy::stop_proxy,
-                proxy::start_static_proxy_server,
-                fetch_categories,
-                fetch_live_list,
-                fetch_live_list_for_cate3,
-                fetch_douyu_room_info,
-                fetch_three_cate,
-                generate_douyin_ms_token,
-                fetch_douyin_partition_rooms,
-                get_douyin_live_stream_url,
-                get_douyin_live_stream_url_with_quality,
-                fetch_douyin_room_info,
-                fetch_douyin_streamer_info,
-                fetch_huya_live_list,
-                platforms::huya::danmaku::fetch_huya_join_params,
-                platforms::huya::stream_url::get_huya_unified_cmd,
-                platforms::bilibili::state::generate_bilibili_w_webid,
-                platforms::bilibili::live_list::fetch_bilibili_live_list,
-                platforms::bilibili::stream_url::get_bilibili_live_stream_url_with_quality,
-                platforms::bilibili::streamer_info::fetch_bilibili_streamer_info,
-                platforms::bilibili::cookie::get_bilibili_cookie,
-                platforms::bilibili::cookie::bootstrap_bilibili_cookie,
-                platforms::bilibili::search::search_bilibili_rooms,
-                platforms::huya::search::search_huya_anchors,
-                open_in_default_browser,
-                version_check::check_version_cmd,
-            ])
-            .run(tauri::generate_context!())
-            .expect("error while running tauri application");
+            }
+            Ok(())
+        })
+        .manage(client) // Manage the reqwest client
+        .manage(follow_http_client) // 专用关注刷新客户端，避免占用默认连接池
+        .manage(DouyuDanmakuHandles::default()) // Manage new DouyuDanmakuHandles
+        .manage(DouyinDanmakuState::default()) // Manage DouyinDanmakuState
+        .manage(HuyaDanmakuState::default()) // Manage HuyaDanmakuState
+        .manage(platforms::common::BilibiliDanmakuState::default()) // Manage BilibiliDanmakuState
+        .manage(StreamUrlStore::default())
+        .manage(proxy::ProxyServerHandle::default())
+        .manage(platforms::bilibili::state::BilibiliState::default())
+        .manage(lan_sync::LanSyncServerState::default())
+        .invoke_handler(tauri::generate_handler![
+            get_stream_url_cmd,
+            get_stream_url_with_quality_cmd,
+            set_stream_url_cmd,
+            search_anchor,
+            config_transfer::save_config_export,
+            config_transfer::pick_config_import,
+            sync_transfer::export_lan_sync_json_to_desktop,
+            sync_transfer::pick_lan_sync_json_import,
+            sync_transfer::import_latest_lan_sync_json_from_desktop,
+            lan_sync::lan_sync_start_server,
+            lan_sync::lan_sync_stop_server,
+            lan_sync::lan_sync_status,
+            lan_sync::lan_sync_token,
+            lan_sync::lan_sync_discover,
+            lan_sync::lan_sync_fetch_manifest,
+            lan_sync::lan_sync_fetch_payload,
+            start_danmaku_listener,      // Douyu danmaku start
+            stop_danmaku_listener,       // Douyu danmaku stop
+            start_douyin_danmu_listener, // Added Douyin danmaku listener command
+            stop_douyin_danmu_listener,  // Added Douyin danmaku stop command
+            start_huya_danmaku_listener, // Added Huya danmaku listener command
+            stop_huya_danmaku_listener,  // Added Huya danmaku stop command
+            platforms::bilibili::danmaku::start_bilibili_danmaku_listener,
+            platforms::bilibili::danmaku::stop_bilibili_danmaku_listener,
+            proxy::start_proxy,
+            proxy::stop_proxy,
+            proxy::start_static_proxy_server,
+            fetch_categories,
+            fetch_live_list,
+            fetch_live_list_for_cate3,
+            fetch_douyu_room_info,
+            fetch_three_cate,
+            generate_douyin_ms_token,
+            fetch_douyin_partition_rooms,
+            get_douyin_live_stream_url,
+            get_douyin_live_stream_url_with_quality,
+            fetch_douyin_room_info,
+            fetch_douyin_streamer_info,
+            fetch_huya_live_list,
+            platforms::huya::danmaku::fetch_huya_join_params,
+            platforms::huya::stream_url::get_huya_unified_cmd,
+            platforms::bilibili::state::generate_bilibili_w_webid,
+            platforms::bilibili::live_list::fetch_bilibili_live_list,
+            platforms::bilibili::stream_url::get_bilibili_live_stream_url_with_quality,
+            platforms::bilibili::streamer_info::fetch_bilibili_streamer_info,
+            platforms::bilibili::cookie::get_bilibili_cookie,
+            platforms::bilibili::cookie::bootstrap_bilibili_cookie,
+            platforms::bilibili::search::search_bilibili_rooms,
+            platforms::huya::search::search_huya_anchors,
+            open_in_default_browser,
+            version_check::check_version_cmd,
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }

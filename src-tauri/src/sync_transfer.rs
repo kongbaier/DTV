@@ -91,7 +91,9 @@ pub fn export_lan_sync_json_to_desktop(
 }
 
 #[tauri::command]
-pub fn pick_lan_sync_json_import(app: tauri::AppHandle) -> Result<Option<ImportedJsonFile>, String> {
+pub fn pick_lan_sync_json_import(
+    app: tauri::AppHandle,
+) -> Result<Option<ImportedJsonFile>, String> {
     let desktop = app.path().desktop_dir().ok();
     let mut dialog = rfd::FileDialog::new().add_filter("DTV Sync", &["json"]);
     if let Some(dir) = desktop {
@@ -102,7 +104,8 @@ pub fn pick_lan_sync_json_import(app: tauri::AppHandle) -> Result<Option<Importe
         return Ok(None);
     };
 
-    let content = fs::read_to_string(&path).map_err(|e| format!("Failed to read json file: {e}"))?;
+    let content =
+        fs::read_to_string(&path).map_err(|e| format!("Failed to read json file: {e}"))?;
     Ok(Some(ImportedJsonFile {
         path: path.to_string_lossy().into_owned(),
         content,
@@ -110,7 +113,9 @@ pub fn pick_lan_sync_json_import(app: tauri::AppHandle) -> Result<Option<Importe
 }
 
 #[tauri::command]
-pub fn import_latest_lan_sync_json_from_desktop(app: tauri::AppHandle) -> Result<Option<ImportedJsonFile>, String> {
+pub fn import_latest_lan_sync_json_from_desktop(
+    app: tauri::AppHandle,
+) -> Result<Option<ImportedJsonFile>, String> {
     let desktop = app
         .path()
         .desktop_dir()
@@ -142,7 +147,8 @@ pub fn import_latest_lan_sync_json_from_desktop(app: tauri::AppHandle) -> Result
     let Some((path, _)) = best else {
         return Ok(None);
     };
-    let content = fs::read_to_string(&path).map_err(|e| format!("Failed to read json file: {e}"))?;
+    let content =
+        fs::read_to_string(&path).map_err(|e| format!("Failed to read json file: {e}"))?;
     Ok(Some(ImportedJsonFile {
         path: path.to_string_lossy().into_owned(),
         content,

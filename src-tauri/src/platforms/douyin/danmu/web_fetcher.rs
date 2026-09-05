@@ -1,8 +1,8 @@
 use crate::platforms::common::http_client::HttpClient;
-use log::{debug, warn};
 use crate::platforms::douyin::web_api::{
     fetch_room_data, normalize_douyin_live_id, DouyinRoomData, DEFAULT_USER_AGENT,
 };
+use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 use serde_json::{self, Value};
 use std::sync::Arc;
@@ -367,7 +367,10 @@ impl DouyinLiveWebFetcher {
         }
 
         let mut headers = HeaderMap::new();
-        headers.insert(ACCEPT, HeaderValue::from_static("application/json, text/plain, */*"));
+        headers.insert(
+            ACCEPT,
+            HeaderValue::from_static("application/json, text/plain, */*"),
+        );
         headers.insert(ACCEPT_LANGUAGE, HeaderValue::from_static("zh-CN,zh;q=0.9"));
         headers.insert(
             REFERER,

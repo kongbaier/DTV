@@ -68,7 +68,7 @@ pub async fn start_douyin_danmu_listener(
     let app_handle_clone = app_handle.clone();
     let room_id_str_clone = normalized_room_id.clone();
 
-        tokio::spawn(async move {
+    tokio::spawn(async move {
         println!(
             "[Douyin Danmaku] Spawning listener for room: {}",
             room_id_str_clone
@@ -147,10 +147,14 @@ pub async fn start_douyin_danmu_listener(
                 Err(e) => {
                     let err_text = e.to_string();
                     // If the server is explicitly throttling / blocking, avoid hammering the same egress IP.
-                    if err_text.contains("http_status=429") || err_text.contains("http_status=403") {
+                    if err_text.contains("http_status=429") || err_text.contains("http_status=403")
+                    {
                         max_backoff_secs = 300;
                         backoff_secs = backoff_secs.max(60);
-                    } else if err_text.contains("http_status=504") || err_text.contains(" 504 ") || err_text.contains("504 Gateway Timeout") {
+                    } else if err_text.contains("http_status=504")
+                        || err_text.contains(" 504 ")
+                        || err_text.contains("504 Gateway Timeout")
+                    {
                         max_backoff_secs = 120;
                         backoff_secs = backoff_secs.max(10);
                     }
@@ -162,7 +166,8 @@ pub async fn start_douyin_danmu_listener(
             }
 
             let jitter_ms: u64 = rand::thread_rng().gen_range(0..=800);
-            let sleep_fut = sleep(Duration::from_secs(backoff_secs) + Duration::from_millis(jitter_ms));
+            let sleep_fut =
+                sleep(Duration::from_secs(backoff_secs) + Duration::from_millis(jitter_ms));
             tokio::select! {
                 _ = sleep_fut => {}
                 _ = rx_shutdown.recv() => break,
@@ -174,4 +179,3 @@ pub async fn start_douyin_danmu_listener(
     });
     Ok(())
 }
-

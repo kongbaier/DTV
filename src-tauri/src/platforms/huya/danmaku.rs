@@ -130,7 +130,10 @@ pub async fn start_huya_danmaku_listener(
     let room_id_clone = room_id_or_url.clone();
 
     tokio::spawn(async move {
-        debug!("[Huya Danmaku] spawned worker for room_id={}", room_id_clone);
+        debug!(
+            "[Huya Danmaku] spawned worker for room_id={}",
+            room_id_clone
+        );
 
         let mut backoff_secs = 1u64;
 
@@ -169,23 +172,21 @@ pub async fn start_huya_danmaku_listener(
                             Err(e) => return Err(anyhow::anyhow!(e)),
                         };
                         match m {
-                            WsMessage::Binary(bin) => {
-                                match decode_msg_tars(&bin)? {
-                                    Some((nick, text)) => {
-                                        let _ = app_handle_clone.emit(
-                                            "danmaku-message",
-                                            crate::platforms::common::DanmakuFrontendPayload {
-                                                room_id: room_id_clone.clone(),
-                                                user: nick,
-                                                content: text,
-                                                user_level: 0,
-                                                fans_club_level: 0,
-                                            },
-                                        );
-                                    }
-                                    None => {}
+                            WsMessage::Binary(bin) => match decode_msg_tars(&bin)? {
+                                Some((nick, text)) => {
+                                    let _ = app_handle_clone.emit(
+                                        "danmaku-message",
+                                        crate::platforms::common::DanmakuFrontendPayload {
+                                            room_id: room_id_clone.clone(),
+                                            user: nick,
+                                            content: text,
+                                            user_level: 0,
+                                            fans_club_level: 0,
+                                        },
+                                    );
                                 }
-                            }
+                                None => {}
+                            },
                             other => {
                                 debug!("[Huya Danmaku] non-binary ws message: {:?}", other);
                             }
@@ -505,4 +506,3 @@ fn decode_msg_tars(data: &[u8]) -> anyhow::Result<Option<(String, String)>> {
     }
     Ok(ret)
 }
-

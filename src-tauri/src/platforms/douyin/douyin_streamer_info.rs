@@ -1,6 +1,8 @@
 use crate::platforms::common::http_client::HttpClient;
 use crate::platforms::common::{FollowHttpClient, GetStreamUrlPayload, LiveStreamInfo};
-use crate::platforms::douyin::web_api::{fetch_room_data, normalize_douyin_live_id, DouyinRoomData};
+use crate::platforms::douyin::web_api::{
+    fetch_room_data, normalize_douyin_live_id, DouyinRoomData,
+};
 use tauri::command;
 use tauri::State;
 
@@ -64,11 +66,11 @@ pub async fn fetch_douyin_streamer_info(
             avatar: None,
             stream_url: None,
             status: None,
-                error_message: Some(format!("获取抖音房间信息失败: {}", e)),
-                upstream_url: None,
-                available_streams: None,
-                normalized_room_id: None,
-                web_rid: Some(normalized_id),
+            error_message: Some(format!("获取抖音房间信息失败: {}", e)),
+            upstream_url: None,
+            available_streams: None,
+            normalized_room_id: None,
+            web_rid: Some(normalized_id),
         }),
     }
 }

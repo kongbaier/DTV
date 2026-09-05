@@ -13,7 +13,8 @@ pub fn init() {
     };
 
     // Avoid panicking if init is called twice (some Tauri entrypoints may do that).
-    let mut builder = env_logger::Builder::from_env(Env::default().default_filter_or(default_filter));
+    let mut builder =
+        env_logger::Builder::from_env(Env::default().default_filter_or(default_filter));
 
     // Keep common HTTP stack crates quiet unless explicitly enabled.
     // These can otherwise flood the terminal in debug builds.
@@ -22,7 +23,5 @@ pub fn init() {
         .filter_module("h2", log::LevelFilter::Info)
         .filter_module("reqwest", log::LevelFilter::Info);
 
-    let _ = builder
-        .format_timestamp_millis()
-        .try_init();
+    let _ = builder.format_timestamp_millis().try_init();
 }

@@ -90,10 +90,7 @@ impl DouYu {
     async fn new(rid: &str) -> Result<Self, Box<dyn std::error::Error>> {
         // 迁移到 reqwest：禁用系统代理、限制重定向、设置默认 UA/语言等头部
         let mut default_headers = HeaderMap::new();
-        default_headers.insert(
-            "User-Agent",
-            HeaderValue::from_static(DEFAULT_DOUYU_UA),
-        );
+        default_headers.insert("User-Agent", HeaderValue::from_static(DEFAULT_DOUYU_UA));
         default_headers.insert(
             "Accept-Language",
             HeaderValue::from_static("zh-CN,zh;q=0.9"),
@@ -189,10 +186,7 @@ impl DouYu {
         Ok(crptext.to_string())
     }
 
-    async fn build_sign_params(
-        &self,
-        room_id: &str,
-    ) -> Result<String, Box<dyn std::error::Error>> {
+    async fn build_sign_params(&self, room_id: &str) -> Result<String, Box<dyn std::error::Error>> {
         let crptext = self.get_h5_enc(room_id).await?;
         let ts = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64;
         let params = self
@@ -341,7 +335,10 @@ impl DouYu {
             .unwrap_or_else(|| normalize_douyu_cdn(requested).to_string())
     }
 
-    pub async fn get_real_url(&self, cdn: Option<&str>) -> Result<String, Box<dyn std::error::Error>> {
+    pub async fn get_real_url(
+        &self,
+        cdn: Option<&str>,
+    ) -> Result<String, Box<dyn std::error::Error>> {
         let (real_room_id, is_live) = self.fetch_room_detail().await?;
         if !is_live {
             return Err(Box::new(std::io::Error::new(

@@ -18,7 +18,10 @@ pub async fn handle_received_messages(
     app_handle: tauri::AppHandle, // Added AppHandle
     room_id: String,              // Added room_id parameter
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    debug!("[Douyin Danmaku] Message handler started for room_id: {}", room_id);
+    debug!(
+        "[Douyin Danmaku] Message handler started for room_id: {}",
+        room_id
+    );
     while let Some(message_result) = read_stream.next().await {
         match message_result {
             Ok(ws_msg) => {
@@ -87,7 +90,9 @@ pub async fn handle_received_messages(
                                             }
                                         }
                                     }
-                                    Err(e) => warn!("[Douyin Danmaku] Failed to parse Response: {}", e),
+                                    Err(e) => {
+                                        warn!("[Douyin Danmaku] Failed to parse Response: {}", e)
+                                    }
                                 }
                             } else if push_frame.payload_type == "ack" {
                                 // Optional: log received ACKs from server
@@ -104,7 +109,10 @@ pub async fn handle_received_messages(
                         warn!("[Douyin Danmaku] Failed to send PONG from message_handler");
                     }
                 } else if let WsMessage::Close(close_frame) = ws_msg {
-                    debug!("[Douyin Danmaku] WebSocket closed by server: {:?}", close_frame);
+                    debug!(
+                        "[Douyin Danmaku] WebSocket closed by server: {:?}",
+                        close_frame
+                    );
                     break;
                 }
             }
