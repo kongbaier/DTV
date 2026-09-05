@@ -108,6 +108,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  /* 折叠判定依赖“溢出即真实”：展开态不允许按钮被 flex 压扁，否则 scrollWidth 测不出溢出。
+     折叠（更多按钮）后恢复可压缩，作为极端窄屏下的兜底。 */
+  flex-shrink: 0;
+}
+
+.navbar[data-nav-compact='true'] .actions {
+  flex-shrink: 1;
 }
 
 .actionsWindows {
@@ -1140,4 +1147,45 @@
 .liveDotOn {
   background: var(--status-live);
   box-shadow: 0 0 0 4px rgba(255, 62, 62, 0.12);
+}
+
+/* —— 顶栏 "更多" 下拉菜单 —— */
+.morePopover {
+  min-width: 208px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-lg);
+  padding: 6px;
+}
+
+.moreItem {
+  color: var(--primary-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.moreItemIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.moreItemVersion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.moreItemNew {
+  height: 16px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.16);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 16px;
 }

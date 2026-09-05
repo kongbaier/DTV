@@ -15,6 +15,7 @@ import {
   LayoutGrid,
   MonitorSmartphone,
   Moon,
+  MoreHorizontal,
   Search,
   Sun,
   ThumbsUp,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { useLocation } from 'react-router-dom';
+import { Dropdown } from '@heroui/react';
 
 import styles from './Navbar.module.css';
 import { LanSyncModal } from './LanSyncModal';
@@ -462,6 +464,60 @@ export function Navbar({
     return () => window.removeEventListener('resize', onResize);
   }, [updateHighlight]);
 
+  // —— 窄窗口折叠：版本/赞赏/同步/主题收进 "更多" ——
+  // 触发信号量 Navbar 自身 DOM 是否溢出（scrollWidth > clientWidth），而非 window 宽度，
+  // 天然适配 DPI 缩放、字号、版本徽标、自定义标签增减等变量；对搜索下拉打开时的误判做了豁免。
+  const navRef = useRef<HTMLElement | null>(null);
+  const [navCompact, setNavCompact] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const navCompactRef = useRef(false);
+  const navExpandedWidthRef = useRef(0);
+  const navSearchOpenNow = isSearchFocused && !!searchQuery.trim();
+  const navSearchOpenRef = useRef(false);
+  useEffect(() => {
+    navSearchOpenRef.current = navSearchOpenNow;
+  }, [navSearchOpenNow]);
+
+  const updateNavCompact = useCallback(() => {
+    const el = navRef.current;
+    if (!el) return;
+    if (navCompactRef.current) {
+      // 已折叠：可用宽度回到「展开所需宽度 + 余量」才恢复，避免在临界宽度来回抖动
+      if (
+        navExpandedWidthRef.current > 0 &&
+        el.clientWidth >= navExpandedWidthRef.current + 2
+      ) {
+        navCompactRef.current = false;
+        setNavCompact(false);
+      }
+    } else if (!navSearchOpenRef.current && el.scrollWidth > el.clientWidth + 1) {
+      // 展开态且内容溢出：记录当前（含全部按钮）的内容宽度后再折叠
+      navExpandedWidthRef.current = el.scrollWidth;
+      navCompactRef.current = true;
+      setNavCompact(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(updateNavCompact);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [updateNavCompact]);
+
+  // 版本文本 / NEW 徽标 / 自定义标签 / 搜索下拉开关等变化不改 nav 自身尺寸
+  // （ResizeObserver 不触发），在这些时刻也需要重测一次折叠状态
+  useLayoutEffect(() => {
+    updateNavCompact();
+  }, [
+    hasUpdate,
+    localVersion,
+    navSearchOpenNow,
+    updateNavCompact,
+    visiblePlatforms.length,
+  ]);
+
   const island = playerUi.island;
   const islandDisplayName = island.anchorName || island.roomId || '';
   const islandDisplayTitle = island.title || '';
@@ -483,8 +539,10 @@ export function Navbar({
 
   return (
     <nav
+      ref={navRef}
       className={`${styles.navbar} ${theme === 'dark' ? styles.navbarDark : ''}`}
       data-tauri-drag-region
+      data-nav-compact={navCompact ? 'true' : 'false'}
     >
       <div className={styles.platformTabsWrap} data-tauri-drag-region>
         <div
@@ -832,53 +890,136 @@ export function Navbar({
           </div>
         ) : null}
 
-        <button
-          type="button"
-          // eslint-disable-next-line react/no-unknown-property
-          data-tauri-drag-region="false"
-          className={styles.versionBtn}
-          title="版本信息"
-          aria-label="版本信息"
-          onClick={() => setUpdateOpen(true)}
-        >
-          <span className={styles.versionText}>v{localVersion || '?'}</span>
-          {hasUpdate ? <span className={styles.badgeNew}>NEW</span> : null}
-        </button>
+        {navCompact ? (
+          <Dropdown
+            isOpen={moreOpen}
+            onOpenChange={(open) => setMoreOpen(!!open)}
+          >
+            <Dropdown.Trigger
+              type="button"
+              className={styles.navIconBtn}
+              data-tauri-drag-region="false"
+              aria-label="更多"
+            >
+              {hasUpdate ? (
+                <span className={styles.badgeDot} aria-hidden="true" />
+              ) : null}
+              <MoreHorizontal size={18} />
+            </Dropdown.Trigger>
+            <Dropdown.Popover
+              placement="bottom end"
+              className={styles.morePopover}
+            >
+              <Dropdown.Menu
+                aria-label="更多操作"
+                onAction={(key) => {
+                  if (key === 'version') setUpdateOpen(true);
+                  else if (key === 'donate') setDonateOpen(true);
+                  else if (key === 'lanSync') setLanSyncOpen(true);
+                  else if (key === 'theme') onThemeToggle();
+                  setMoreOpen(false);
+                }}
+              >
+                <Dropdown.Item
+                  id="version"
+                  textValue="版本信息"
+                  className={styles.moreItem}
+                >
+                  <span className={styles.moreItemVersion}>
+                    {hasUpdate ? (
+                      <span className={styles.moreItemNew}>NEW</span>
+                    ) : null}
+                    版本 v{localVersion || '?'}
+                  </span>
+                </Dropdown.Item>
+                <Dropdown.Item
+                  id="donate"
+                  textValue="打赏支持"
+                  className={styles.moreItem}
+                >
+                  <span className={styles.moreItemIcon}>
+                    <ThumbsUp size={15} />
+                  </span>
+                  打赏支持
+                </Dropdown.Item>
+                <Dropdown.Item
+                  id="lanSync"
+                  textValue="数据同步"
+                  className={styles.moreItem}
+                >
+                  <span className={styles.moreItemIcon}>
+                    <MonitorSmartphone size={15} />
+                  </span>
+                  数据同步
+                </Dropdown.Item>
+                <Dropdown.Item
+                  id="theme"
+                  textValue={
+                    theme === 'dark' ? '切换为浅色模式' : '切换为深色模式'
+                  }
+                  className={styles.moreItem}
+                >
+                  <span className={styles.moreItemIcon}>
+                    {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                  </span>
+                  {theme === 'dark' ? '切换为浅色模式' : '切换为深色模式'}
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
+        ) : (
+          <>
+            <button
+              type="button"
+              // eslint-disable-next-line react/no-unknown-property
+              data-tauri-drag-region="false"
+              className={styles.versionBtn}
+              title="版本信息"
+              aria-label="版本信息"
+              onClick={() => setUpdateOpen(true)}
+            >
+              <span className={styles.versionText}>
+                v{localVersion || '?'}
+              </span>
+              {hasUpdate ? <span className={styles.badgeNew}>NEW</span> : null}
+            </button>
 
-        <button
-          type="button"
-          // eslint-disable-next-line react/no-unknown-property
-          data-tauri-drag-region="false"
-          className={styles.navIconBtn}
-          title="打赏支持"
-          aria-label="打赏"
-          onClick={() => setDonateOpen(true)}
-        >
-          <ThumbsUp size={18} />
-        </button>
+            <button
+              type="button"
+              // eslint-disable-next-line react/no-unknown-property
+              data-tauri-drag-region="false"
+              className={styles.navIconBtn}
+              title="打赏支持"
+              aria-label="打赏"
+              onClick={() => setDonateOpen(true)}
+            >
+              <ThumbsUp size={18} />
+            </button>
 
-        <button
-          type="button"
-          // eslint-disable-next-line react/no-unknown-property
-          data-tauri-drag-region="false"
-          className={styles.navIconBtn}
-          title="Data Sync"
-          aria-label="Data Sync"
-          onClick={() => setLanSyncOpen(true)}
-        >
-          <MonitorSmartphone size={18} />
-        </button>
+            <button
+              type="button"
+              // eslint-disable-next-line react/no-unknown-property
+              data-tauri-drag-region="false"
+              className={styles.navIconBtn}
+              title="Data Sync"
+              aria-label="Data Sync"
+              onClick={() => setLanSyncOpen(true)}
+            >
+              <MonitorSmartphone size={18} />
+            </button>
 
-        <button
-          type="button"
-          // eslint-disable-next-line react/no-unknown-property
-          data-tauri-drag-region="false"
-          className={`${styles.themeToggle} ${theme === 'dark' ? styles.themeToggleDark : styles.themeToggleLight}`}
-          onClick={onThemeToggle}
-          aria-label={theme === 'dark' ? '切换到浅色' : '切换到深色'}
-        >
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+            <button
+              type="button"
+              // eslint-disable-next-line react/no-unknown-property
+              data-tauri-drag-region="false"
+              className={`${styles.themeToggle} ${theme === 'dark' ? styles.themeToggleDark : styles.themeToggleLight}`}
+              onClick={onThemeToggle}
+              aria-label={theme === 'dark' ? '切换到浅色' : '切换到深色'}
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          </>
+        )}
 
         {isWindows ? (
           <div

@@ -22,7 +22,7 @@
     "@tauri-apps/plugin-updater": "^2.3.0",
     "danmu.js": "1.1.13-douyin-1.5",
     "framer-motion": "^12.23.12",
-    "lucide-react": "^0.546.0",
+    "lucide-react": "^1.40.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
