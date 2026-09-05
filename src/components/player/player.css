@@ -67,7 +67,7 @@
   flex: 1 1 auto;
   background-color: transparent;
   border-radius: var(--radius-md) 0 0 var(--radius-md);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   border-right: none;
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.1),
@@ -83,7 +83,7 @@
 }
 
 .player-container.player-container--solo {
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
 
@@ -991,7 +991,7 @@
   padding: 28px 34px 26px;
   box-sizing: border-box;
   position: relative;
-  color: var(--primary-text, rgba(244, 247, 255, 0.96));
+  color: var(--text-primary, rgba(244, 247, 255, 0.96));
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   backdrop-filter: var(--glass-blur);
@@ -1096,12 +1096,12 @@
   font-size: 0.75rem;
   padding: 4px 10px;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--secondary-text);
+  color: var(--text-secondary);
   background: rgba(255, 255, 255, 0.06);
   transition:
     background-color 0.2s ease,
@@ -1111,9 +1111,9 @@
 }
 
 .cookie-status-btn:hover {
-  background: var(--hover-bg);
-  color: var(--primary-text);
-  border-color: var(--border-color-light);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border);
   transform: translateY(-1px);
 }
 
@@ -1129,7 +1129,7 @@
 }
 
 .cookie-unset {
-  color: var(--secondary-text);
+  color: var(--text-secondary);
 }
 
 .cookie-clear-btn {
@@ -1138,7 +1138,7 @@
   border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--secondary-text);
+  color: var(--text-secondary);
   cursor: pointer;
   transition:
     color 0.2s ease,
@@ -1146,7 +1146,7 @@
 }
 
 .cookie-clear-btn:hover {
-  color: var(--primary-text);
+  color: var(--text-primary);
   transform: translateY(-1px);
 }
 
@@ -2137,7 +2137,7 @@ html.web-fs-active .danmu-panel {
   margin-top: 0;
   padding: 12px 28px;
   background: var(--accent-gradient);
-  color: var(--accent-text);
+  color: var(--accent-foreground);
   border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
   border-radius: 10px;
   cursor: pointer;
@@ -2231,11 +2231,11 @@ video.xgplayer-video {
   }
 
   :root[data-theme='light'] .player-container {
-    border-right: 1px solid var(--border-color-light, #e0e0e0);
+    border-right: 1px solid var(--border, #e0e0e0);
   }
 
   :root[data-theme='light'] .danmu-panel {
-    border-left: 1px solid var(--border-color-light, #e0e0e0);
+    border-left: 1px solid var(--border, #e0e0e0);
   }
 }
 
@@ -2438,7 +2438,7 @@ video.xgplayer-video {
   background-color: var(--content-bg-light, #ffffff);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  border: 1px solid var(--border-color-light, #e0e0e0);
+  border: 1px solid var(--border, #e0e0e0);
   box-shadow: var(--content-shadow-light, 0 4px 12px rgba(0, 0, 0, 0.08));
   color: var(--secondary-text-light, #555555);
 }
@@ -2483,7 +2483,7 @@ video.xgplayer-video {
 :root[data-theme='light'] .error-player .retry-btn,
 :root[data-theme='light'] .offline-player .retry-btn {
   background: var(--accent-gradient);
-  color: var(--accent-text);
+  color: var(--accent-foreground);
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   box-shadow: 0 6px 18px var(--accent-glow);
 }
@@ -2500,5 +2500,5 @@ video.xgplayer-video {
 }
 
 :root[data-theme='light'] .streamer-info-offline {
-  border-bottom: 1px solid var(--border-color-light, #e0e0e0);
+  border-bottom: 1px solid var(--border, #e0e0e0);
 }

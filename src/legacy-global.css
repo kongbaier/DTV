@@ -35,6 +35,16 @@
   --dur-2: 180ms;
   --dur-3: 240ms;
 
+  /* 主题不变的派生 token: 单点定义, 内部引用的语义色随 [data-theme] 解析 */
+  --accent-gradient: linear-gradient(
+    135deg,
+    var(--accent),
+    var(--accent-hover)
+  );
+  --glass-blur: blur(32px);
+  --status-live: #ff3e3e;
+  --status-warning: #f59e0b;
+
   /* vibestream-day */
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
@@ -45,6 +55,7 @@
   --accent-hover: #16a34a;
   --accent-glow: rgba(34, 197, 94, 0.35);
   --platform-active-bg: rgba(15, 23, 42, 0.04);
+  --bg-hover: rgba(0, 0, 0, 0.04);
 
   --border: #e2e8f0;
   --glass-bg: rgba(255, 255, 255, 0.75);
@@ -53,6 +64,7 @@
   --shadow-low: 0 4px 16px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.12);
+  --glass-shadow: var(--shadow-md);
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -60,13 +72,17 @@
   --radius-xl: 32px;
   --radius-full: 9999px;
 
+  /* 浮层毛玻璃卡(半透明, 叠在内容上) */
+  --glass-card-bg: rgba(255, 255, 255, 0.6);
+  --glass-card-border: #ffffff;
+
   /* HeroUI v3 design tokens (bridge) */
   --radius: 4px;
   --background: var(--bg-primary);
   --foreground: var(--text-primary);
   --surface-secondary: var(--bg-secondary);
   --surface-tertiary: var(--bg-tertiary);
-  --accent-foreground: var(--accent-text);
+  --accent-foreground: #ffffff;
   --default: var(--bg-secondary);
   --default-foreground: var(--text-primary);
   --focus: var(--accent);
@@ -80,55 +96,10 @@
   --overlay-shadow: var(--shadow-md);
   --border-width: 1px;
 
+  /* 布局 */
   --sidebar-width: 240px;
   --sidebar-collapsed-width: 72px;
   --navbar-height: 72px;
-
-  /* Legacy variable bridge */
-  --primary-bg: var(--bg-primary);
-  --secondary-bg: var(--bg-secondary);
-  --tertiary-bg: var(--bg-tertiary);
-  --accent-color: var(--accent);
-  --accent-gradient: linear-gradient(
-    135deg,
-    var(--accent),
-    var(--accent-hover)
-  );
-  --accent-text: #ffffff;
-  --primary-text: var(--text-primary);
-  --secondary-text: var(--text-secondary);
-  --dim-text: rgba(134, 134, 139, 0.8);
-  --border-color: var(--border);
-  --border-color-light: var(--border);
-  --glass-blur: blur(32px);
-  --glass-shadow: var(--shadow-md);
-  --content-panel-bg: var(--bg-secondary);
-  --color-card: rgba(255, 255, 255, 0.6);
-  --color-border: #ffffff;
-  --card-bg: var(--bg-secondary);
-  --card-shadow: var(--shadow-low);
-  --card-shadow-hover: var(--shadow-md);
-  --hover-bg: rgba(0, 0, 0, 0.04);
-  --page-mesh:
-    radial-gradient(at 0% 0%, rgba(0, 0, 0, 0.06) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.04) 0px, transparent 50%);
-  --ambient-bg-image: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.18) 0%,
-    rgba(0, 0, 0, 0.55) 100%
-  );
-  --ambient-bg-opacity: 1;
-  --ambient-bg-filter: none;
-  --sidebar-overlay: linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.82),
-    rgba(255, 255, 255, 0.82)
-  );
-  --sidebar-overlay-opacity: 0.98;
-  --status-live: #ff3e3e;
-  --status-offline: #86868b;
-  --status-active: var(--accent);
-  --status-warning: #f59e0b;
 }
 
 [data-theme='dark'] {
@@ -143,6 +114,7 @@
   --accent-hover: #34d399;
   --accent-glow: rgba(34, 197, 94, 0.3);
   --platform-active-bg: rgba(255, 255, 255, 0.06);
+  --bg-hover: rgba(255, 255, 255, 0.06);
 
   --border: #222222;
   --glass-bg: rgba(20, 20, 22, 0.8);
@@ -151,52 +123,11 @@
   --shadow-low: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 12px 48px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 32px 96px rgba(0, 0, 0, 0.6);
-
-  /* Legacy variable bridge */
-  --primary-bg: var(--bg-primary);
-  --secondary-bg: var(--bg-secondary);
-  --tertiary-bg: var(--bg-tertiary);
-  --accent-color: var(--accent);
-  --accent-gradient: linear-gradient(
-    135deg,
-    var(--accent),
-    var(--accent-hover)
-  );
-  --accent-text: #ffffff;
-  --primary-text: var(--text-primary);
-  --secondary-text: var(--text-secondary);
-  --dim-text: rgba(161, 161, 166, 0.8);
-  --border-color: var(--border);
-  --border-color-light: var(--border);
-  --glass-blur: blur(32px);
   --glass-shadow: var(--shadow-lg);
-  --content-panel-bg: var(--bg-secondary);
-  --color-card: rgba(255, 255, 255, 0.15);
-  --color-border: rgba(255, 255, 255, 0.3);
-  --card-bg: var(--bg-secondary);
-  --card-shadow: var(--shadow-md);
-  --card-shadow-hover: var(--shadow-lg);
-  --hover-bg: rgba(255, 255, 255, 0.06);
-  --page-mesh:
-    radial-gradient(at 0% 0%, rgba(255, 255, 255, 0.02) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(0, 0, 0, 0.35) 0px, transparent 50%);
-  --ambient-bg-image: linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0.18)
-  );
-  --ambient-bg-opacity: 1;
-  --ambient-bg-filter: none;
-  --sidebar-overlay: linear-gradient(
-    0deg,
-    rgba(3, 5, 6, 0.94),
-    rgba(3, 5, 6, 0.9)
-  );
-  --sidebar-overlay-opacity: 0.84;
-  --status-live: #ff3e3e;
-  --status-offline: #525c53;
-  --status-active: #e5e7eb;
-  --status-warning: #f59e0b;
+
+  /* 浮层毛玻璃卡 */
+  --glass-card-bg: rgba(255, 255, 255, 0.15);
+  --glass-card-border: rgba(255, 255, 255, 0.3);
 }
 
 *,

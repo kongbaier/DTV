@@ -8,7 +8,7 @@
 
 .emptyTip {
   font-size: var(--text-sm);
-  color: var(--secondary-text);
+  color: var(--text-secondary);
   padding: 14px 12px;
 }
 
@@ -22,7 +22,7 @@
 .chip {
   border: none;
   background: var(--glass-bg);
-  color: var(--primary-text, rgba(236, 242, 255, 0.9));
+  color: var(--text-primary, rgba(236, 242, 255, 0.9));
   border-radius: 999px;
   padding: 8px 12px;
   display: inline-flex;

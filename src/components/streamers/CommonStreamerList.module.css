@@ -17,7 +17,7 @@
   justify-content: center;
   align-items: center;
   padding: 24px;
-  color: var(--secondary-text);
+  color: var(--text-secondary);
   gap: 12px;
 }
 
@@ -27,7 +27,7 @@
   justify-content: center;
   gap: 12px;
   padding: 16px 0 12px;
-  color: var(--secondary-text);
+  color: var(--text-secondary);
 }
 
 .loadingInitial {

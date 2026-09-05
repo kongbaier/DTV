@@ -21,7 +21,7 @@ export function PlayerRoute() {
           alignItems: 'center',
           flex: 1,
           minHeight: 0,
-          color: 'var(--secondary-text)',
+          color: 'var(--text-secondary)',
           fontWeight: 700,
         }}
       >

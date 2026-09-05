@@ -1024,7 +1024,7 @@ export function FollowsList() {
             <div
               style={{
                 padding: 18,
-                color: 'var(--secondary-text)',
+                color: 'var(--text-secondary)',
                 fontWeight: 800,
                 textAlign: 'center',
               }}
@@ -1490,7 +1490,7 @@ export function FollowsList() {
                     <div
                       className={styles.modalBody}
                       style={{
-                        color: 'var(--secondary-text)',
+                        color: 'var(--text-secondary)',
                         fontWeight: 800,
                       }}
                     >

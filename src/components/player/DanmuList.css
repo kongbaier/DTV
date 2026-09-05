@@ -9,7 +9,7 @@
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  color: var(--primary-text, #e5e9f5);
+  color: var(--text-primary, #e5e9f5);
   font-family: var(
     --danmu-font-family,
     'OPPO Sans',

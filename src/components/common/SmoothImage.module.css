@@ -34,8 +34,8 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  color: var(--secondary-text);
-  background-color: var(--secondary-bg);
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
 }
 
 .img {

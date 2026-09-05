@@ -82,7 +82,7 @@ export function PlayerOverlayHost() {
                 <div
                   style={{
                     padding: 18,
-                    color: 'var(--secondary-text)',
+                    color: 'var(--text-secondary)',
                     fontWeight: 700,
                   }}
                 >

@@ -26,7 +26,7 @@ export function PlayerPage({
   if (!roomId) {
     return (
       <div
-        style={{ padding: 18, color: 'var(--secondary-text)', fontWeight: 700 }}
+        style={{ padding: 18, color: 'var(--text-secondary)', fontWeight: 700 }}
       >
         无效的房间 ID。
       </div>

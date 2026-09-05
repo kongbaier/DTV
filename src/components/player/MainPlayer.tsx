@@ -1721,7 +1721,7 @@ export function MainPlayer({
                     </div>
                     <div
                       style={{
-                        color: 'var(--secondary-text)',
+                        color: 'var(--text-secondary)',
                         fontWeight: 600,
                         whiteSpace: 'pre-wrap',
                       }}
