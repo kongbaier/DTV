@@ -932,7 +932,7 @@ pub async fn get_huya_unified_cmd(
     line: Option<String>,
     follow_http: State<'_, FollowHttpClient>,
 ) -> Result<HuyaUnifiedResponse, String> {
-    let client = &follow_http.0.inner;
+    let client = &follow_http.inner().0.inner;
 
     let profile = fetch_profile_room(client, &room_id)
         .await

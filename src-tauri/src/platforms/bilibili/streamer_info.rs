@@ -139,7 +139,7 @@ pub async fn fetch_bilibili_streamer_info(
         }
     }
 
-    let client = &follow_http.0.inner;
+    let client = &follow_http.inner().0.inner;
 
     // Get WBI keys and build sign
     let (img_key, sub_key) = get_wbi_keys(client, &headers).await?;

@@ -527,7 +527,7 @@ pub async fn get_bilibili_live_stream_url_with_quality(
         SelectedStream::Hls(real_url) => {
             // HLS：无需本地代理，若存在旧的 FLV 代理则关闭并清空存储
             {
-                let handle_to_stop = { proxy_server_handle.0.lock().unwrap().take() };
+                let handle_to_stop = { proxy_server_handle.inner().0.lock().unwrap().take() };
                 if let Some(handle) = handle_to_stop {
                     handle.stop(false).await;
                     eprintln!("[Bilibili] Stopped existing FLV proxy before using HLS stream");

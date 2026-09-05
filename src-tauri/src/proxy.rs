@@ -226,7 +226,7 @@ pub async fn start_proxy(
     // REMOVED: let awc_client_for_actix = web::Data::new(Client::default());
 
     // Ensure MutexGuard is dropped before .await
-    let existing_handle_to_stop = { server_handle_state.0.lock().unwrap().take() };
+    let existing_handle_to_stop = { server_handle_state.inner().0.lock().unwrap().take() };
     if let Some(existing_handle) = existing_handle_to_stop {
         existing_handle.stop(false).await;
     }
@@ -271,7 +271,7 @@ pub async fn start_proxy(
     .run();
 
     let server_handle_for_state = server.handle();
-    *server_handle_state.0.lock().unwrap() = Some(server_handle_for_state);
+    *server_handle_state.inner().0.lock().unwrap() = Some(server_handle_for_state);
 
     // Use tauri::async_runtime::spawn directly
     tauri::async_runtime::spawn(async move {
@@ -363,7 +363,7 @@ pub async fn start_static_proxy_server(
 #[tauri::command]
 pub async fn stop_proxy(server_handle_state: State<'_, ProxyServerHandle>) -> Result<(), String> {
     // Ensure MutexGuard is dropped before .await
-    let handle_to_stop = { server_handle_state.0.lock().unwrap().take() };
+    let handle_to_stop = { server_handle_state.inner().0.lock().unwrap().take() };
 
     if let Some(handle) = handle_to_stop {
         handle.stop(false).await; // Changed to non-graceful shutdown

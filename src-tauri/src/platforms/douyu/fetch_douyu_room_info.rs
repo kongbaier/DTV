@@ -42,6 +42,7 @@ pub async fn fetch_douyu_room_info(
     headers.insert("User-Agent", HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"));
 
     let response_result = follow_http
+        .inner()
         .0
         .inner
         .get(format!("https://www.douyu.com/betard/{}", room_id))

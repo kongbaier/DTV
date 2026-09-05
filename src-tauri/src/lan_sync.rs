@@ -389,7 +389,7 @@ pub async fn lan_sync_start_server(
         return Err(format!("Unsupported payload version: {}", payload.version));
     }
 
-    let previous = state.0.lock().unwrap().take();
+    let previous = state.inner().0.lock().unwrap().take();
     if let Some(prev) = previous {
         stop_running(prev).await;
     }
@@ -402,7 +402,7 @@ pub async fn lan_sync_start_server(
         Err(e) => {
             // 如果是我们自己的旧实例没停干净，先再停一次再重试；否则仍然返回错误
             if e.kind() == std::io::ErrorKind::AddrInUse {
-                let previous = state.0.lock().unwrap().take();
+                let previous = state.inner().0.lock().unwrap().take();
                 if let Some(prev) = previous {
                     stop_running(prev).await;
                 }
@@ -443,7 +443,7 @@ pub async fn lan_sync_start_server(
     let hosts = build_hosts();
     let mdns = start_mdns_advertise(port, &hosts, &token);
 
-    *state.0.lock().unwrap() = Some(RunningLanSync {
+    *state.inner().0.lock().unwrap() = Some(RunningLanSync {
         port,
         hosts: hosts.clone(),
         handle,
@@ -458,7 +458,7 @@ pub async fn lan_sync_start_server(
 pub async fn lan_sync_stop_server(
     state: tauri::State<'_, LanSyncServerState>,
 ) -> Result<(), String> {
-    let running = state.0.lock().unwrap().take();
+    let running = state.inner().0.lock().unwrap().take();
     if let Some(running) = running {
         stop_running(running).await;
     }
@@ -469,7 +469,7 @@ pub async fn lan_sync_stop_server(
 pub async fn lan_sync_status(
     state: tauri::State<'_, LanSyncServerState>,
 ) -> Result<Option<LanSyncServerInfo>, String> {
-    let guard = state.0.lock().unwrap();
+    let guard = state.inner().0.lock().unwrap();
     Ok(guard.as_ref().map(|r| LanSyncServerInfo {
         port: r.port,
         hosts: r.hosts.clone(),

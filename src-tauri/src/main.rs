@@ -97,7 +97,7 @@ async fn start_danmaku_listener(
 ) -> Result<(), String> {
     // Business rule: only one room at a time. Always stop any previous listener first.
     let previous_sender = {
-        let mut lock = danmaku_handles.0.lock().unwrap();
+        let mut lock = danmaku_handles.inner().0.lock().unwrap();
         lock.take()
     };
     if let Some(sender) = previous_sender {
@@ -106,7 +106,7 @@ async fn start_danmaku_listener(
 
     let (stop_tx, stop_rx) = oneshot::channel();
     {
-        let mut lock = danmaku_handles.0.lock().unwrap();
+        let mut lock = danmaku_handles.inner().0.lock().unwrap();
         *lock = Some(stop_tx);
     }
 
@@ -138,7 +138,7 @@ async fn stop_danmaku_listener(
     // The `room_id` parameter is kept for frontend compatibility.
     // This backend is single-instance, so we always stop the current listener (if any).
     let sender = {
-        let mut lock = danmaku_handles.0.lock().unwrap();
+        let mut lock = danmaku_handles.inner().0.lock().unwrap();
         lock.take()
     };
     if let Some(sender) = sender {

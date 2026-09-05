@@ -27,7 +27,7 @@ pub async fn fetch_douyin_streamer_info(
         });
     }
 
-    let http_client: &HttpClient = &follow_http.0;
+    let http_client: &HttpClient = &follow_http.inner().0;
 
     let normalized_id = normalize_douyin_live_id(&requested_id);
 
