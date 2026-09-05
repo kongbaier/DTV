@@ -12,6 +12,7 @@ import { AnimatePresence, m } from 'framer-motion';
 import {
   ChevronDown,
   ExternalLink,
+  GitPullRequest,
   LayoutGrid,
   MonitorSmartphone,
   Moon,
@@ -939,21 +940,18 @@ export function Navbar({
                   textValue="版本信息"
                   className={styles.moreItem}
                 >
-                  <span className={styles.moreItemVersion}>
-                    {hasUpdate ? (
-                      <span className={styles.moreItemNew}>NEW</span>
-                    ) : null}
-                    版本 v{localVersion || '?'}
-                  </span>
+                  <GitPullRequest size={15} className={styles.moreItemIcon} />
+                  {hasUpdate ? (
+                    <span className={styles.moreItemNew}>NEW</span>
+                  ) : null}
+                  版本 v{localVersion || '?'}
                 </Dropdown.Item>
                 <Dropdown.Item
                   id="donate"
                   textValue="打赏支持"
                   className={styles.moreItem}
                 >
-                  <span>
-                    <ThumbsUp size={15} className={styles.moreItemIcon} />
-                  </span>
+                  <ThumbsUp size={15} className={styles.moreItemIcon} />
                   打赏支持
                 </Dropdown.Item>
                 <Dropdown.Item
@@ -961,22 +959,23 @@ export function Navbar({
                   textValue="数据同步"
                   className={styles.moreItem}
                 >
-                  <span className={styles.moreItemIcon}>
-                    <MonitorSmartphone size={15} />
-                  </span>
+                  <MonitorSmartphone
+                    className={styles.moreItemIcon}
+                    size={15}
+                  />
                   数据同步
                 </Dropdown.Item>
                 <Dropdown.Item
                   id="theme"
-                  textValue={
-                    theme === 'dark' ? '切换为浅色模式' : '切换为深色模式'
-                  }
+                  textValue={theme === 'dark' ? '深色模式' : '浅色模式'}
                   className={styles.moreItem}
                 >
-                  <span className={styles.moreItemIcon}>
-                    {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-                  </span>
-                  {theme === 'dark' ? '切换为浅色模式' : '切换为深色模式'}
+                  {theme === 'dark' ? (
+                    <Sun size={15} className={styles.moreItemIcon} />
+                  ) : (
+                    <Moon size={15} className={styles.moreItemIcon} />
+                  )}
+                  {theme === 'dark' ? '深色模式' : '浅色模式'}
                 </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown.Popover>

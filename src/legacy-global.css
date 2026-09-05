@@ -46,8 +46,8 @@
   --status-warning: #f59e0b;
 
   /* vibestream-day */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
   --bg-tertiary: #f1f5f9;
   --text-primary: #0f172a;
   --text-secondary: #64748b;
@@ -168,11 +168,6 @@ body {
     border-color var(--dur-3) var(--ease-out),
     transform var(--dur-2) var(--ease-out),
     opacity var(--dur-2) var(--ease-out);
-}
-
-:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
-  outline-offset: 2px;
 }
 
 button:not(.button):not([data-slot='button']) {

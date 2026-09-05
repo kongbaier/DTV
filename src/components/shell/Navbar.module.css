@@ -1199,12 +1199,6 @@
   margin-right: 10px;
 }
 
-.moreItemVersion {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .moreItemNew {
   height: 16px;
   padding: 0 6px;
