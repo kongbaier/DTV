@@ -490,7 +490,10 @@ export function Navbar({
         navCompactRef.current = false;
         setNavCompact(false);
       }
-    } else if (!navSearchOpenRef.current && el.scrollWidth > el.clientWidth + 1) {
+    } else if (
+      !navSearchOpenRef.current &&
+      el.scrollWidth > el.clientWidth + 1
+    ) {
       // 展开态且内容溢出：记录当前（含全部按钮）的内容宽度后再折叠
       navExpandedWidthRef.current = el.scrollWidth;
       navCompactRef.current = true;
@@ -695,10 +698,7 @@ export function Navbar({
                     )}
                   </div>
                   <div className={styles.resultMain}>
-                    <div
-                      className={styles.resultName}
-                      title={anchor.userName}
-                    >
+                    <div className={styles.resultName} title={anchor.userName}>
                       {anchor.userName}
                     </div>
                     <div
@@ -903,9 +903,9 @@ export function Navbar({
 
       <div className={styles.actions} data-tauri-drag-region>
         {/* 播放页 / 自定义分区：搜索仍位于右侧按钮簇首位 */}
-        {!searchCentered && activePlatform !== 'custom' ? (
-          renderSearchBox()
-        ) : null}
+        {!searchCentered && activePlatform !== 'custom'
+          ? renderSearchBox()
+          : null}
 
         {navCompact ? (
           <Dropdown
@@ -995,9 +995,7 @@ export function Navbar({
               aria-label="版本信息"
               onClick={() => setUpdateOpen(true)}
             >
-              <span className={styles.versionText}>
-                v{localVersion || '?'}
-              </span>
+              <span className={styles.versionText}>v{localVersion || '?'}</span>
               {hasUpdate ? <span className={styles.badgeNew}>NEW</span> : null}
             </button>
 

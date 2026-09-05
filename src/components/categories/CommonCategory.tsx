@@ -7,7 +7,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+} from 'lucide-react';
 import { AnimatePresence, m } from 'framer-motion';
 
 import styles from './CommonCategory.module.css';
@@ -39,11 +44,63 @@ export function CommonCategory({
   const cate2ShellRef = useRef<HTMLDivElement | null>(null);
   const [overlayMaxHeight, setOverlayMaxHeight] = useState<number | null>(null);
   const emittedKeyRef = useRef<string | null>(null);
+  const cate1ListRef = useRef<HTMLUListElement | null>(null);
+  // 列表是隐藏滚动条的横向滚动容器，可在对应方向滚动时浮出箭头提示
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
 
   useEffect(() => {
     setCate1List(Array.isArray(categoriesData) ? categoriesData : []);
     setExpanded(false);
   }, [categoriesData]);
+
+  useEffect(() => {
+    const el = cate1ListRef.current;
+    if (!el) {
+      setCanScrollRight(false);
+      setCanScrollLeft(false);
+      return;
+    }
+    const update = () => {
+      const node = cate1ListRef.current;
+      if (!node) return;
+      const { scrollLeft, clientWidth, scrollWidth } = node;
+      setCanScrollRight(scrollWidth - scrollLeft - clientWidth > 2);
+      setCanScrollLeft(scrollLeft > 2);
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+    // 布局/字体就绪后再补量一次，覆盖分类列表刚更新的情况
+    const t = window.setTimeout(update, 300);
+    return () => {
+      el.removeEventListener('scroll', update);
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+      window.clearTimeout(t);
+    };
+  }, [cate1List]);
+
+  const scrollRight = () => {
+    const el = cate1ListRef.current;
+    if (!el) return;
+    // 每次滚动约一屏的四分之三，至少 200px，避免几乎不可见的位移
+    const step = Math.max(200, Math.round(el.clientWidth * 0.75));
+    el.scrollTo({ left: el.scrollLeft + step, behavior: 'smooth' });
+  };
+
+  const scrollLeft = () => {
+    const el = cate1ListRef.current;
+    if (!el) return;
+    // 与 scrollRight 同幅度回退
+    const step = Math.max(200, Math.round(el.clientWidth * 0.75));
+    el.scrollTo({
+      left: Math.max(0, el.scrollLeft - step),
+      behavior: 'smooth',
+    });
+  };
 
   useLayoutEffect(() => {
     if (!expanded) {
@@ -160,25 +217,53 @@ export function CommonCategory({
         <>
           <div className={styles.cate1ListContainer}>
             <div className={styles.cate1Row}>
-              <ul className={styles.cate1List}>
-                {cate1List.map((c1) => {
-                  const selected = c1.href === selectedCate1Href;
-                  return (
-                    <li
-                      key={c1.href}
-                      className={`${styles.cate1Item} ${selected ? styles.cate1ItemSelected : ''}`}
-                      onClick={() => {
-                        if (selectedCate1Href === c1.href) return;
-                        setSelectedCate1Href(c1.href);
-                        setSelectedCate2Href(null);
-                        setExpanded(false);
-                      }}
-                    >
-                      {c1.title}
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className={styles.cate1ListWrap}>
+                {canScrollLeft ? (
+                  <button
+                    type="button"
+                    className={
+                      styles.cate1ScrollBtn + ' ' + styles.cate1ScrollLeft
+                    }
+                    onClick={scrollLeft}
+                    title="回到前面的分类"
+                    aria-label="回到前面的分类"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                ) : null}
+                <ul ref={cate1ListRef} className={styles.cate1List}>
+                  {cate1List.map((c1) => {
+                    const selected = c1.href === selectedCate1Href;
+                    return (
+                      <li
+                        key={c1.href}
+                        className={`${styles.cate1Item} ${selected ? styles.cate1ItemSelected : ''}`}
+                        onClick={() => {
+                          if (selectedCate1Href === c1.href) return;
+                          setSelectedCate1Href(c1.href);
+                          setSelectedCate2Href(null);
+                          setExpanded(false);
+                        }}
+                      >
+                        {c1.title}
+                      </li>
+                    );
+                  })}
+                </ul>
+                {canScrollRight ? (
+                  <button
+                    type="button"
+                    className={
+                      styles.cate1ScrollBtn + ' ' + styles.cate1ScrollRight
+                    }
+                    onClick={scrollRight}
+                    title="查看更多分类"
+                    aria-label="查看更多分类"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                ) : null}
+              </div>
               <div className={styles.cate1Actions}>{actions}</div>
             </div>
           </div>

@@ -48,39 +48,49 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 12px;
   padding: 0;
+}
+
+/* ul 的外层定位包裹：不参与滚动，左右箭头以它为基准钉在列表可视区两端 */
+.cate1ListWrap {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
 }
 
 .cate1List {
   list-style: none;
   margin: 0;
-  padding: 0 0 4px;
-  display: inline-flex;
+  padding: 0;
+  display: flex;
   gap: 22px;
-  flex-wrap: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
   background: transparent;
   border: none;
   box-shadow: none;
   position: relative;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .cate1Item {
   height: 32px;
   padding: 0 6px;
-  display: inline-flex;
-  align-items: center;
   cursor: pointer;
   transition:
     color 0.2s ease,
     transform 0.2s ease;
   font-size: 12.5px;
+  line-height: 32px;
   font-weight: 800;
   border-radius: 8px;
   white-space: nowrap;
   color: var(--secondary-text);
   background: transparent;
-  border: 1px solid transparent;
   box-shadow: none;
   position: relative;
 }
@@ -104,7 +114,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -2px;
+  bottom: 0px;
   height: 2px;
   border-radius: 999px;
   background: var(--accent);
@@ -147,9 +157,69 @@
 .cate1Actions {
   position: static;
   height: 32px;
+  min-width: max-content;
   display: inline-flex;
   align-items: center;
   z-index: 2;
+}
+
+/* 列表可横向滚动时，浮在列表可视区两端（钉在 cate1ListWrap 的左右缘）的箭头提示 */
+.cate1ScrollBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  cursor: pointer;
+  color: rgba(248, 250, 252, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.cate1ScrollRight {
+  right: 2px;
+}
+
+.cate1ScrollLeft {
+  left: 2px;
+}
+
+.cate1ScrollBtn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: rgba(248, 250, 252, 1);
+}
+
+.cate1ScrollRight:hover {
+  transform: translateY(-50%) translateX(1px); /* 右移示意方向 */
+}
+
+.cate1ScrollLeft:hover {
+  transform: translateY(-50%) translateX(-1px);
+}
+
+:global(:root[data-theme='light']) .cate1ScrollBtn {
+  background: rgba(15, 23, 42, 0.06);
+  border-color: rgba(148, 163, 184, 0.28);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  color: rgba(15, 23, 42, 0.9);
+}
+
+:global(:root[data-theme='light']) .cate1ScrollBtn:hover {
+  background: rgba(15, 23, 42, 0.14);
+  color: rgba(15, 23, 42, 1);
 }
 
 .cate2Container {
