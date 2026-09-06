@@ -1,7 +1,7 @@
 /* 主播卡片列表。
    整份收进 @layer components，使 Tailwind utilities 可覆盖。
    深色走 .dark（默认=亮色）：能被语义 token 翻转的颜色一律引用 token，
-   不再写 [data-theme] 覆盖块；仅头像描边这类需按主题取值的保留 .dark 分支。
+   不再写按主题属性的覆盖块；仅头像描边这类需按主题取值的保留 .dark 分支。
    data-scrolling 暂停逻辑保留：滚动时停掉 hover/过渡动画避免卡顿。 */
 @layer components {
   .container {

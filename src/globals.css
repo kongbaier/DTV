@@ -2,8 +2,9 @@
 
 /* 深色模式采用 Tailwind 官方 class 方案：
    <html class="dark"> 即深色（.dark 同时激活 :root.dark 的语义 token 与 dark: 变体）。
-   HeroUI v3 自带一套 @custom-variant dark（其深色 token 写在 .dark, [data-theme="dark"] 上），
-   与下方声明在不同样式表各自编译、互不冲突；此声明把应用内的 dark: 收窄为纯 class 驱动。 */
+   HeroUI v3 自带一套 @custom-variant dark（其深色 token 同时挂在 .dark class
+   与深色属性选择器上），与下方声明在不同样式表各自编译、互不冲突；
+   此声明把应用内的 dark: 收窄为纯 class 驱动。 */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================================
@@ -12,7 +13,6 @@
  * 结构（吸收 shadcn/参考系优点，贴合本应用）：
  *   - 物理色阶 --brand*         主题无关的品牌绿色阶梯（勿在组件里直接消费，经语义层引用）
  *   - 语义角色（:root 亮 / :root.dark 深） 组件里一律引用语义 token
- *   - 旧名别名 shim             迁移期保证旧 CSS 仍能渲染（E 阶段删除）
  *   - @theme inline              语义色同名注入 Tailwind 命名空间 -> bg-card / text-muted-foreground …
  *   - HeroUI v3 注入            把语义色喂给 @heroui 用到的少量组件（dropdown/spinner/card/skeleton）
  *
@@ -229,31 +229,6 @@
   --overlay-shadow: var(--shadow-md);
   --border-width: 1px;
   --skeleton-animation: shimmer;
-}
-
-/* ============================================================================
- * 旧名别名 shim（迁移期兼容 —— 全部组件样式改写为新语义名后删除本段）
- * ----------------------------------------------------------------------------
- * 语义澄清：旧 --accent（品牌绿） -> 新 --primary；灰色 hover 另立 --surface-hover。
- * 因此别名只把"旧名"指到"新语义"，避免同一变量双义。
- * ========================================================================== */
-:root,
-:root.dark {
-  --bg-primary: var(--background);
-  --bg-secondary: var(--card);
-  --bg-tertiary: var(--secondary);
-  --text-primary: var(--foreground);
-  --text-secondary: var(--muted-foreground);
-  --accent: var(--primary);
-  --accent-hover: var(--primary-hover);
-  --accent-glow: var(--primary-glow);
-  --accent-gradient: var(--primary-gradient);
-  --accent-foreground: var(--primary-foreground);
-  --bg-hover: var(--surface-hover);
-  --platform-active-bg: var(--surface-hover);
-  --danger: var(--destructive);
-  --danger-foreground: var(--destructive-foreground);
-  --focus: var(--ring);
 }
 
 /* ============================================================================

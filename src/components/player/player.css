@@ -2109,7 +2109,7 @@ video.xgplayer-video {
 }
 
 /* 说明：原文件此处（2047~2222 行的 "Day Mode Styles"）集中了 50+ 处
-   :root[data-theme='light'/'dark'] 覆盖。语义化时逐类把亮/暗取值拆进上面的
+   按根元素主题属性的亮/暗覆盖。语义化时逐类把亮/暗取值拆进上面的
    就近规则：浮于视频上的深色 chrome 保持不变式；外层表面（空/错/离线/加载态、
    player-container、紧凑岛、follow-btn）改为「默认=亮色 + .dark 分支」。
    死代码段落（compact-island / danmu-panel / filter 钮）只保留其深色底色，
