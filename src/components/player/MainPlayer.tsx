@@ -1690,52 +1690,20 @@ export function MainPlayer({
 
               <div ref={playerContainerRef} className="video-player" />
 
-              {isLoadingStream ? (
-                <div
-                  className="loading-player"
-                  style={{ position: 'absolute', inset: 0, zIndex: 20 }}
-                ></div>
-              ) : null}
+              {isLoadingStream ? <div className="loading-player" /> : null}
 
               {streamError ? (
                 <div
                   className={isOfflineError ? 'offline-player' : 'error-player'}
-                  style={{ position: 'absolute', inset: 0, zIndex: 20 }}
                 >
-                  <div
-                    style={{
-                      padding: 18,
-                      width: 'min(520px, 92vw)',
-                      margin: '0 auto',
-                      textAlign: 'left',
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 14,
-                        fontWeight: 800,
-                        marginBottom: 10,
-                      }}
-                    >
+                  <div className="p-[18px] w-[min(520px,92vw)] mx-auto text-left">
+                    <div className="text-[14px] font-extrabold mb-[10px]">
                       {isOfflineError ? '主播未开播' : '加载失败'}
                     </div>
-                    <div
-                      style={{
-                        color: 'var(--text-secondary)',
-                        fontWeight: 600,
-                        whiteSpace: 'pre-wrap',
-                      }}
-                    >
+                    <div className="text-muted-foreground font-semibold whitespace-pre-wrap">
                       {streamError}
                     </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        gap: 10,
-                        marginTop: 14,
-                        justifyContent: 'flex-start',
-                      }}
-                    >
+                    <div className="flex gap-[10px] mt-[14px] justify-start">
                       <button
                         className="retry-btn"
                         onClick={() => void reloadStream('refresh')}

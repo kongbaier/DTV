@@ -1,4 +1,20 @@
-/* 全局主题变量 - 灵动之气 (Luminous Air) */
+/* ============================================================================
+ * 播放器皮肤全局 CSS（player.css）
+ * ----------------------------------------------------------------------------
+ * 例外文件：刻意保持 unlayered —— 本文件职责是覆盖 xgplayer 皮肤（同样 unlayered），
+ * 若整份收进 @layer components，unlayered 的 xgplayer 会反过来压过它。
+ *
+ * 主题约定与普通模块不同：播放器控件 / 下拉浮层大多浮在实时画面上，必须两主题都
+ * 保持深色（"深色 chrome"不变式，本体即默认，不做 .dark 翻转）。只有落在外层
+ * 页底 / 视频黑底之上的表面（player-container 外壳、空/错/离线/加载态、紧凑岛）
+ * 才随主题翻转 —— 这类采用「默认=亮色 + .dark 分支」。
+ *
+ * 注：.streamer-info / .danmu-panel / .player-compact-island 等段落目前无组件
+ * 引用（历史死代码，仅保留主题拆分以免将来复用错乱）。
+ * ========================================================================== */
+
+/* 皮肤私有中性灰：浮于视频上的控件强调，两主题一致（属"深色 chrome"不变式）。
+   不与页面语义灰阶混用 —— 页面灰阶会随主题翻转，不能用在视频上方。 */
 :root {
   --player-accent: #e5e7eb;
   --player-accent-strong: rgba(255, 255, 255, 0.14);
@@ -30,9 +46,14 @@
   max-height: 100%;
   min-height: 0;
   gap: 0;
-  overflow: hidden;
+  /* 默认=亮色：无边框视频框不裁切；深色玻璃外壳才需要裁剪圆角 */
+  overflow: visible;
   box-sizing: border-box;
   position: relative;
+}
+
+.dark .player-layout {
+  overflow: hidden;
 }
 
 .player-layout .main-content {
@@ -43,9 +64,13 @@
   min-height: 0;
   height: 100%;
   max-height: 100%;
-  overflow: hidden;
+  overflow: visible;
   padding-left: 0;
   box-sizing: border-box;
+}
+
+.dark .player-layout .main-content {
+  overflow: hidden;
 }
 
 /* 播放器容器 */
@@ -54,11 +79,12 @@
   flex-direction: column;
   flex: 1 1 auto;
   background-color: transparent;
-  border: 1px solid var(--border);
-  border-right: none;
+  /* 无边框：亮/暗两主题均被原主题层 border:none 覆盖成无框，这里统一 */
+  border: none;
+  /* 默认=亮色：浅投影 */
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-    var(--glass-shadow);
+    0 2px 6px rgba(15, 23, 42, 0.06),
+    0 10px 22px rgba(15, 23, 42, 0.08);
   overflow: hidden;
   min-height: 0;
   height: 100%;
@@ -69,8 +95,9 @@
   z-index: 1;
 }
 
-.player-container.player-container--solo {
-  border-right: 1px solid var(--border);
+/* 深色：玻璃外壳投影 */
+.dark .player-container {
+  box-shadow: var(--glass-shadow);
 }
 
 .xgplayer-controls {
@@ -901,7 +928,7 @@
   padding: 28px 34px 26px;
   box-sizing: border-box;
   position: relative;
-  color: var(--text-primary, rgba(244, 247, 255, 0.96));
+  color: var(--foreground);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   backdrop-filter: var(--glass-blur);
@@ -1011,7 +1038,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   background: rgba(255, 255, 255, 0.06);
   transition:
     background-color 0.2s ease,
@@ -1021,8 +1048,8 @@
 }
 
 .cookie-status-btn:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
+  background: var(--surface-hover);
+  color: var(--foreground);
   border-color: var(--border);
   transform: translateY(-1px);
 }
@@ -1032,14 +1059,14 @@
 }
 
 .cookie-configured {
-  color: var(--success-color, #22c55e);
+  color: var(--success);
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
 .cookie-unset {
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
 }
 
 .cookie-clear-btn {
@@ -1048,7 +1075,7 @@
   border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--muted-foreground);
   cursor: pointer;
   transition:
     color 0.2s ease,
@@ -1056,7 +1083,7 @@
 }
 
 .cookie-clear-btn:hover {
-  color: var(--text-primary);
+  color: var(--foreground);
   transform: translateY(-1px);
 }
 
@@ -1105,15 +1132,16 @@
   color: rgba(214, 223, 255, 0.75);
 }
 
+/* 关注钮（随所在表面翻转：默认=亮色深字浅绿，深色白字绿底） */
 .follow-btn {
   height: 34px;
   padding: 0 14px;
   border-radius: 12px;
-  border: 1px solid rgba(16, 185, 129, 0.32);
-  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.36);
+  background: rgba(16, 185, 129, 0.12);
+  color: rgba(15, 23, 42, 0.92);
   backdrop-filter: blur(10px) saturate(1.08);
   -webkit-backdrop-filter: blur(10px) saturate(1.08);
-  color: rgba(244, 247, 255, 0.92);
   cursor: pointer;
   font-weight: var(--weight-bold);
   transition:
@@ -1122,35 +1150,36 @@
     color 0.2s ease;
 }
 
+.dark .follow-btn {
+  border-color: rgba(16, 185, 129, 0.32);
+  background: rgba(16, 185, 129, 0.14);
+  color: rgba(244, 247, 255, 0.92);
+}
+
 .follow-btn:hover {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(16, 185, 129, 0.46);
+}
+
+.dark .follow-btn:hover {
   background: rgba(16, 185, 129, 0.18);
   border-color: rgba(16, 185, 129, 0.42);
 }
 
 .follow-btn.is-following {
+  color: rgba(15, 23, 42, 0.92);
+  background: rgba(255, 59, 59, 0.12);
+  border-color: rgba(255, 59, 59, 0.26);
+}
+
+.dark .follow-btn.is-following {
+  color: rgba(244, 247, 255, 0.92);
   background: rgba(255, 59, 59, 0.14);
   border-color: rgba(255, 59, 59, 0.28);
 }
 
 .follow-text {
   font-size: 12px;
-}
-
-:root[data-theme='light'] .follow-btn {
-  color: rgba(15, 23, 42, 0.92);
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.36);
-}
-
-:root[data-theme='light'] .follow-btn:hover {
-  background: rgba(16, 185, 129, 0.16);
-  border-color: rgba(16, 185, 129, 0.46);
-}
-
-:root[data-theme='light'] .follow-btn.is-following {
-  color: rgba(15, 23, 42, 0.92);
-  background: rgba(255, 59, 59, 0.12);
-  border-color: rgba(255, 59, 59, 0.26);
 }
 
 /* 弹幕面板 */
@@ -1275,14 +1304,6 @@
   min-width: 0;
 }
 
-:root[data-theme='light'] .player-topbar-streamer {
-  background: rgba(10, 10, 12, 0.52);
-  border-color: rgba(255, 255, 255, 0.14);
-  box-shadow:
-    0 18px 46px rgba(0, 0, 0, 0.28),
-    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-}
-
 .player-topbar-avatar {
   width: 32px;
   height: 32px;
@@ -1315,15 +1336,6 @@
   );
 }
 
-:root[data-theme='light'] .player-topbar-avatarFallback {
-  color: rgba(255, 255, 255, 0.88);
-  background: radial-gradient(
-    120% 120% at 30% 20%,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0.06)
-  );
-}
-
 .player-topbar-meta {
   display: flex;
   flex-direction: column;
@@ -1341,10 +1353,6 @@
   max-width: 48vw;
 }
 
-:root[data-theme='light'] .player-topbar-title {
-  color: rgba(245, 247, 250, 0.95);
-}
-
 .player-topbar-sub {
   margin-top: 2px;
   font-size: 11px;
@@ -1354,10 +1362,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 48vw;
-}
-
-:root[data-theme='light'] .player-topbar-sub {
-  color: rgba(245, 247, 250, 0.72);
 }
 
 .player-topbar-status {
@@ -1375,10 +1379,6 @@
 .player-topbar-status.is-offline {
   background: rgba(148, 163, 184, 0.14);
   border-color: rgba(148, 163, 184, 0.28);
-  color: rgba(226, 232, 240, 0.88);
-}
-
-:root[data-theme='light'] .player-topbar-status.is-offline {
   color: rgba(226, 232, 240, 0.88);
 }
 
@@ -1472,17 +1472,6 @@
 .player-window-controls .window-btn--close:active {
   background: #f1707a;
   color: #ffffff;
-}
-
-:root[data-theme='light'] .player-topbar-follow {
-  color: rgba(255, 255, 255, 0.92);
-  background: rgba(10, 10, 12, 0.44);
-  border-color: rgba(255, 255, 255, 0.14);
-}
-
-:root[data-theme='light'] .player-topbar-follow:hover {
-  background: rgba(10, 10, 12, 0.56);
-  border-color: rgba(255, 255, 255, 0.22);
 }
 
 .player-page.player-chrome-hidden .player-topbar {
@@ -1689,31 +1678,56 @@
   justify-content: center;
   text-align: center;
   height: 100%;
+  /* 铺满视频井（由 MainPlayer 行内样式迁来） */
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: 16px;
+  padding: 40px;
+  /* 默认=亮色：不透明卡片 */
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  color: var(--muted-foreground);
+}
+
+/* 深色：压在视频黑底上的半透明玻璃 */
+.dark .empty-player,
+.dark .error-player {
   background-color: rgba(35, 37, 46, 0.7);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.08);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  padding: 40px;
   color: #bec0c7;
 }
 
 .empty-player .empty-icon,
 .error-player .error-icon {
   margin-bottom: 20px;
-  color: #666;
+  /* 默认=亮色 */
+  color: #888888;
+  opacity: 0.9;
+}
+
+.dark .empty-player .empty-icon,
+.dark .error-player .error-icon {
+  color: #666666;
   opacity: 0.7;
 }
 
 .loading-player {
   --loader-size: 62px;
   --loader-stroke: 4px;
-  --loader-track: rgba(255, 255, 255, 0.18);
-  --loader-accent: rgba(160, 200, 255, 0.9);
-  --loader-dot: rgba(206, 222, 255, 0.92);
-  --loader-glow: rgba(160, 200, 255, 0.22);
-  position: relative;
+  /* 默认=亮色：视频黑底上取饱和蓝保证可见 */
+  --loader-track: rgba(76, 102, 158, 0.22);
+  --loader-accent: rgba(70, 112, 255, 0.92);
+  --loader-dot: rgba(70, 112, 255, 0.92);
+  --loader-glow: rgba(90, 130, 255, 0.38);
+  /* 铺满视频井（由 MainPlayer 行内样式迁来） */
+  position: absolute;
+  inset: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1723,6 +1737,14 @@
   border: none;
   box-shadow: none;
   padding: 0;
+}
+
+/* 深色：回落到偏冷的浅蓝白，暗底上不刺眼 */
+.dark .loading-player {
+  --loader-track: rgba(255, 255, 255, 0.18);
+  --loader-accent: rgba(160, 200, 255, 0.9);
+  --loader-dot: rgba(206, 222, 255, 0.92);
+  --loader-glow: rgba(160, 200, 255, 0.22);
 }
 
 .loading-player .spinner {
@@ -1787,6 +1809,13 @@
     #000 calc(100% - var(--loader-stroke) * 1.9)
   );
   animation: spinner-spin 0.9s linear infinite;
+  /* 默认=亮色：给转动头加一层色光晕 */
+  filter: drop-shadow(0 0 6px var(--loader-glow));
+}
+
+/* 深色：不追光晕，避免暗底上过曝 */
+.dark .loading-player .spinner-head {
+  filter: none;
 }
 
 .loading-player .spinner-dot {
@@ -1869,6 +1898,12 @@
   margin: 0 0 12px;
   font-size: 22px;
   font-weight: 600;
+  /* 默认=亮色（不透明卡片上的深字） */
+  color: var(--foreground);
+}
+
+.dark .empty-player h3,
+.dark .error-player h3 {
   color: #e0e0e0;
 }
 
@@ -1884,28 +1919,28 @@
   /* Ensure .offline-player .retry-btn also uses these styles */
   margin-top: 0;
   padding: 12px 28px;
-  background: var(--accent-gradient);
-  color: var(--accent-foreground);
-  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  background: var(--primary-gradient);
+  color: var(--primary-foreground);
+  border: 1px solid color-mix(in srgb, var(--primary) 55%, transparent);
   border-radius: 10px;
   cursor: pointer;
   font-size: 1.05em;
   font-weight: 500;
   transition: all 0.25s ease;
-  box-shadow: 0 6px 18px var(--accent-glow);
+  box-shadow: 0 6px 18px var(--primary-glow);
 }
 
 .error-player .retry-btn:hover,
 .offline-player .retry-btn:hover {
   filter: brightness(1.03) saturate(1.04);
   transform: translateY(-2px);
-  box-shadow: 0 10px 26px var(--accent-glow);
+  box-shadow: 0 10px 26px var(--primary-glow);
 }
 
 .error-player .retry-btn:active,
 .offline-player .retry-btn:active {
   transform: translateY(0px);
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-glow) 70%, transparent);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--primary-glow) 70%, transparent);
 }
 
 /* 视频元素样式 */
@@ -1953,13 +1988,6 @@ video.xgplayer-video {
     border-right: 1px solid rgba(255, 255, 255, 0.08);
   }
 
-  :root[data-theme='light'] .player-container {
-    border-right: 1px solid var(--border, #e0e0e0);
-  }
-
-  :root[data-theme='light'] .danmu-panel {
-    border-left: 1px solid var(--border, #e0e0e0);
-  }
 }
 
 @media (max-width: 768px) {
@@ -2011,6 +2039,23 @@ video.xgplayer-video {
   padding: 40px;
   height: 100%;
   box-sizing: border-box;
+  /* 铺满视频井（由 MainPlayer 行内样式迁来） */
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  /* 默认=亮色：不透明卡片 */
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  color: var(--muted-foreground);
+}
+
+/* 深色：无卡片，纯文字浮在视频黑底上 */
+.dark .offline-player {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  color: #a0a0a0;
 }
 
 .offline-message {
@@ -2018,19 +2063,34 @@ video.xgplayer-video {
 }
 
 .offline-icon svg {
-  color: #727272;
+  /* 默认=亮色 */
+  color: #888888;
+  opacity: 0.9;
   /* A softer color for the icon */
   margin-bottom: 16px;
 }
 
+.dark .offline-icon svg {
+  color: #727272;
+  opacity: 1;
+}
+
 .offline-player h3 {
   font-size: 1.4em;
-  color: #e0e0e0;
   margin-bottom: 8px;
+  color: var(--foreground);
+}
+
+.dark .offline-player h3 {
+  color: #e0e0e0;
 }
 
 .offline-player p {
   font-size: 1em;
+  color: var(--muted-foreground);
+}
+
+.dark .offline-player p {
   color: #a0a0a0;
 }
 
@@ -2040,188 +2100,17 @@ video.xgplayer-video {
   /* Limit width of streamer info bar */
   margin-bottom: 30px;
   /* Add styles to ensure it looks good above the offline message */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--border);
   padding-bottom: 20px;
 }
 
-/* Day Mode Styles */
-:root[data-theme='light'] .player-page {
-  background: transparent;
+.dark .streamer-info-offline {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-:root[data-theme='light'] .player-compact-island {
-  background: rgba(248, 250, 252, 0.9);
-  border-color: #ffffff;
-  box-shadow:
-    0 3px 8px rgba(15, 23, 42, 0.08),
-    0 10px 20px rgba(15, 23, 42, 0.08);
-}
-
-:root[data-theme='light'] .compact-avatar {
-  border-color: rgba(148, 163, 184, 0.4);
-  background: rgba(148, 163, 184, 0.22);
-}
-
-:root[data-theme='light'] .compact-avatar--fallback {
-  color: #0f172a;
-}
-
-:root[data-theme='light'] .compact-name {
-  color: #111827;
-}
-
-:root[data-theme='light'] .compact-title {
-  color: #475569;
-}
-
-:root[data-theme='light'] .compact-expand-btn {
-  color: #0f172a;
-  background: rgba(148, 163, 184, 0.24);
-}
-
-:root[data-theme='light'] .compact-expand-btn:hover {
-  background: rgba(148, 163, 184, 0.34);
-}
-
-:root[data-theme='light'] .danmu-filter-toggle-btn,
-:root[data-theme='light'] .danmu-collapse-btn {
-  color: #111827;
-  background: rgba(248, 250, 252, 0.92);
-  border: 1px solid #ffffff;
-}
-
-:root[data-theme='light'] .danmu-filter-toggle-btn:hover,
-:root[data-theme='light'] .danmu-collapse-btn:hover {
-  background: rgba(241, 245, 249, 0.98);
-}
-
-:root[data-theme='light'] .player-layout {
-  border: none;
-  box-shadow: none;
-  overflow: visible;
-}
-
-/* Night mode: player outer shell should be borderless like the danmu panel */
-:root[data-theme='dark'] .player-container {
-  border: none;
-  box-shadow: var(--glass-shadow);
-}
-
-:root[data-theme='light'] .player-container {
-  background-color: transparent;
-  backdrop-filter: none;
-  /* Remove blur for light mode if desired, or adjust */
-  -webkit-backdrop-filter: none;
-  border: none;
-  box-shadow:
-    0 2px 6px rgba(15, 23, 42, 0.06),
-    0 10px 22px rgba(15, 23, 42, 0.08);
-}
-
-:root[data-theme='light'] .danmu-panel {
-  background-color: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: none;
-  box-shadow:
-    0 2px 6px rgba(15, 23, 42, 0.06),
-    0 10px 22px rgba(15, 23, 42, 0.08);
-}
-
-:root[data-theme='light'] .player-layout .main-content {
-  overflow: visible;
-}
-
-:root[data-theme='light'] .danmu-panel:hover {
-  transform: none;
-  /* Subtle lift */
-  box-shadow: none;
-}
-
-:root[data-theme='light'] .player-close-btn {
-  background: rgba(10, 10, 12, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.92);
-  box-shadow:
-    0 22px 54px rgba(0, 0, 0, 0.32),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-}
-
-:root[data-theme='light'] .player-close-btn:hover {
-  background: rgba(10, 10, 12, 0.72);
-  border-color: rgba(255, 255, 255, 0.24);
-  box-shadow:
-    0 24px 58px rgba(0, 0, 0, 0.34),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-}
-
-:root[data-theme='light'] .empty-player,
-:root[data-theme='light'] .error-player,
-:root[data-theme='light'] .offline-player {
-  background-color: var(--content-bg-light, #ffffff);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 1px solid var(--border, #e0e0e0);
-  box-shadow: var(--content-shadow-light, 0 4px 12px rgba(0, 0, 0, 0.08));
-  color: var(--secondary-text-light, #555555);
-}
-
-:root[data-theme='light'] .empty-player .empty-icon,
-:root[data-theme='light'] .error-player .error-icon,
-:root[data-theme='light'] .offline-icon svg {
-  color: var(--icon-color-light, #888888);
-  opacity: 0.9;
-}
-
-:root[data-theme='light'] .loading-player {
-  --loader-track: rgba(76, 102, 158, 0.22);
-  --loader-accent: rgba(70, 112, 255, 0.92);
-  --loader-dot: rgba(70, 112, 255, 0.92);
-  --loader-glow: rgba(90, 130, 255, 0.38);
-}
-
-:root[data-theme='light'] .loading-player .spinner-head {
-  filter: drop-shadow(0 0 6px var(--loader-glow));
-}
-
-:root[data-theme='light'] .loading-player .spinner-dot::before {
-  box-shadow:
-    0 4px 12px rgba(70, 80, 120, 0.22),
-    0 0 10px var(--loader-glow);
-}
-
-:root[data-theme='light'] .empty-player h3,
-:root[data-theme='light'] .error-player h3,
-:root[data-theme='light'] .offline-player h3 {
-  color: var(--primary-text-light, #333333);
-}
-
-:root[data-theme='light'] .empty-player p,
-:root[data-theme='light'] .error-player p,
-:root[data-theme='light'] .offline-player p {
-  color: var(--secondary-text-light, #555555);
-  opacity: 1;
-}
-
-:root[data-theme='light'] .error-player .retry-btn,
-:root[data-theme='light'] .offline-player .retry-btn {
-  background: var(--accent-gradient);
-  color: var(--accent-foreground);
-  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-  box-shadow: 0 6px 18px var(--accent-glow);
-}
-
-:root[data-theme='light'] .error-player .retry-btn:hover,
-:root[data-theme='light'] .offline-player .retry-btn:hover {
-  filter: brightness(1.03) saturate(1.04);
-  box-shadow: 0 10px 26px var(--accent-glow);
-}
-
-:root[data-theme='light'] .error-player .retry-btn:active,
-:root[data-theme='light'] .offline-player .retry-btn:active {
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-glow) 70%, transparent);
-}
-
-:root[data-theme='light'] .streamer-info-offline {
-  border-bottom: 1px solid var(--border, #e0e0e0);
-}
+/* 说明：原文件此处（2047~2222 行的 "Day Mode Styles"）集中了 50+ 处
+   :root[data-theme='light'/'dark'] 覆盖。语义化时逐类把亮/暗取值拆进上面的
+   就近规则：浮于视频上的深色 chrome 保持不变式；外层表面（空/错/离线/加载态、
+   player-container、紧凑岛、follow-btn）改为「默认=亮色 + .dark 分支」。
+   死代码段落（compact-island / danmu-panel / filter 钮）只保留其深色底色，
+   无组件引用，将来复用再补亮色即可。 */
