@@ -11,6 +11,11 @@
   transform: translateZ(0);
   width: 100%;
   position: relative;
+  /* translateZ(0) 使其成为独立层叠上下文，z-index 会锁死在其内部：
+     cate2Overlay(absolute z:50) 无法越过它同层、却排在它后面的主播卡(自身有
+     content-visibility/contain 层叠上下文)而被盖住。给本层一个正 z-index，
+     让整个分类头(含展开的 cate2Overlay)画在最上层内容之上。 */
+  z-index: 1;
 }
 
 .categoryListExpanded {
@@ -399,6 +404,9 @@
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(32px);
   -webkit-backdrop-filter: blur(32px);
+  /* 进入动画期间首次合成，backdrop-filter 采样未就绪时顶部会闪一帧黑边。
+     常驻合成层让 backdrop 在动画开始前就绪，消除该闪烁。 */
+  will-change: transform;
   overflow: hidden;
   display: flex;
   flex-direction: column;
