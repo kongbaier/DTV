@@ -177,7 +177,10 @@
     padding: 0 14px;
     font-size: 12px;
     cursor: pointer;
-    /* 不用 backdrop-filter(含 saturate)：避免 backdrop 采样扰动背后色彩/闪烁。 */
+    /* 毛玻璃药丸：恢复 blur(10px)。刻意不带 saturate——当年就是它的
+       saturate(1.05) 让背后滚动内容的色彩偏移。祖先 translateZ 已清，blur 稳定。 */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     box-shadow: none;
     transition:
       background 0.2s ease,
@@ -227,8 +230,9 @@
     justify-content: center;
     border-radius: 999px;
     cursor: pointer;
-    /* 不用 backdrop-filter：与 cate2Overlay 同理，避免 Chromium backdrop
-       采样带来的色彩/闪烁伪影。 */
+    /* 毛玻璃提示钮：祖先 translateZ 已清，恢复 blur(8px) 与 cate2Overlay 同策略 */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     transition:
       background 0.18s ease,
       color 0.18s ease,
@@ -428,9 +432,15 @@
     padding: 18px;
     border-radius: 40px;
     z-index: 50;
-    /* 不用 backdrop-filter：展开动画首帧 backdrop 采样未就绪会在面板顶部闪
-       黑边，且会扰动背后内容色彩。面板本就近不透明，改实底观感不变。 */
-    background: #ffffff;
+    /* 毛玻璃浮层：恢复 backdrop-filter(blur 32px)。
+       早先(ffc792f)为修展开动画首帧黑边改为实底；其后 7684858/6fc6bed 移除了
+       .categoryList 祖先 translateZ（那才是 backdrop 采样错乱的根因），故现可
+       安全加回。will-change: transform 让元素常驻合成层，backdrop 在入场动画
+       首帧前即采样就绪，杜绝黑边。若在真机上复现闪烁，回退为实底即可。 */
+    background: rgba(255, 255, 255, 0.985);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    will-change: transform;
     border: 1px solid rgba(148, 163, 184, 0.28);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     overflow: hidden;
@@ -438,7 +448,7 @@
     flex-direction: column;
 
     :global(.dark) & {
-      background: rgb(20, 20, 20);
+      background: rgba(20, 20, 20, 0.985);
       border-color: rgba(255, 255, 255, 0.1);
       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
     }
