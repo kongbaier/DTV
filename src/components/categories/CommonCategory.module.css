@@ -8,13 +8,15 @@
   overflow: visible;
   transition: none;
   will-change: max-height;
-  transform: translateZ(0);
   width: 100%;
   position: relative;
-  /* translateZ(0) 使其成为独立层叠上下文，z-index 会锁死在其内部：
-     cate2Overlay(absolute z:50) 无法越过它同层、却排在它后面的主播卡(自身有
-     content-visibility/contain 层叠上下文)而被盖住。给本层一个正 z-index，
-     让整个分类头(含展开的 cate2Overlay)画在最上层内容之上。 */
+  /* 不要再给本层加 transform(如 translateZ(0))：
+     - 它会把本层变成独立层叠上下文，cate2Overlay(absolute z:50) 被锁在内部，
+       拼不过它同层、但排在后面的主播卡(content-visibility/contain 自带层叠
+       上下文)，展开面板会被盖住；
+     - 该祖先 transform 还会触发 Chromium backdrop-filter 在展开动画首帧的
+       黑边/模糊缺失伪影。
+     这里改用正 z-index 让整层(含展开的 cate2Overlay)画在上层内容之上。 */
   z-index: 1;
 }
 
