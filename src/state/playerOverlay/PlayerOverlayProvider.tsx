@@ -77,13 +77,7 @@ export function PlayerOverlayHost() {
           >
             <Suspense
               fallback={
-                <div
-                  style={{
-                    padding: 18,
-                    color: 'var(--text-secondary)',
-                    fontWeight: 700,
-                  }}
-                >
+                <div className="p-[18px] text-muted-foreground font-bold">
                   加载播放器...
                 </div>
               }

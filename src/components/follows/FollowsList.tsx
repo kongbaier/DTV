@@ -1021,14 +1021,7 @@ export function FollowsList() {
           ref={streamersListRef}
         >
           {listItems.length === 0 ? (
-            <div
-              style={{
-                padding: 18,
-                color: 'var(--text-secondary)',
-                fontWeight: 800,
-                textAlign: 'center',
-              }}
-            >
+            <div className="p-[18px] text-center font-extrabold text-muted-foreground">
               暂无关注主播
             </div>
           ) : (
@@ -1488,11 +1481,7 @@ export function FollowsList() {
                       </button>
                     </div>
                     <div
-                      className={styles.modalBody}
-                      style={{
-                        color: 'var(--text-secondary)',
-                        fontWeight: 800,
-                      }}
+                      className={`${styles.modalBody} font-extrabold text-muted-foreground`}
                     >
                       删除后，文件夹里的主播会回到主列表。
                     </div>

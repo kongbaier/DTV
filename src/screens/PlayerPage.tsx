@@ -25,9 +25,7 @@ export function PlayerPage({
   const plat = useMemo(() => toPlatformEnum(platform), [platform]);
   if (!roomId) {
     return (
-      <div
-        style={{ padding: 18, color: 'var(--text-secondary)', fontWeight: 700 }}
-      >
+      <div className="p-[18px] text-muted-foreground font-bold">
         无效的房间 ID。
       </div>
     );

@@ -14,22 +14,10 @@ export function PlayerRoute() {
 
   if (!roomId) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flex: 1,
-          minHeight: 0,
-          color: 'var(--text-secondary)',
-          fontWeight: 700,
-        }}
-      >
+      <div className="flex flex-1 min-h-0 items-center justify-center text-muted-foreground font-bold">
         <div>
-          <div style={{ fontSize: 16, marginBottom: 8 }}>未指定房间 ID</div>
-          <div style={{ fontSize: 12, opacity: 0.7 }}>
-            请从主播列表进入直播间
-          </div>
+          <div className="text-[16px] mb-2">未指定房间 ID</div>
+          <div className="text-[12px] opacity-70">请从主播列表进入直播间</div>
         </div>
       </div>
     );
@@ -38,20 +26,12 @@ export function PlayerRoute() {
   return (
     <Suspense
       fallback={
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 1,
-            minHeight: 0,
-          }}
-        >
+        <div className="flex flex-1 min-h-0 items-center justify-center">
           <LoadingDots />
         </div>
       }
     >
-      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
+      <div className="flex flex-1 min-h-0">
         <PlayerPage platform={platform} roomId={roomId} />
       </div>
     </Suspense>
