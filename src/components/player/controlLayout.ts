@@ -1,8 +1,8 @@
 import type Player from 'xgplayer';
 
 export function arrangeControlClusters(player: Player | null) {
-  if (!player || !(player as any).root) return;
-  const root = (player as any).root as HTMLElement;
+  if (!player || !player.root) return;
+  const root = player.root;
 
   const run = () => {
     try {

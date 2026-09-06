@@ -41,6 +41,7 @@ import {
 } from '@/state/follow/FollowProvider';
 import { Platform } from '@/platforms/common/types';
 import { useImageProxy } from '@/hooks/useImageProxy';
+import { useWindowState } from '@/hooks/useWindowState';
 import { useCustomCategories } from '@/state/customCategories/CustomCategoriesProvider';
 import { usePlayerOverlay } from '@/state/playerOverlay/PlayerOverlayProvider';
 
@@ -150,8 +151,15 @@ export function Navbar({
   onPlatformChange: (p: UiPlatform) => void;
 }) {
   const { pathname } = useLocation();
-  const [isWindows, setIsWindows] = useState(false);
-  const [isMaximized, setIsMaximized] = useState(false);
+  // 窗口状态取自单例 store（useWindowState）：与播放器共享同一份 isMaximized/isWindows
+  // 快照与唯一的 onResized 监听，避免各处各挂一份重复逻辑。
+  const {
+    isWindows,
+    isMaximized,
+    toggleMaximizeWindow,
+    minimizeWindow,
+    closeWindow,
+  } = useWindowState();
 
   const [donateOpen, setDonateOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
@@ -314,96 +322,6 @@ export function Navbar({
       void ensureProxyStarted();
     }
   }, [ensureProxyStarted, searchPlatform]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const osMod: any = await import('@tauri-apps/plugin-os');
-        const p =
-          typeof osMod?.platform === 'function' ? await osMod.platform() : '';
-        if (cancelled) return;
-        const platform = String(p).toLowerCase();
-        setIsWindows(platform === 'windows' || platform === 'linux');
-      } catch {
-        // non-tauri env: ignore
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isWindows) return;
-    let cancelled = false;
-    let unlisten: null | (() => void) = null;
-    (async () => {
-      try {
-        const { getCurrentWindow } = await import('@tauri-apps/api/window');
-        const win = getCurrentWindow();
-        try {
-          const max = await win.isMaximized();
-          if (!cancelled) setIsMaximized(!!max);
-        } catch {
-          // ignore
-        }
-        try {
-          unlisten = await win.onResized(async () => {
-            try {
-              const max = await win.isMaximized();
-              setIsMaximized(!!max);
-            } catch {
-              // ignore
-            }
-          });
-        } catch {
-          // ignore
-        }
-      } catch {
-        // ignore
-      }
-    })();
-    return () => {
-      cancelled = true;
-      try {
-        unlisten?.();
-      } catch {
-        // ignore
-      }
-    };
-  }, [isWindows]);
-
-  const minimizeWindow = useCallback(async () => {
-    try {
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      await getCurrentWindow().minimize();
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const toggleMaximizeWindow = useCallback(async () => {
-    try {
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      const win = getCurrentWindow();
-      const max = await win.isMaximized();
-      if (max) await win.unmaximize();
-      else await win.maximize();
-      setIsMaximized(!max);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const closeWindow = useCallback(async () => {
-    try {
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      await getCurrentWindow().close();
-    } catch {
-      // ignore
-    }
-  }, []);
 
   const updateHighlight = useCallback(() => {
     const el = tabRefs.current[activePlatform];

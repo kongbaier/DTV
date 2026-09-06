@@ -43,6 +43,7 @@ import { getHuyaStreamConfig } from '@/platforms/huya/playerHelper';
 import { getBilibiliStreamConfig } from '@/platforms/bilibili/playerHelper';
 import { useImageProxy } from '@/hooks/useImageProxy';
 import { useWindowDrag } from '@/hooks/useWindowDrag';
+import { useWindowState } from '@/hooks/useWindowState';
 import {
   useFollow,
   type FollowedStreamer,
@@ -251,8 +252,17 @@ export function MainPlayer({
   const [playerAnchorName, setPlayerAnchorName] = useState<string | null>(null);
   const [playerAvatar, setPlayerAvatar] = useState<string | null>(null);
   const [playerIsLive, setPlayerIsLive] = useState<boolean | null>(null);
-  const [isWindows, setIsWindows] = useState(false);
-  const [isMaximized, setIsMaximized] = useState(false);
+  // 窗口状态/动作统一取自单例 store（useWindowState）：Navbar 与播放器共享同一份
+  // isMaximized/isWindows 快照与 onResized 监听，全屏 ⇄ 最大化协调也内聚其中。
+  const {
+    isWindows,
+    isMaximized,
+    toggleMaximizeWindow,
+    minimizeWindow,
+    closeWindow,
+    prepareEnterFullscreen,
+    clearEnterFullscreenRecord,
+  } = useWindowState();
 
   const lineOptions: LineOption[] = useMemo(
     () => lineOptionsByPlatform[platform] ?? [],
@@ -349,95 +359,20 @@ export function MainPlayer({
   const hideChromeTimerRef = useRef<number | null>(null);
   const moveRafRef = useRef(0);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const osMod: any = await import('@tauri-apps/plugin-os');
-        const p =
-          typeof osMod?.platform === 'function' ? await osMod.platform() : '';
-        if (cancelled) return;
-        const platform = String(p).toLowerCase();
-        setIsWindows(platform === 'windows' || platform === 'linux');
-      } catch {
-        // non-tauri env: ignore
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isWindows) return;
-    let cancelled = false;
-    let unlisten: null | (() => void) = null;
-    (async () => {
-      try {
-        const { getCurrentWindow } = await import('@tauri-apps/api/window');
-        const win = getCurrentWindow();
-        try {
-          const max = await win.isMaximized();
-          if (!cancelled) setIsMaximized(!!max);
-        } catch {
-          // ignore
-        }
-        try {
-          unlisten = await win.onResized(async () => {
-            try {
-              const max = await win.isMaximized();
-              setIsMaximized(!!max);
-            } catch {
-              // ignore
-            }
-          });
-        } catch {
-          // ignore
-        }
-      } catch {
-        // ignore
-      }
-    })();
-    return () => {
-      cancelled = true;
-      try {
-        unlisten?.();
-      } catch {
-        // ignore
-      }
-    };
-  }, [isWindows]);
-
-  const minimizeWindow = useCallback(async () => {
-    try {
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      await getCurrentWindow().minimize();
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const toggleMaximizeWindow = useCallback(async () => {
-    try {
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      const win = getCurrentWindow();
-      const max = await win.isMaximized();
-      if (max) await win.unmaximize();
-      else await win.maximize();
-      setIsMaximized(!max);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const closeWindow = useCallback(async () => {
-    try {
-      const { getCurrentWindow } = await import('@tauri-apps/api/window');
-      await getCurrentWindow().close();
-    } catch {
-      // ignore
-    }
-  }, []);
+  // 最大化/还原可能涉及与全屏互斥的切换（全屏→最大化先退全屏、还原时若先前是从全屏切来的
+  // 则回到全屏），这类操作需要操作 xgplayer 元素全屏，故把当前 player 作为 peer 交给单例
+  // store 的动作；其余窗口动作（minimize/close/isWindows 等）直接由 useWindowState() 提供。
+  const toggleMaximizeWithPlayer = useCallback(() => {
+    const player = playerRef.current;
+    void toggleMaximizeWindow(
+      player && typeof player.exitFullscreen === 'function'
+        ? {
+            exitFullscreen: () => player.exitFullscreen(),
+            getFullscreen: () => player.getFullscreen(),
+          }
+        : undefined,
+    );
+  }, [toggleMaximizeWindow]);
 
   useEffect(() => {
     const armHide = () => {
@@ -927,6 +862,34 @@ export function MainPlayer({
         return;
       }
       playbackKindRef.current = isHlsPlayback ? 'hls' : 'flv';
+
+      // 在 xgplayer 的“原生全屏”入口（全屏按钮 / 双击视频都走到 player.getFullscreen()）前
+      // 拦一道：若窗口当前处于最大化，先 unmaximize 并记录，再放行元素全屏 —— 元素全屏会让
+      // Tauri 把 OS 窗口切成原生全屏，若直接从最大化切过去会与最大化态互斥/丢失状态。
+      // 退出全屏后的“恢复最大化”由单例 store 的 resize 处理（syncFromResize）负责，因此这里
+      // 不包 exitFullscreen，避免与 Esc 等非代码路径退出重复。
+      try {
+        const origGetFullscreen =
+          typeof player.getFullscreen === 'function'
+            ? player.getFullscreen.bind(player)
+            : null;
+        if (origGetFullscreen) {
+          player.getFullscreen = async (...args: unknown[]) => {
+            await prepareEnterFullscreen();
+            const ret = origGetFullscreen(...args);
+            if (ret && typeof ret.catch === 'function') {
+              // 若元素全屏请求失败（例如 await unmaximize 后手势激活丢失），
+              // 撤销刚记录的“之前最大化”，避免残留待恢复标记。
+              ret.catch(() => {
+                clearEnterFullscreenRecord();
+              });
+            }
+            return ret;
+          };
+        }
+      } catch {
+        // ignore
+      }
 
       try {
         const storedPlayerVolume = loadStoredVolume();
@@ -1543,7 +1506,7 @@ export function MainPlayer({
             className="window-btn"
             data-player-drag="false"
             aria-label={isMaximized ? '还原' : '最大化'}
-            onClick={() => void toggleMaximizeWindow()}
+            onClick={() => void toggleMaximizeWithPlayer()}
           >
             {!isMaximized ? (
               <svg viewBox="0 0 24 24" fill="none">

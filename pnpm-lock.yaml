@@ -12,16 +12,16 @@ importers:
         specifier: 3.0.2
         version: 3.0.2(@react-spectrum/provider@3.11.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(tailwindcss@4.3.3)
       '@tauri-apps/api':
-        specifier: ^2.7.0
+        specifier: ^2.11.1
         version: 2.11.1
       '@tauri-apps/plugin-opener':
-        specifier: ^2.4.0
+        specifier: ^2.5.5
         version: 2.5.5
       '@tauri-apps/plugin-os':
-        specifier: ^2.3.0
+        specifier: ^2.3.2
         version: 2.3.2
       '@tauri-apps/plugin-updater':
-        specifier: ^2.3.0
+        specifier: ^2.11.0
         version: 2.11.0
       danmu.js:
         specifier: 1.1.13-douyin-1.5
@@ -67,7 +67,7 @@ importers:
         specifier: ^4.3.3
         version: 4.3.3(vite@8.2.2(@types/node@22.20.1)(jiti@2.7.0))
       '@tauri-apps/cli':
-        specifier: ^2.7.0
+        specifier: ^2.11.4
         version: 2.11.4
       '@types/node':
         specifier: ^22.17.0
