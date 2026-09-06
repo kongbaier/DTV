@@ -1,596 +1,492 @@
-.categoryList {
-  display: flex;
-  flex-direction: column;
-  background: transparent;
-  color: var(--text-primary);
-  max-height: none;
-  min-height: 0;
-  overflow: visible;
-  transition: none;
-  will-change: max-height;
-  width: 100%;
-  position: relative;
-  /* 不要再给本层加 transform(如 translateZ(0))：
-     - 它会把本层变成独立层叠上下文，cate2Overlay(absolute z:50) 被锁在内部，
-       拼不过它同层、但排在后面的主播卡(content-visibility/contain 自带层叠
-       上下文)，展开面板会被盖住；
-     - 该祖先 transform 还会触发 Chromium backdrop-filter 在展开动画首帧的
-       黑边/模糊缺失伪影。
-     这里改用正 z-index 让整层(含展开的 cate2Overlay)画在上层内容之上。 */
-  z-index: 1;
-}
+/* 平台首页顶部分类条（cate1 横滚 + cate2 药丸 + douyu 长列表展开面板）。
+   整份收进 @layer components，使 Tailwind utilities 可覆盖。
+   深色走 .dark（默认=亮色）：能被语义 token 翻转的颜色引用 token，
+   玻璃类透明白/黑 tint 按主题保留在 :global(.dark) 分支。
+   注意：本层根 .categoryList 不再加 transform（见其内注释），避免 Chromium
+   backdrop 伪影与把展开面板的层叠锁死。 */
+@layer components {
+  .categoryList {
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+    color: var(--foreground);
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+    transition: none;
+    will-change: max-height;
+    width: 100%;
+    position: relative;
+    /* 不要再给本层加 transform(如 translateZ(0))：
+       - 它会把本层变成独立层叠上下文，cate2Overlay(absolute z:50) 被锁在内部，
+         拼不过它同层、但排在后面的主播卡(content-visibility/contain 自带层叠
+         上下文)，展开面板会被盖住；
+       - 该祖先 transform 还会触发 Chromium backdrop-filter 在展开动画首帧的
+         黑边/模糊缺失伪影。
+       这里改用正 z-index 让整层(含展开的 cate2Overlay)画在上层内容之上。 */
+    z-index: 1;
+  }
 
-.categoryListExpanded {
-  max-height: 500px;
-}
+  .categoryListExpanded {
+    max-height: 500px;
+  }
 
-.loadingState {
-  padding: 32px 16px;
-  text-align: center;
-  color: var(--text-secondary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
+  .loadingState,
+  .loadingText {
+    text-align: center;
+    color: var(--muted-foreground);
+  }
 
-.loadingText {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
+  .loadingState {
+    padding: 32px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
 
-.cate1ListContainer {
-  overflow-x: auto;
-  flex-shrink: 0;
-  padding: 3px 0 6px;
-  transition: none;
-  border: none;
-  box-shadow: none;
-  position: relative;
-}
+  .loadingText {
+    font-size: 12px;
+    font-weight: 500;
+  }
 
-.cate1Row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0;
-}
+  .cate1ListContainer {
+    overflow-x: auto;
+    flex-shrink: 0;
+    padding: 3px 0 6px;
+    transition: none;
+    border: none;
+    box-shadow: none;
+    position: relative;
 
-/* ul 的外层定位包裹：不参与滚动，左右箭头以它为基准钉在列表可视区两端 */
-.cate1ListWrap {
-  display: flex;
-  align-items: center;
-  flex: 1 1 auto;
-  min-width: 0;
-  position: relative;
-}
+    &::-webkit-scrollbar {
+      height: 0;
+    }
+  }
 
-.cate1List {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  gap: 22px;
-  flex: 1 1 auto;
-  min-width: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  position: relative;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
+  .cate1Row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0;
+  }
 
-.cate1Item {
-  height: 32px;
-  padding: 0 6px;
-  cursor: pointer;
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
-  font-size: 12.5px;
-  line-height: 32px;
-  font-weight: 800;
-  border-radius: 8px;
-  white-space: nowrap;
-  color: var(--text-secondary);
-  background: transparent;
-  box-shadow: none;
-  position: relative;
-}
+  /* ul 的外层定位包裹：不参与滚动，左右箭头以它为基准钉在列表可视区两端 */
+  .cate1ListWrap {
+    display: flex;
+    align-items: center;
+    flex: 1 1 auto;
+    min-width: 0;
+    position: relative;
+  }
 
-.cate1Item:hover {
-  color: var(--text-primary);
-  background: transparent;
-}
+  .cate1List {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 22px;
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    position: relative;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
 
-.cate1ItemSelected {
-  background: transparent;
-  color: var(--text-primary);
-  font-weight: 900;
-  transform: none;
-  border-color: transparent;
-  box-shadow: none;
-}
+  .cate1Item {
+    height: 32px;
+    padding: 0 6px;
+    cursor: pointer;
+    transition:
+      color 0.2s ease,
+      transform 0.2s ease;
+    font-size: 12.5px;
+    line-height: 32px;
+    font-weight: 800;
+    border-radius: 8px;
+    white-space: nowrap;
+    background: transparent;
+    box-shadow: none;
+    position: relative;
+    /* 文字灰阶：亮用暖灰、深用泛白灰（选中态另见 .cate1ItemSelected） */
+    color: #5f6563;
 
-.cate1Item::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0px;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--accent);
-  box-shadow: 0 0 10px var(--accent-glow);
-  opacity: 0;
-  transform: scaleX(0.6);
-  transition:
-    opacity 0.2s ease,
-    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+    &:hover {
+      color: var(--foreground);
+    }
 
-.cate1ItemSelected::after {
-  opacity: 1;
-  transform: scaleX(1);
-}
+    /* 底部选中下划线：品牌绿 */
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+      opacity: 0;
+      transform: scaleX(0.6);
+      transition:
+        opacity 0.2s ease,
+        transform 0.3s var(--ease-out);
+    }
 
-:global(:root[data-theme='dark']) .cate1Item {
-  color: #cbd5d1;
-}
+    :global(.dark) & {
+      color: #cbd5d1;
+    }
+  }
 
-:global(:root[data-theme='light']) .cate1Item {
-  color: #5f6563;
-}
+  .cate1ItemSelected {
+    background: transparent;
+    font-weight: 900;
+    transform: none;
+    border-color: transparent;
+    box-shadow: none;
+    color: #1f2937;
 
-:global(:root[data-theme='light']) .cate1ItemSelected {
-  color: #1f2937;
-}
+    &::after {
+      opacity: 1;
+      transform: scaleX(1);
+    }
 
-:global(:root[data-theme='dark']) .cate1ItemSelected {
-  color: #f6fbf7;
-}
+    :global(.dark) & {
+      color: #f6fbf7;
+    }
+  }
 
-:global(:root[data-theme='light']) .cate1ListContainer {
-}
+  .cate1Actions {
+    position: static;
+    height: 32px;
+    min-width: max-content;
+    display: inline-flex;
+    align-items: center;
+    z-index: 2;
+  }
 
-.cate1ListContainer::-webkit-scrollbar {
-  height: 0;
-}
+  /* 分类条末尾动作钮（订阅分区按钮）用全局类名以便复用 */
+  .cate1Actions :global(.category-subscribe-btn) {
+    height: 28px;
+    border-radius: 12px;
+    padding: 0 14px;
+    font-size: 12px;
+    cursor: pointer;
+    /* 不用 backdrop-filter(含 saturate)：避免 backdrop 采样扰动背后色彩/闪烁。 */
+    box-shadow: none;
+    transition:
+      background 0.2s ease,
+      transform 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+    /* 默认=亮色 */
+    background: rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    color: rgba(15, 23, 42, 0.9);
 
-.cate1Actions {
-  position: static;
-  height: 32px;
-  min-width: max-content;
-  display: inline-flex;
-  align-items: center;
-  z-index: 2;
-}
+    &:hover {
+      transform: translateY(-1px);
+      background: rgba(15, 23, 42, 0.12);
+      border-color: rgba(15, 23, 42, 0.24);
+    }
 
-/* 列表可横向滚动时，浮在列表可视区两端（钉在 cate1ListWrap 的左右缘）的箭头提示 */
-.cate1ScrollBtn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 3;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  cursor: pointer;
-  color: rgba(248, 250, 252, 0.9);
-  /* 不用 backdrop-filter：与 cate2Overlay 同理，避免 Chromium backdrop 采样
-     带来的色彩/闪烁伪影。 */
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition:
-    background 0.18s ease,
-    color 0.18s ease,
-    transform 0.18s ease;
-}
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
 
-.cate1ScrollRight {
-  right: 2px;
-}
+    :global(.dark) & {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.18);
+      color: rgba(248, 250, 252, 0.96);
 
-.cate1ScrollLeft {
-  left: 2px;
-}
+      &:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.26);
+      }
+    }
+  }
 
-.cate1ScrollBtn:hover {
-  background: rgba(255, 255, 255, 0.22);
-  color: rgba(248, 250, 252, 1);
-}
+  /* 列表可横向滚动时，浮在可视区两端（钉在 cate1ListWrap 左右缘）的箭头提示 */
+  .cate1ScrollBtn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    cursor: pointer;
+    /* 不用 backdrop-filter：与 cate2Overlay 同理，避免 Chromium backdrop
+       采样带来的色彩/闪烁伪影。 */
+    transition:
+      background 0.18s ease,
+      color 0.18s ease,
+      transform 0.18s ease;
+    /* 默认=亮色 */
+    color: rgba(15, 23, 42, 0.9);
+    background: rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 
-.cate1ScrollRight:hover {
-  transform: translateY(-50%) translateX(1px); /* 右移示意方向 */
-}
+    &:hover {
+      background: rgba(15, 23, 42, 0.14);
+      color: rgba(15, 23, 42, 1);
+    }
 
-.cate1ScrollLeft:hover {
-  transform: translateY(-50%) translateX(-1px);
-}
+    :global(.dark) & {
+      color: rgba(248, 250, 252, 0.9);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.14);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
-:global(:root[data-theme='light']) .cate1ScrollBtn {
-  background: rgba(15, 23, 42, 0.06);
-  border-color: rgba(148, 163, 184, 0.28);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-  color: rgba(15, 23, 42, 0.9);
-}
+      &:hover {
+        background: rgba(255, 255, 255, 0.22);
+        color: rgba(248, 250, 252, 1);
+      }
+    }
+  }
 
-:global(:root[data-theme='light']) .cate1ScrollBtn:hover {
-  background: rgba(15, 23, 42, 0.14);
-  color: rgba(15, 23, 42, 1);
-}
+  .cate1ScrollRight {
+    right: 2px;
 
-.cate2Container {
-  padding: 10px 0 6px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: visible;
-  background: transparent;
-}
+    &:hover {
+      transform: translateY(-50%) translateX(1px); /* 右移示意方向 */
+    }
+  }
 
-.cate2Shell {
-  padding: 8px;
-  border-radius: 32px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
+  .cate1ScrollLeft {
+    left: 2px;
 
-:global(:root[data-theme='light']) .cate2Shell {
-  background: rgba(15, 23, 42, 0.04);
-  border-color: rgba(148, 163, 184, 0.28);
-}
+    &:hover {
+      transform: translateY(-50%) translateX(-1px);
+    }
+  }
 
-.cate2Grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  justify-content: flex-start;
-  padding: 0;
-}
+  .cate2Container {
+    padding: 10px 0 6px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: visible;
+    background: transparent;
+  }
 
-@media (min-width: 640px) {
+  .cate2Shell {
+    padding: 8px;
+    border-radius: 32px;
+    /* 默认=亮色 */
+    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(148, 163, 184, 0.28);
+
+    :global(.dark) & {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+
   .cate2Grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    justify-content: flex-start;
+    padding: 0;
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+    }
   }
-}
 
-@media (min-width: 768px) {
-  .cate2Grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+  .cate2Card {
+    min-height: 36px;
+    padding: 10px 8px;
+    width: 100%;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    /* 默认=亮色：白底细边灰字 */
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 1);
+    color: rgba(107, 114, 128, 1);
+
+    /* 悬浮只用非选中态；hover 用 :not(.cate2CardActive) 排除选中卡，
+       保持激活绿不受悬浮扰动。（亮色下旧逻辑 hover 会把字翻白成白底白字，
+       属潜在可见 bug，这里按浮层同款浅灰蓝风格补上。） */
+    &:hover:not(.cate2CardActive) {
+      background: rgba(15, 23, 42, 0.06);
+      border-color: rgba(148, 163, 184, 0.35);
+      color: rgba(15, 23, 42, 0.92);
+    }
+
+    :global(.dark) & {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.05);
+      color: #cbd5d1;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+      &:hover:not(.cate2CardActive) {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: rgba(248, 250, 252, 1);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+    }
   }
-}
 
-@media (min-width: 1024px) {
-  .cate2Grid {
-    grid-template-columns: repeat(10, minmax(0, 1fr));
+  /* 选中卡：绿色渐变。要用 .cate2Card.cate2CardActive 复合选择器压过上方
+     `.dark .cate2Card`(嵌套提升到的 0,2,0 特异性) —— 否则深色下激活卡会被
+     白玻璃底覆盖而看不到渐变。 */
+  .cate2Card.cate2CardActive,
+  .cate2CardActive {
+    background: var(--primary-gradient);
+    border-color: color-mix(in srgb, var(--primary) 65%, var(--primary-hover));
+    color: #ffffff;
+    font-weight: 900;
+    box-shadow: none;
   }
-}
 
-.cate2Card {
-  min-height: 36px;
-  padding: 10px 8px;
-  width: 100%;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  color: var(--text-secondary);
-  box-shadow: none;
-}
+  .cate2Name {
+    font-size: 11px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
 
-.cate2Card:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(248, 250, 252, 1);
-}
+  .cate2ExpandBtn {
+    min-height: 36px;
+    padding: 10px 8px;
+    width: 100%;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 900;
+    transition:
+      transform 0.18s ease,
+      background 0.18s ease,
+      border-color 0.18s ease;
+    /* 默认=亮色 */
+    background: #ffffff;
+    border: 1px solid rgba(203, 213, 225, 0.95);
+    color: rgba(15, 23, 42, 0.9);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 10px 22px rgba(15, 23, 42, 0.08);
 
-.cate2CardActive {
-  background: var(--accent-gradient);
-  border-color: color-mix(in srgb, var(--accent) 65%, var(--accent-hover));
-  color: #ffffff;
-  font-weight: 900;
-  box-shadow: none;
-}
+    &:hover {
+      transform: translateY(-1px);
+      background: #f8fafc;
+      border-color: rgba(148, 163, 184, 0.45);
+    }
 
-.cate2Name {
-  font-size: 11px;
-  font-weight: 900;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: center;
-}
+    :global(.dark) & {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: rgba(248, 250, 252, 1);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 
-:global(:root[data-theme='dark']) .cate2Card {
-  color: #cbd5d1;
-}
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
 
-:global(:root[data-theme='dark']) .cate2Card:not(.cate2CardActive) {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
+  /* douyu 长 cate2 列表的展开浮层（absolute 钉在 .cate2Container 之下） */
+  .cate2Overlay {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 8px;
+    padding: 18px;
+    border-radius: 40px;
+    z-index: 50;
+    /* 不用 backdrop-filter：展开动画首帧 backdrop 采样未就绪会在面板顶部闪
+       黑边，且会扰动背后内容色彩。面板本就近不透明，改实底观感不变。 */
+    background: #ffffff;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
-:global(:root[data-theme='dark']) .cate2Card:hover:not(.cate2CardActive) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
+    :global(.dark) & {
+      background: rgb(20, 20, 20);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+    }
+  }
 
-:global(:root[data-theme='light']) .cate2Card {
-  background: #ffffff;
-  border-color: rgba(226, 232, 240, 1);
-  color: rgba(107, 114, 128, 1);
-}
+  /* 展开浮层内的药丸只覆盖亮色：白底上面板用浅灰蓝填充；
+     深色面板沿用通用 .cate2Card 暗色玻璃，故用 :root:not(.dark) 把亮色专属
+     规则锁在亮主题，避免误伤深色。 */
+  :global(:root:not(.dark)) .cate2Overlay .cate2Card:not(.cate2CardActive) {
+    background: rgba(15, 23, 42, 0.06);
+    border-color: rgba(148, 163, 184, 0.28);
+    color: rgba(15, 23, 42, 0.82);
 
-:global(:root[data-theme='light']) .cate2CardActive {
-  background: var(--accent-gradient);
-  border-color: color-mix(in srgb, var(--accent) 65%, var(--accent-hover));
-  color: #ffffff;
-  box-shadow: none;
-}
+    &:hover {
+      background: rgba(15, 23, 42, 0.1);
+      border-color: rgba(148, 163, 184, 0.35);
+      color: rgba(15, 23, 42, 0.92);
+    }
+  }
 
-:global(:root[data-theme='dark']) .cate2CardActive {
-  background: var(--accent-gradient);
-  border-color: color-mix(in srgb, var(--accent) 65%, var(--accent-hover));
-  color: #ffffff;
-  box-shadow: none;
-}
+  .cate2OverlayBody {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0 4px 6px 0;
+    scrollbar-width: none;
 
-.cate2ExpandBtn {
-  min-height: 36px;
-  padding: 10px 8px;
-  width: 100%;
-  border-radius: 999px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(248, 250, 252, 1);
-  font-size: 11px;
-  font-weight: 900;
-  transition:
-    transform 0.18s ease,
-    background 0.18s ease,
-    border-color 0.18s ease;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+  }
 
-.cate2ExpandBtn:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.2);
-}
-
-:global(:root[data-theme='light']) .cate2ExpandBtn {
-  background: rgba(255, 255, 255, 1);
-  border-color: rgba(203, 213, 225, 0.95);
-  color: rgba(15, 23, 42, 0.9);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 10px 22px rgba(15, 23, 42, 0.08);
-}
-
-:global(:root[data-theme='light']) .cate2ExpandBtn:hover {
-  background: rgba(248, 250, 252, 1);
-  border-color: rgba(148, 163, 184, 0.45);
-}
-
-.cate2Overlay {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 8px;
-  padding: 18px;
-  border-radius: 40px;
-  z-index: 50;
-  /* 不用 backdrop-filter：展开动画首帧 backdrop 采样未就绪会在面板顶部闪黑边，
-     且会扰动背后内容色彩。面板本就近乎不透明，改实底观感不变。 */
-  background: rgb(20, 20, 20);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-:global(:root[data-theme='light']) .cate2Overlay {
-  background: #ffffff;
-  border-color: rgba(148, 163, 184, 0.28);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-:global(:root[data-theme='light'])
-  .cate2Overlay
-  .cate2Card:not(.cate2CardActive) {
-  background: rgba(15, 23, 42, 0.06);
-  border-color: rgba(148, 163, 184, 0.28);
-  color: rgba(15, 23, 42, 0.82);
-}
-
-:global(:root[data-theme='light'])
-  .cate2Overlay
-  .cate2Card:hover:not(.cate2CardActive) {
-  background: rgba(15, 23, 42, 0.1);
-  border-color: rgba(148, 163, 184, 0.35);
-  color: rgba(15, 23, 42, 0.92);
-}
-
-.cate2OverlayHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  padding: 0 6px;
-}
-
-.cate2OverlayBody {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: 0 4px 6px 0;
-  scrollbar-width: none;
-}
-
-.cate2OverlayBody::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-.cate2OverlayTitle {
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-}
-
-.cate2OverlayClose {
-  width: 36px;
-  height: 36px;
-  border-radius: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-  transition:
-    transform 0.18s ease,
-    background 0.18s ease;
-}
-
-.cate2OverlayClose:hover {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.12);
-}
-
-:global(:root[data-theme='light']) .cate2OverlayClose {
-  background: rgba(15, 23, 42, 0.06);
-  border-color: rgba(148, 163, 184, 0.28);
-  color: rgba(15, 23, 42, 0.9);
-}
-
-.cate2OverlayGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-@media (min-width: 640px) {
   .cate2OverlayGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
   }
-}
-
-@media (min-width: 768px) {
-  .cate2OverlayGrid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 1024px) {
-  .cate2OverlayGrid {
-    grid-template-columns: repeat(8, minmax(0, 1fr));
-  }
-}
-
-.expandButton {
-  position: relative;
-  align-self: center;
-  margin-top: -6px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 16px;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: 999px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  z-index: 5;
-  box-shadow: var(--shadow-low);
-}
-
-.expandButton:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-:global(:root[data-theme='dark']) .expandButton {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-secondary);
-}
-
-:global(:root[data-theme='dark']) .expandButton:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: var(--text-primary);
-}
-
-.expandIcon {
-  margin-left: 2px;
-  width: 12px;
-  height: 12px;
-}
-
-.expandIconExpanded {
-  transform: rotate(180deg);
-}
-
-/* Actions button styles keep global class name for reuse */
-.cate1Actions :global(.category-subscribe-btn) {
-  height: 28px;
-  border-radius: 12px;
-  padding: 0 14px;
-  font-size: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(248, 250, 252, 0.96);
-  cursor: pointer;
-  /* 不用 backdrop-filter(含 saturate)：避免 backdrop 采样扰动背后色彩/闪烁。 */
-  box-shadow: none;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
-}
-
-.cate1Actions :global(.category-subscribe-btn:hover) {
-  transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.26);
-}
-
-.cate1Actions :global(.category-subscribe-btn:disabled) {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-}
-
-:global(:root[data-theme='light'])
-  .cate1Actions
-  :global(.category-subscribe-btn) {
-  background: rgba(15, 23, 42, 0.06);
-  border-color: rgba(15, 23, 42, 0.12);
-  color: rgba(15, 23, 42, 0.9);
 }
