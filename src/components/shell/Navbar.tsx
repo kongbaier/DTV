@@ -886,7 +886,7 @@ export function Navbar({
   return (
     <nav
       ref={navRef}
-      className={`${styles.navbar} ${theme === 'dark' ? styles.navbarDark : ''}`}
+      className={styles.navbar}
       data-drag-region
       data-nav-compact={navCompact ? 'true' : 'false'}
       data-nav-search-center={searchCentered ? 'true' : 'false'}

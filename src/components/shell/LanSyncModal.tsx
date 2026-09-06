@@ -533,8 +533,7 @@ export function LanSyncModal({
 
                 {jsonExportError ? (
                   <p
-                    className={styles.syncHint}
-                    style={{ color: 'rgba(239, 68, 68, 0.95)' }}
+                    className={`${styles.syncHint} text-destructive`}
                   >
                     {jsonExportError}
                   </p>
@@ -542,8 +541,7 @@ export function LanSyncModal({
 
                 {exportError ? (
                   <p
-                    className={styles.syncHint}
-                    style={{ color: 'rgba(239, 68, 68, 0.95)' }}
+                    className={`${styles.syncHint} text-destructive`}
                   >
                     {exportError}
                   </p>
@@ -551,8 +549,7 @@ export function LanSyncModal({
 
                 {jsonExportPath ? (
                   <p
-                    className={styles.syncHint}
-                    style={{ color: 'rgba(34, 197, 94, 0.95)' }}
+                    className={`${styles.syncHint} text-success`}
                   >
                     导出成功：已导出到桌面。文件：{jsonExportPath}
                   </p>
@@ -627,8 +624,7 @@ export function LanSyncModal({
 
                 {importError ? (
                   <p
-                    className={styles.syncHint}
-                    style={{ color: 'rgba(239, 68, 68, 0.95)' }}
+                    className={`${styles.syncHint} text-destructive`}
                   >
                     {importError}
                   </p>
