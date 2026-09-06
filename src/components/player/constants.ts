@@ -10,6 +10,16 @@ export type DanmuUserSettings = {
   opacity: number;
 };
 
+export const DEFAULT_DANMU_SETTINGS: DanmuUserSettings = {
+  color: '#ffffff',
+  strokeColor: '#444444',
+  fontSize: '20px',
+  duration: 10000,
+  area: 0.5,
+  mode: 'scroll',
+  opacity: 1,
+};
+
 export const DANMU_PREFERENCES_STORAGE_KEY = 'dtv_danmu_preferences_v1';
 // Keep compatible with legacy DTV-main project (portable config key).
 export const DANMU_BLOCK_KEYWORDS_STORAGE_KEY = 'danmu_block_keywords';
