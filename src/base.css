@@ -1,0 +1,170 @@
+@font-face {
+  font-family: 'OPPO Sans';
+  src: url('/fonts/OPPO Sans 4.0.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 元素层：与 Tailwind preflight / HeroUI 同处 @layer base，层内按源码序后者优先，
+   utilities 仍可正常覆盖（修复此前 unlayered 压制 utilities 的问题）。
+   注意：本文件无 Tailwind 指令，不被其编译器处理，勿使用 CSS 嵌套。 */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--background);
+    color: var(--foreground);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    font-weight: var(--weight-regular);
+    letter-spacing: 0.01em;
+    overflow: hidden;
+  }
+
+  :where(button, input, textarea, select) {
+    font: inherit;
+    color: inherit;
+  }
+
+  :where(a, button, [role='button'], input, textarea, select, summary) {
+    transition:
+      background-color var(--dur-3) var(--ease-out),
+      color var(--dur-2) var(--ease-out),
+      border-color var(--dur-3) var(--ease-out),
+      transform var(--dur-2) var(--ease-out),
+      opacity var(--dur-2) var(--ease-out);
+  }
+
+  button:not(.button):not([data-slot='button']) {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  a:hover {
+    color: var(--primary);
+  }
+
+  ul {
+    list-style: none;
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--foreground) 15%, transparent);
+    border-radius: 10px;
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--foreground) 20%, transparent);
+  }
+
+  ::selection {
+    background: color-mix(in oklch, var(--primary) 22%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :where(a, button, [role='button'], input, textarea, select, summary) {
+      transition-duration: 1ms !important;
+    }
+  }
+}
+
+/* 复用 chrome 组件类：收进 @layer components，使 Tailwind utilities 可覆盖。 */
+@layer components {
+  .mica {
+    background-color: var(--glass-bg);
+    backdrop-filter: blur(32px) saturate(220%);
+    -webkit-backdrop-filter: blur(32px) saturate(220%);
+    border: 1px solid var(--glass-border);
+  }
+
+  .fluent-card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-low);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .fluent-card:hover {
+    border-color: var(--border);
+    box-shadow: var(--shadow-low);
+  }
+
+  .win-controls {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    height: calc(var(--navbar-height) + 1px);
+    padding: 0;
+    margin: 0;
+  }
+
+  .win-control-btn {
+    width: 40px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--foreground);
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .win-control-btn:hover {
+    background: var(--surface-hover);
+  }
+
+  .win-control-btn:active {
+    background: var(--surface-active);
+  }
+
+  .win-control-btn.close:hover,
+  .win-control-btn.close:active {
+    background: #e81123;
+    color: #fff;
+  }
+
+  .cookie-error {
+    font-size: 0.72rem;
+    color: var(--error-color, #f87171);
+  }
+}

@@ -1,1 +1,286 @@
 @import 'tailwindcss';
+
+/* 深色模式采用 Tailwind 官方 class 方案：
+   <html class="dark"> 即深色（.dark 同时激活 :root.dark 的语义 token 与 dark: 变体）。
+   HeroUI v3 自带一套 @custom-variant dark（其深色 token 写在 .dark, [data-theme="dark"] 上），
+   与下方声明在不同样式表各自编译、互不冲突；此声明把应用内的 dark: 收窄为纯 class 驱动。 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================================
+ * 语义 token 体系
+ * ----------------------------------------------------------------------------
+ * 结构（吸收 shadcn/参考系优点，贴合本应用）：
+ *   - 物理色阶 --brand*         主题无关的品牌绿色阶梯（勿在组件里直接消费，经语义层引用）
+ *   - 语义角色（:root 亮 / :root.dark 深） 组件里一律引用语义 token
+ *   - 旧名别名 shim             迁移期保证旧 CSS 仍能渲染（E 阶段删除）
+ *   - @theme inline              语义色同名注入 Tailwind 命名空间 -> bg-card / text-muted-foreground …
+ *   - HeroUI v3 注入            把语义色喂给 @heroui 用到的少量组件（dropdown/spinner/card/skeleton）
+ *
+ * token 保持在 unlayered：unlayered 规则优先于 HeroUI 的 @layer theme/base 默认值，
+ * 保证语义色能覆盖 HeroUI 内置主题。
+ * ========================================================================== */
+
+/* ---- 物理色阶：品牌绿色阶梯（主题无关） ----------------------------------- */
+:root {
+  --brand: #22c55e;
+  --brand-d1: #16a34a;
+  --brand-d2: #15803d;
+  --brand-d3: #166534;
+  --brand-l1: #34d399;
+  --brand-l2: #6ee7b7;
+  --brand-l3: #a7f3d0;
+}
+
+/* ---- 非色 token（主题无关，沿用原值，组件继续直接引用） ------------------- */
+:root {
+  --font-sans:
+    'OPPO Sans', 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+
+  /* Typography */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 15px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --leading-tight: 1.15;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+  --weight-regular: 400;
+  --weight-medium: 600;
+  --weight-bold: 700;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 240ms;
+
+  /* 派生 token：单点定义，内部引用语义色随主题解析 */
+  --primary-gradient: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  --glass-blur: blur(32px);
+  --status-warning: #f59e0b;
+
+  /* 圆角 / 阴影 */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+}
+
+/* ============================================================================
+ * 语义色 · 亮色主题 (:root)
+ * ========================================================================== */
+:root {
+  /* 基底 */
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --card: #f8fafc;
+  --card-foreground: #0f172a;
+  --popover: #fdfdfd;
+  --popover-foreground: #0f172a;
+  --muted-foreground: #64748b;
+
+  /* 中性底 / hover 高亮 */
+  --secondary: #f1f5f9;
+  --secondary-foreground: #334155;
+  --muted: color-mix(in oklch, var(--foreground) 5%, var(--background));
+  --surface-hover: rgba(0, 0, 0, 0.04);
+  --surface-active: rgba(0, 0, 0, 0.08);
+
+  /* 品牌（绿）：主操作 / 焦点 / 强强调 */
+  --primary: var(--brand);
+  --primary-foreground: #ffffff;
+  --primary-hover: var(--brand-d1);
+  --primary-active: var(--brand-d2);
+  --primary-strong: var(--brand-d3);
+  --primary-glow: color-mix(in oklch, var(--primary) 35%, transparent);
+
+  /* 边框 / 输入 / 焦点环 */
+  --border: #e2e8f0;
+  --input: #dbe3ee;
+  --ring: var(--primary);
+
+  /* 状态色 */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #22c55e;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #111827;
+  --status-live: #ff3e3e;
+
+  /* 毛玻璃 */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-card-bg: rgba(255, 255, 255, 0.6);
+  --glass-card-border: #ffffff;
+
+  /* 阴影 */
+  --shadow-low: 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.12);
+  --glass-shadow: var(--shadow-md);
+
+  /* 布局 */
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 72px;
+  --navbar-height: 72px;
+}
+
+/* ============================================================================
+ * 语义色 · 深色主题 (:root.dark)
+ * ========================================================================== */
+:root.dark {
+  --background: #1a1a1a;
+  --foreground: #e2e8f0;
+  --card: #0a0a0a;
+  --card-foreground: #e2e8f0;
+  --popover: #1c1c1c;
+  --popover-foreground: #f6f6f6;
+  --muted-foreground: #64748b;
+
+  --secondary: #242424;
+  --secondary-foreground: #e5e7eb;
+  --muted: color-mix(in oklch, var(--foreground) 6%, var(--background));
+  --surface-hover: rgba(255, 255, 255, 0.06);
+  --surface-active: rgba(255, 255, 255, 0.12);
+
+  --primary: var(--brand);
+  --primary-foreground: #ffffff;
+  --primary-hover: var(--brand-l1);
+  --primary-active: var(--brand-l2);
+  --primary-strong: var(--brand-l3);
+  --primary-glow: color-mix(in oklch, var(--primary) 30%, transparent);
+
+  --border: #222222;
+  --input: #33373f;
+  --ring: var(--primary);
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #22c55e;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #111827;
+  --status-live: #ff3e3e;
+
+  --glass-bg: rgba(20, 20, 22, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-card-bg: rgba(255, 255, 255, 0.15);
+  --glass-card-border: rgba(255, 255, 255, 0.3);
+
+  --shadow-low: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 12px 48px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 32px 96px rgba(0, 0, 0, 0.6);
+  --glass-shadow: var(--shadow-lg);
+}
+
+/* ============================================================================
+ * HeroUI v3 注入：把应用语义色喂给 @heroui 组件消费的变量名
+ * （只覆盖本应用用到的组件表面；unlayered 优先于 @heroui 内置 @layer base 默认值）
+ * ========================================================================== */
+:root,
+:root.dark {
+  --surface: var(--card);
+  --surface-foreground: var(--card-foreground);
+  --surface-secondary: var(--card);
+  --surface-secondary-foreground: var(--card-foreground);
+  --surface-tertiary: var(--secondary);
+  --surface-tertiary-foreground: var(--secondary-foreground);
+  --overlay: var(--popover);
+  --overlay-foreground: var(--popover-foreground);
+  --default: var(--secondary);
+  --default-foreground: var(--secondary-foreground);
+  --accent: var(--primary);
+  --accent-foreground: var(--primary-foreground);
+  --muted: var(--muted-foreground);
+  --scrollbar: var(--border);
+  --separator: var(--border);
+  --focus: var(--ring);
+  --link: var(--foreground);
+  --danger: var(--destructive);
+  --danger-foreground: var(--destructive-foreground);
+  --field-background: var(--card);
+  --field-foreground: var(--foreground);
+  --radius: 4px;
+  --surface-shadow: var(--shadow-low);
+  --overlay-shadow: var(--shadow-md);
+  --border-width: 1px;
+  --skeleton-animation: shimmer;
+}
+
+/* ============================================================================
+ * 旧名别名 shim（迁移期兼容 —— 全部组件样式改写为新语义名后删除本段）
+ * ----------------------------------------------------------------------------
+ * 语义澄清：旧 --accent（品牌绿） -> 新 --primary；灰色 hover 另立 --surface-hover。
+ * 因此别名只把"旧名"指到"新语义"，避免同一变量双义。
+ * ========================================================================== */
+:root,
+:root.dark {
+  --bg-primary: var(--background);
+  --bg-secondary: var(--card);
+  --bg-tertiary: var(--secondary);
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted-foreground);
+  --accent: var(--primary);
+  --accent-hover: var(--primary-hover);
+  --accent-glow: var(--primary-glow);
+  --accent-gradient: var(--primary-gradient);
+  --accent-foreground: var(--primary-foreground);
+  --bg-hover: var(--surface-hover);
+  --platform-active-bg: var(--surface-hover);
+  --danger: var(--destructive);
+  --danger-foreground: var(--destructive-foreground);
+  --focus: var(--ring);
+}
+
+/* ============================================================================
+ * @theme inline：把语义色同名注入 Tailwind 命名空间
+ * 如此 bg-card / text-muted-foreground / bg-surface-hover 等都可用，
+ * 且展开为内联 var()，跟随 :root.dark 运行时翻转。
+ * ========================================================================== */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-glow: var(--primary-glow);
+  --color-ring: var(--ring);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-status-live: var(--status-live);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-active: var(--surface-active);
+  --color-brand: var(--brand);
+  --color-brand-d1: var(--brand-d1);
+  --color-brand-d2: var(--brand-d2);
+  --color-brand-d3: var(--brand-d3);
+  --color-brand-l1: var(--brand-l1);
+  --color-brand-l2: var(--brand-l2);
+  --color-brand-l3: var(--brand-l3);
+  --font-sans: var(--font-sans);
+}

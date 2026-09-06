@@ -8,10 +8,11 @@ import {
   useLocation,
 } from 'react-router-dom';
 
-// CSS 加载顺序有讲究：Tailwind preflight → HeroUI → 应用自定义变量/覆盖
+// CSS 加载顺序有讲究：Tailwind（preflight + 语义 token + @theme inline）
+// → HeroUI → 元素层 base（@layer base/components，供 utilities 覆盖）
 import '@/globals.css';
 import '@heroui/react/styles';
-import '@/legacy-global.css';
+import '@/base.css';
 
 import { Providers } from '@/components/providers/Providers';
 import { MotionProvider } from '@/components/motion/MotionProvider';

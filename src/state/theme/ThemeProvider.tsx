@@ -71,7 +71,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     userPreference === 'system' ? systemTheme : userPreference;
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', effectiveTheme);
+    const root = document.documentElement;
+    // 统一以 .dark class 驱动主题（配合 globals.css 的 @custom-variant dark 与 :root.dark token）。
+    // data-theme 属性在迁移期暂留，供尚未改写的 [data-theme] 选择器使用；迁移完成后删除。
+    root.classList.toggle('dark', effectiveTheme === 'dark');
+    root.setAttribute('data-theme', effectiveTheme);
     void setTauriWindowTheme(effectiveTheme);
   }, [effectiveTheme]);
 
