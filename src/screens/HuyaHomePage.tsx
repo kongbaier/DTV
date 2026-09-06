@@ -20,16 +20,8 @@ export function HuyaHomePage() {
   }, [custom, selected?.cate2Href]);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        overflow: 'hidden',
-        background: 'transparent',
-      }}
-    >
-      <div style={{ flexShrink: 0, background: 'transparent', zIndex: 10 }}>
+    <div className="flex h-full flex-col overflow-hidden bg-transparent">
+      <div className="z-10 shrink-0 bg-transparent">
         <CommonCategory
           categoriesData={huyaCategoriesData}
           onCategorySelected={(e) => setSelected(e)}
@@ -60,14 +52,7 @@ export function HuyaHomePage() {
           }
         />
       </div>
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflow: 'hidden',
-          background: 'transparent',
-        }}
-      >
+      <div className="min-h-0 flex-1 overflow-hidden bg-transparent">
         <CommonStreamerList
           key={selected?.cate2Href ?? 'none'}
           selectedCategory={selected}

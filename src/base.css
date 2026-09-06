@@ -6,6 +6,20 @@
   font-display: swap;
 }
 
+/* LoadingDots 弹跳动画（全局 keyframes，供 Tailwind 任意值 animate-[dot-bounce_...] 引用） */
+@keyframes dot-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0) scale(0.9);
+    opacity: 0.55;
+  }
+  40% {
+    transform: translateY(-8px) scale(1.05);
+    opacity: 1;
+  }
+}
+
 /* 元素层：与 Tailwind preflight / HeroUI 同处 @layer base，层内按源码序后者优先，
    utilities 仍可正常覆盖（修复此前 unlayered 压制 utilities 的问题）。
    注意：本文件无 Tailwind 指令，不被其编译器处理，勿使用 CSS 嵌套。 */

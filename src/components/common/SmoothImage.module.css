@@ -1,62 +1,70 @@
-.wrapper {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--skeleton-bg, rgba(255, 255, 255, 0.06));
-  width: 100%;
-  height: 100%;
-}
+/* 图片懒加载占位：加载中 shimmer、失败态、成功后淡入。
+   shimmer 纯白渐变是主题无关的骨架观感，保持原值。
+   data-scrolling 暂停逻辑：滚动时停掉动画避免卡顿（属性在 <html>，与主题无关）。
+   @layer components：让 Tailwind utilities 可覆盖。 */
+@layer components {
+  .wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--skeleton-bg, rgba(255, 255, 255, 0.06));
+  }
 
-.placeholder {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  animation: shimmer 1.4s ease-in-out infinite;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.04) 25%,
-    rgba(255, 255, 255, 0.12) 37%,
-    rgba(255, 255, 255, 0.04) 63%
-  );
-  background-size: 400% 100%;
-}
+  .placeholder {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 25%,
+      rgba(255, 255, 255, 0.12) 37%,
+      rgba(255, 255, 255, 0.04) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
 
-:global(:root[data-scrolling='1']) .placeholder {
-  animation: none !important;
-  background: rgba(255, 255, 255, 0.06);
-}
+  .error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--muted-foreground);
+    background-color: var(--card);
+  }
 
-.error {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: var(--text-secondary);
-  background-color: var(--bg-secondary);
-}
+  .img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.35s ease;
 
-.img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-}
+    &.imgLoaded {
+      opacity: 1;
+    }
+  }
 
-:global(:root[data-scrolling='1']) .img {
-  transition: none !important;
-}
+  .errorIcon {
+    opacity: 0.5;
+  }
 
-.imgLoaded {
-  opacity: 1;
-}
+  :global(:root[data-scrolling='1']) {
+    .placeholder {
+      animation: none !important;
+      background: rgba(255, 255, 255, 0.06);
+    }
 
-.errorIcon {
-  opacity: 0.5;
+    .img {
+      transition: none !important;
+    }
+  }
 }
 
 @keyframes shimmer {

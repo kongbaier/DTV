@@ -62,7 +62,11 @@
   --dur-3: 240ms;
 
   /* 派生 token：单点定义，内部引用语义色随主题解析 */
-  --primary-gradient: linear-gradient(135deg, var(--primary), var(--primary-hover));
+  --primary-gradient: linear-gradient(
+    135deg,
+    var(--primary),
+    var(--primary-hover)
+  );
   --glass-blur: blur(32px);
   --status-warning: #f59e0b;
 
@@ -115,6 +119,12 @@
   --warning: #f59e0b;
   --warning-foreground: #111827;
   --status-live: #ff3e3e;
+
+  /* 平台主题色（订阅芯片上的平台标记：亮色用深阶保证浅底对比） */
+  --platform-douyu: #d97706;
+  --platform-huya: #b45309;
+  --platform-douyin: #4c1d95;
+  --platform-bilibili: #c026d3;
 
   /* 毛玻璃 */
   --glass-bg: rgba(255, 255, 255, 0.75);
@@ -171,6 +181,12 @@
   --warning-foreground: #111827;
   --status-live: #ff3e3e;
 
+  /* 平台主题色（深色下换浅粉彩以在深底上保持对比） */
+  --platform-douyu: #ffb17a;
+  --platform-huya: #ffd37a;
+  --platform-douyin: #a78bfa;
+  --platform-bilibili: #ff9bd1;
+
   --glass-bg: rgba(20, 20, 22, 0.8);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-card-bg: rgba(255, 255, 255, 0.15);
@@ -186,8 +202,7 @@
  * HeroUI v3 注入：把应用语义色喂给 @heroui 组件消费的变量名
  * （只覆盖本应用用到的组件表面；unlayered 优先于 @heroui 内置 @layer base 默认值）
  * ========================================================================== */
-:root,
-:root.dark {
+:root {
   --surface: var(--card);
   --surface-foreground: var(--card-foreground);
   --surface-secondary: var(--card);

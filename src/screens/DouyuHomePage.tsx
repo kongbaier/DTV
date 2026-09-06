@@ -169,16 +169,8 @@ export function DouyuHomePage() {
       : null;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        overflow: 'hidden',
-        background: 'transparent',
-      }}
-    >
-      <div style={{ flexShrink: 0 }}>
+    <div className="flex h-full flex-col overflow-hidden bg-transparent">
+      <div className="shrink-0">
         <CommonCategory
           categoriesData={categories}
           onCategorySelected={(e) => {
@@ -241,14 +233,7 @@ export function DouyuHomePage() {
           </div>
         ) : null}
       </div>
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflow: 'hidden',
-          background: 'transparent',
-        }}
-      >
+      <div className="min-h-0 flex-1 overflow-hidden bg-transparent">
         <CommonStreamerList
           key={
             douyuCategory ? `${douyuCategory.type}:${douyuCategory.id}` : 'none'

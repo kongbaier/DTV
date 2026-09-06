@@ -88,15 +88,15 @@ export function CustomHomePage() {
   }, [selectedEntry]);
 
   return (
-    <div className={styles.customHome}>
+    <div className="flex h-full flex-col overflow-hidden bg-transparent">
       {!entries.length ? (
-        <div className={styles.emptyTip}>
+        <div className="px-[12px] py-[14px] text-[13px] text-muted-foreground">
           暂无收藏分区，去分类页订阅后会出现在这里。
         </div>
       ) : null}
 
       {entries.length ? (
-        <div className={styles.list}>
+        <div className="flex flex-wrap gap-[10px] px-[12px] pb-[14px] pt-[6px]">
           {entries.map((entry) => {
             const active = entry.key === selected;
             const platformClass =
@@ -126,7 +126,7 @@ export function CustomHomePage() {
         </div>
       ) : null}
 
-      <div className={styles.streamerList}>
+      <div className="min-h-0 flex-1 overflow-hidden bg-transparent">
         {selectedEntry ? (
           <CommonStreamerList
             key={selected}

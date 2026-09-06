@@ -11,8 +11,6 @@ import React, {
 } from 'react';
 import { AnimatePresence, m } from 'framer-motion';
 
-import styles from './PlayerOverlayProvider.module.css';
-
 const PlayerPage = lazy(() =>
   import('@/screens/PlayerPage').then((m) => ({ default: m.PlayerPage })),
 );
@@ -58,7 +56,7 @@ export function PlayerOverlayHost() {
     <AnimatePresence>
       {isOpen ? (
         <m.div
-          className={styles.overlayRoot}
+          className="absolute inset-0 z-[500] flex items-stretch justify-stretch"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -66,12 +64,12 @@ export function PlayerOverlayHost() {
         >
           <button
             type="button"
-            className={styles.backdrop}
+            className="absolute inset-0 z-0 m-0 border-0 bg-[rgba(0,0,0,0.62)] p-0"
             aria-label="关闭播放器"
             onClick={closePlayer}
           />
           <m.div
-            className={styles.overlayPanel}
+            className="relative z-[1] flex min-h-0 min-w-0 flex-1 flex-col bg-black"
             initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, y: 110, rotate: 0.6, scale: 0.985 }}

@@ -11,7 +11,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, m } from 'framer-motion';
 import { Spinner } from '@heroui/react';
 
-import styles from './AppShell.module.css';
 import { Sidebar } from '@/components/shell/Sidebar';
 import { Navbar } from '@/components/shell/Navbar';
 import { useTheme } from '@/state/theme/ThemeProvider';
@@ -141,11 +140,11 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
     optimisticPlatform !== activePlatform || isRoutePending;
 
   return (
-    <div className={styles.appShell}>
+    <div className="flex h-screen overflow-hidden">
       {!shouldHidePlayerChrome ? (
         <Sidebar isCollapsed={isSidebarCollapsed} />
       ) : null}
-      <div className={styles.appMain}>
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-background">
         {!shouldHidePlayerChrome ? (
           <Navbar
             theme={effectiveTheme}
@@ -156,10 +155,10 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         ) : null}
 
         <m.main
-          className={`${styles.appBody} ${playerRoute ? styles.appBodyPlayer : ''}`}
+          className={`relative flex min-h-0 flex-1 flex-col overflow-hidden ${playerRoute ? 'px-0' : 'px-[14px]'}`}
         >
           <div
-            className={`${styles.routePendingContents} ${showRoutePending ? styles.routePendingContentsHidden : ''}`}
+            className={`flex min-h-0 flex-1 flex-col ${showRoutePending ? 'pointer-events-none opacity-0' : ''}`}
             aria-hidden={showRoutePending}
           >
             {playerRoute ? (
@@ -173,7 +172,7 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
                     duration: 0.18,
                     ease: [0.16, 1, 0.3, 1],
                   }}
-                  style={{ flex: 1, minHeight: 0 }}
+                  className="min-h-0 flex-1"
                 >
                   {children}
                 </m.div>
@@ -184,12 +183,12 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
           </div>
           {showRoutePending ? (
             <div
-              className={styles.routePendingOverlay}
+              className="absolute inset-0 z-20 flex items-center justify-center bg-background"
               data-drag-region="false"
             >
               <button
                 type="button"
-                className={styles.routePendingButton}
+                className="flex h-[56px] w-[132px] items-center justify-center rounded-[14px] border border-white/[0.08] bg-white/[0.06] p-0"
                 disabled
                 aria-label="正在加载"
               >
