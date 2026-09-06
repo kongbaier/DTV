@@ -185,11 +185,11 @@
   border-radius: 999px;
   cursor: pointer;
   color: rgba(248, 250, 252, 0.9);
-  background: rgba(255, 255, 255, 0.1);
+  /* 不用 backdrop-filter：与 cate2Overlay 同理，避免 Chromium backdrop 采样
+     带来的色彩/闪烁伪影。 */
+  background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   transition:
     background 0.18s ease,
     color 0.18s ease,
@@ -401,21 +401,18 @@
   padding: 18px;
   border-radius: 40px;
   z-index: 50;
-  background: rgba(20, 20, 20, 0.985);
+  /* 不用 backdrop-filter：展开动画首帧 backdrop 采样未就绪会在面板顶部闪黑边，
+     且会扰动背后内容色彩。面板本就近乎不透明，改实底观感不变。 */
+  background: rgb(20, 20, 20);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
-  /* 进入动画期间首次合成，backdrop-filter 采样未就绪时顶部会闪一帧黑边。
-     常驻合成层让 backdrop 在动画开始前就绪，消除该闪烁。 */
-  will-change: transform;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 :global(:root[data-theme='light']) .cate2Overlay {
-  background: rgba(255, 255, 255, 0.975);
+  background: #ffffff;
   border-color: rgba(148, 163, 184, 0.28);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
@@ -569,8 +566,7 @@
   background: rgba(255, 255, 255, 0.08);
   color: rgba(248, 250, 252, 0.96);
   cursor: pointer;
-  backdrop-filter: blur(10px) saturate(1.05);
-  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  /* 不用 backdrop-filter(含 saturate)：避免 backdrop 采样扰动背后色彩/闪烁。 */
   box-shadow: none;
   transition:
     background 0.2s ease,
