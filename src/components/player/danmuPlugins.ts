@@ -56,7 +56,7 @@ export class DanmuToggleControl extends Plugin {
     if (this.config.disable) {
       return '';
     }
-    return `<xg-icon class="xgplayer-danmu-toggle" title="" role="button" aria-pressed="${this.isActive}">
+    return `<xg-icon class="xgplayer-danmu-toggle xgplayer-personal-control" title="" role="button" aria-pressed="${this.isActive}">
       <span class="danmu-toggle-label">弹幕</span>
       <span class="danmu-toggle-switch">
         <span class="switch-track"></span>
@@ -224,7 +224,7 @@ export class DanmuSettingsControl extends Plugin {
     if (this.config.disable) {
       return '';
     }
-    return `<xg-icon class="xgplayer-danmu-settings" title="">
+    return `<xg-icon class="xgplayer-danmu-settings xgplayer-personal-control" title="">
       ${ICONS.cog}
     </xg-icon>`;
   }
@@ -617,7 +617,7 @@ export class DanmuKeywordBlockControl extends Plugin {
     if (this.config.disable) {
       return '';
     }
-    return `<xg-icon class="xgplayer-danmu-block" title="弹幕屏蔽">
+    return `<xg-icon class="xgplayer-danmu-block xgplayer-personal-control" title="弹幕屏蔽">
       ${ICONS.filter}
     </xg-icon>`;
   }

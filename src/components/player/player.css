@@ -100,27 +100,54 @@
   box-shadow: var(--glass-shadow);
 }
 
-.xgplayer-controls {
-  display: flex;
-  width: 100%;
-  gap: 16px;
-  padding: 0 18px 16px;
-  align-items: center;
-  justify-content: space-between;
-  box-sizing: border-box;
-}
+.xgplayer {
+  .xgplayer-controls {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
 
-.xgplayer-controls-left,
-.xgplayer-controls-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+    .xg-inner-controls {
+      position: static;
+      padding: 0 12px;
+      width: 100%;
+    }
+
+    .lucide {
+      stroke-width: 2px;
+    }
+  }
+
+  .xg-left-grid,
+  .xg-right-grid {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .xgplayer-personal-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    position: relative;
+    border: none;
+    background: none;
+    transition: color 0.2s ease;
+  }
+
+  xg-icon {
+    color: var(--color-white);
+    margin: 0;
+  }
 }
 
 .xgplayer-left-cluster,
@@ -141,13 +168,6 @@
 .danmu-control-group {
   gap: 10px;
   padding: 6px 12px;
-}
-
-.xgplayer-left-cluster .xgplayer-refresh-control,
-.xgplayer-left-cluster .xgplayer-play,
-.danmu-control-group .xgplayer-danmu-settings,
-.danmu-control-group .xgplayer-danmu-toggle {
-  padding: 0;
 }
 
 .xgplayer-left-cluster:hover,
@@ -235,34 +255,6 @@
   }
 }
 
-.xgplayer-refresh-control,
-.xgplayer-quality-control,
-.xgplayer-line-control,
-.xgplayer-danmu-toggle,
-.xgplayer-danmu-settings,
-.xgplayer-volume-control {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 6px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.88);
-  cursor: pointer;
-  position: relative;
-  border: none;
-  background: none;
-  transition: color 0.2s ease;
-}
-
-.xgplayer-refresh-control:hover,
-.xgplayer-quality-control:hover,
-.xgplayer-line-control:hover,
-.xgplayer-danmu-toggle:hover,
-.xgplayer-danmu-settings:hover,
-.xgplayer-volume-control:hover {
-  color: #ffffff;
-}
-
 .xgplayer-quality-control.menu-open .quality-caret,
 .xgplayer-line-control.menu-open .line-caret {
   transform: rotate(180deg);
@@ -271,15 +263,6 @@
 .xgplayer-quality-control .quality-caret,
 .xgplayer-line-control .line-caret {
   transition: transform 0.2s ease;
-}
-
-.xgplayer-refresh-control svg,
-.xgplayer-quality-control svg,
-.xgplayer-line-control svg,
-.xgplayer-danmu-toggle svg,
-.xgplayer-danmu-settings svg,
-.xgplayer-volume-control svg {
-  pointer-events: none;
 }
 
 .xgplayer-refresh-control.is-loading {
@@ -303,7 +286,7 @@
 .xgplayer-quality-control.is-switching::after,
 .xgplayer-line-control.is-switching::after {
   content: '';
-  width: 12px;
+  width: 10px;
   height: 12px;
   margin-left: 4px;
   border-radius: 50%;
@@ -329,41 +312,37 @@
   background: transparent;
   border: none;
   transition: color 0.2s ease;
-}
 
-.xgplayer-danmu-toggle:hover {
-  color: #ffffff;
-}
+  & .is-off {
+    opacity: 0.85;
+  }
 
-.xgplayer-danmu-toggle.is-off {
-  opacity: 0.85;
-}
-
-.xgplayer-danmu-toggle .danmu-toggle-switch {
-  position: relative;
-  width: 30px;
-  height: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
+  & .danmu-toggle-switch {
+    position: relative;
+    width: 30px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
 }
 
 .xgplayer-danmu-toggle .danmu-toggle-switch .switch-track {
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.32);
   transition: background 0.2s ease;
 }
 
 .xgplayer-danmu-toggle .danmu-toggle-switch .switch-thumb {
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
-  transform: translateX(1px);
+  transform: translateX(3px);
   transition:
     transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.2s ease,
@@ -1940,7 +1919,8 @@
 .error-player .retry-btn:active,
 .offline-player .retry-btn:active {
   transform: translateY(0px);
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--primary-glow) 70%, transparent);
+  box-shadow: 0 6px 18px
+    color-mix(in srgb, var(--primary-glow) 70%, transparent);
 }
 
 /* 视频元素样式 */
@@ -1957,15 +1937,6 @@ video.xgplayer-video {
   height: 100%;
   position: absolute;
   inset: 0;
-}
-
-.xgplayer .xgplayer-controls {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 0 18px 16px;
-  box-sizing: border-box;
 }
 
 /* 响应式样式 */
@@ -1987,7 +1958,6 @@ video.xgplayer-video {
   .player-container {
     border-right: 1px solid rgba(255, 255, 255, 0.08);
   }
-
 }
 
 @media (max-width: 768px) {

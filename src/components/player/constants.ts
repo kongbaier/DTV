@@ -31,6 +31,8 @@ export const DANMU_AREA_OPTIONS = [0.25, 0.5, 0.75] as const;
 export const DANMU_OPACITY_MIN = 0.2;
 export const DANMU_OPACITY_MAX = 1;
 export const PLAYER_VOLUME_STORAGE_KEY = 'dtv_player_volume_v1';
+// muted 与 volume 分离后的静音标志(volume 只表达音量 level,不再用 0 编码静音)。
+export const PLAYER_MUTED_STORAGE_KEY = 'dtv_player_muted_v1';
 export const DEFAULT_DANMU_FONT_FAMILY =
   '"OPPO Sans", "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif';
 export const WINDOWS_DANMU_FONT_FAMILY =
@@ -169,6 +171,51 @@ export const persistStoredVolume = (volume: number) => {
   }
 };
 
+export const loadStoredMuted = (): boolean | null => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return null;
+  }
+  try {
+    const raw = window.localStorage.getItem(PLAYER_MUTED_STORAGE_KEY);
+    if (raw === null) {
+      return null;
+    }
+    return raw === 'true';
+  } catch (error) {
+    console.warn('[Player] Failed to load stored muted:', error);
+    return null;
+  }
+};
+
+export const persistStoredMuted = (muted: boolean) => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return;
+  }
+  try {
+    window.localStorage.setItem(
+      PLAYER_MUTED_STORAGE_KEY,
+      muted ? 'true' : 'false',
+    );
+  } catch (error) {
+    console.warn('[Player] Failed to persist muted:', error);
+  }
+};
+
+// volume 与 muted 是两个独立轴:volume=0 不代表 muted(滑条拖到 0 是无声音量,
+// 静音是另一个可恢复的状态)。返回 { volume, muted },muted 已含旧版数据迁移:
+// 旧版本用 volume===0 编码静音且没有 muted 键,此时视为 muted=true。
+export const loadStoredVolumeState = (): {
+  volume: number | null;
+  muted: boolean;
+} => {
+  const volume = loadStoredVolume();
+  let muted = loadStoredMuted();
+  if (muted === null) {
+    muted = volume === 0;
+  }
+  return { volume, muted };
+};
+
 export const loadDanmuPreferences = (): {
   enabled: boolean;
   settings: DanmuUserSettings;
@@ -284,7 +331,7 @@ export const persistDanmuKeywordBlockPreferences = (
 };
 
 export const createLucideIconSvg = (name: string, inner: string) => {
-  return `<svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-${name}" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="lucide lucide-${name}" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 };
 
 export const ICONS = {
@@ -314,7 +361,7 @@ export const ICONS = {
   ),
   cog: createLucideIconSvg(
     'cog',
-    '<path d="M11 10.27 7 3.34"></path><path d="m11 13.73-4 6.93"></path><path d="M12 22v-2"></path><path d="M12 2v2"></path><path d="M14 12h8"></path><path d="m17 20.66-1-1.73"></path><path d="m17 3.34-1 1.73"></path><path d="M2 12h2"></path><path d="m20.66 17-1.73-1"></path><path d="m20.66 7-1.73 1"></path><path d="m3.34 17 1.73-1"></path><path d="m3.34 7 1.73 1"></path><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="12" r="8"></circle>',
+    '<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/>',
   ),
   filter: createLucideIconSvg(
     'filter',
@@ -327,6 +374,10 @@ export const ICONS = {
   volume2: createLucideIconSvg(
     'volume-2',
     '<path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path><path d="M16 9a5 5 0 0 1 0 6"></path><path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path>',
+  ),
+  volumeX: createLucideIconSvg(
+    'volume-x',
+    '<path d="M11 4.702a.7.7 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.7.7 0 0 0 11 19.298z"/><path d="m16.5 14.5 5-5"/><path d="m16.5 9.5 5 5"/>',
   ),
 };
 

@@ -22,7 +22,7 @@ import type {
 import {
   applyDanmuFontFamilyForOS,
   ICONS,
-  loadStoredVolume,
+  loadStoredVolumeState,
   persistDanmuKeywordBlockPreferences,
   persistDanmuPreferences,
   sanitizeDanmuArea,
@@ -453,6 +453,14 @@ export function usePlayerEngine(params: PlayerEngineParams): PlayerEngine {
         VolumeControl,
       } = pluginsMod;
 
+      // volume 与 muted 是两个独立轴:volume=0 不代表 muted。音量数值必须写进
+      // options.volume(xgplayer 会在 start() 的异步 _startInit 里回放 config.volume,
+      // 若 options 里不是持久化的数值会被默认 0.6 覆盖),muted 则由构造后同步。
+      const { volume: storedPlayerVolume, muted: storedPlayerMuted } =
+        loadStoredVolumeState();
+      const initVolume = storedPlayerVolume ?? 0.5;
+      const initMuted = storedPlayerMuted;
+
       const playerOptions: IPlayerOptions = {
         el: playerContainerRef.current,
         url,
@@ -464,9 +472,9 @@ export function usePlayerEngine(params: PlayerEngineParams): PlayerEngine {
         closeVideoClick: true,
         closeVideoTouch: true,
         keyShortcut: true,
+        volume: initVolume,
         width: '100%',
         height: '100%',
-        volume: false as unknown as number,
         pip: {
           position: POSITIONS.CONTROLS_RIGHT,
           index: 3,
@@ -479,6 +487,7 @@ export function usePlayerEngine(params: PlayerEngineParams): PlayerEngine {
         controls: {
           mode: 'normal',
         },
+        ignores: ['volume', 'start', 'replay', 'progress', 'time'],
         icons: {
           play: ICONS.play,
           pause: ICONS.pause,
@@ -570,7 +579,7 @@ export function usePlayerEngine(params: PlayerEngineParams): PlayerEngine {
         };
       }
 
-      const player = new (PlayerCtor as any)(playerOptions);
+      const player = new PlayerCtor(playerOptions);
       playerRef.current = player;
       if (!isSessionActive(sessionId)) {
         try {
@@ -582,6 +591,14 @@ export function usePlayerEngine(params: PlayerEngineParams): PlayerEngine {
         return;
       }
       playbackKindRef.current = isHlsPlayback ? 'hls' : 'flv';
+
+      try {
+        // xgplayer 的 config 不支持把 muted 作为媒体初始状态(只认 autoplayMuted),
+        // 音量已通过 options.volume 注入,这里在构造后立即同步静音状态。
+        player.muted = initMuted;
+      } catch {
+        // ignore
+      }
 
       // 在 xgplayer 的“原生全屏”入口（全屏按钮 / 双击视频都走到 player.getFullscreen()）前
       // 拦一道：若窗口当前处于最大化，先 unmaximize 并记录，再放行元素全屏 —— 元素全屏会让
@@ -601,16 +618,6 @@ export function usePlayerEngine(params: PlayerEngineParams): PlayerEngine {
             });
             return ret;
           };
-        }
-      } catch {
-        // ignore
-      }
-
-      try {
-        const storedPlayerVolume = loadStoredVolume();
-        if (storedPlayerVolume !== null) {
-          player.volume = storedPlayerVolume;
-          player.muted = storedPlayerVolume === 0 ? true : player.muted;
         }
       } catch {
         // ignore
@@ -1130,10 +1137,7 @@ export function usePlayerEngine(params: PlayerEngineParams): PlayerEngine {
       qualityPluginRef.current?.updateLabel?.(currentQuality);
       linePluginRef.current?.setOptions?.([...lineOptions]);
       linePluginRef.current?.updateLabel?.(
-        getLineLabel(
-          lineOptions,
-          resolveCurrentLineFor(platform, currentLine),
-        ),
+        getLineLabel(lineOptions, resolveCurrentLineFor(platform, currentLine)),
       );
     } catch {
       // ignore

@@ -1,6 +1,6 @@
 import Plugin, { POSITIONS } from 'xgplayer/es/plugin/plugin.js';
 
-import { ICONS, loadStoredVolume, persistStoredVolume } from './constants';
+import { ICONS, persistStoredMuted, persistStoredVolume } from './constants';
 
 export class VolumeControl extends Plugin {
   static override pluginName = 'volumeControl';
@@ -21,7 +21,7 @@ export class VolumeControl extends Plugin {
     if (this.config.disable) {
       return '';
     }
-    return `<xg-icon class="xgplayer-volume-control" title="音量/静音切换">
+    return `<xg-icon class="xgplayer-volume-control xgplayer-personal-control">
       <div class="volume-icon">
         ${ICONS.volume2}
       </div>
@@ -38,11 +38,11 @@ export class VolumeControl extends Plugin {
     this.slider = this.find('.volume-slider') as HTMLInputElement | null;
     this.valueLabel = this.find('.volume-value') as HTMLElement | null;
 
-    const updateUI = (volume: number) => {
+    // 纯渲染:把当前 (volume, muted) 对齐到 UI,不改任何状态。
+    // 静音或 0 音量都显示 volume-x(无声),否则显示正常音量 icon。
+    const updateUI = (volume: number, muted: boolean) => {
       const clamped = Math.max(0, Math.min(1, volume));
-      if (clamped > 0) {
-        this.previousVolume = clamped;
-      }
+      const silent = muted || clamped <= 0;
       if (this.slider) {
         this.slider.value = String(Math.round(clamped * 100));
         this.updateSliderVisual(this.slider);
@@ -51,73 +51,74 @@ export class VolumeControl extends Plugin {
         this.valueLabel.textContent = `${Math.round(clamped * 100)}%`;
       }
       if (this.volumeIcon) {
-        this.volumeIcon.setAttribute(
-          'data-muted',
-          clamped === 0 ? 'true' : 'false',
-        );
+        this.volumeIcon.innerHTML = silent ? ICONS.volumeX : ICONS.volume2;
+        this.volumeIcon.setAttribute('data-muted', muted ? 'true' : 'false');
+        this.volumeIcon.setAttribute('title', silent ? '恢复音量' : '静音');
       }
     };
 
-    const storedVolume = loadStoredVolume();
-    if (storedVolume !== null) {
-      if (storedVolume > 0) {
-        this.previousVolume = storedVolume;
-      }
-      this.player.volume = storedVolume;
-      this.player.muted = storedVolume === 0 ? true : this.player.muted;
-    } else {
-      const initial = this.player.volume ?? 1;
-      if (initial > 0) {
-        this.previousVolume = initial;
-      }
+    // 初始化:usePlayerEngine 已把持久化音量写进 options.volume、并在构造后同步 player.muted,
+    // 这里只需读播放器实际状态对齐 UI 并记住最后非零音量(供 0 音量点击恢复)。
+    const initialVolume = this.player.volume ?? 0.6;
+    const initialMuted = !!this.player.muted;
+    if (initialVolume > 0) {
+      this.previousVolume = initialVolume;
     }
-
-    updateUI(this.player.volume ?? storedVolume ?? 1);
+    updateUI(initialVolume, initialMuted);
 
     this.slider?.addEventListener('input', (event) => {
       const value = Number((event.target as HTMLInputElement).value);
       const clampedPercent = Math.max(0, Math.min(100, value));
       const normalized = clampedPercent / 100;
-      if (normalized === 0) {
-        this.player.muted = true;
-      } else {
-        this.player.muted = false;
+      if (normalized > 0) {
         this.previousVolume = normalized;
       }
+      // 拖动滑条即表达“以该音量出声”:音量>0 时解除静音;拖到 0 保持非静音(0 音量 ≠ 静音)。
+      if (this.player.muted && normalized > 0) {
+        this.player.muted = false;
+      }
       this.player.volume = normalized;
-      updateUI(normalized);
       persistStoredVolume(normalized);
+      updateUI(normalized, this.player.muted);
     });
 
     this.handleIconClick = (event: Event) => {
       event.preventDefault();
       event.stopPropagation();
       const currentVolume = this.player.volume ?? 0;
-      if (currentVolume > 0) {
-        this.previousVolume = currentVolume;
-        this.player.volume = 0;
+      if (!this.player.muted && currentVolume > 0) {
+        // 有声 → 静音:只切 muted,保留 volume(两个轴分离),取消静音时回到该音量。
         this.player.muted = true;
-        updateUI(0);
-        persistStoredVolume(0);
       } else {
-        const restoreVolume = this.previousVolume > 0 ? this.previousVolume : 1;
+        // 静音中(恢复原音量)或 0 音量(恢复到记忆音量) → 出声。
+        const remembered = this.previousVolume > 0 ? this.previousVolume : 1;
+        const restore =
+          this.player.muted && currentVolume > 0 ? currentVolume : remembered;
+        this.player.volume = restore;
+        if (restore > 0) {
+          this.previousVolume = restore;
+        }
         this.player.muted = false;
-        this.player.volume = restoreVolume;
-        updateUI(restoreVolume);
-        persistStoredVolume(restoreVolume);
       }
+      persistStoredVolume(this.player.volume ?? 0);
+      persistStoredMuted(this.player.muted);
+      updateUI(this.player.volume ?? 0, this.player.muted);
     };
 
     this.volumeIcon?.addEventListener('click', this.handleIconClick);
     if (this.volumeIcon) {
-      this.volumeIcon.setAttribute('title', '点击静音 / 取消静音');
       this.volumeIcon.style.cursor = 'pointer';
     }
 
     this.onVolumeChange = () => {
-      const current = this.player.volume ?? 1;
-      updateUI(current);
-      persistStoredVolume(current);
+      const volume = this.player.volume ?? 0;
+      const muted = !!this.player.muted;
+      if (volume > 0) {
+        this.previousVolume = volume;
+      }
+      updateUI(volume, muted);
+      persistStoredVolume(volume);
+      persistStoredMuted(muted);
     };
     this.player.on('volumechange', this.onVolumeChange);
   }
@@ -187,7 +188,7 @@ export class RefreshControl extends Plugin {
     if (this.config.disable) {
       return '';
     }
-    return `<xg-icon class="xgplayer-refresh-control" title="刷新">
+    return `<xg-icon class="xgplayer-refresh-control xgplayer-personal-control" title="刷新">
       ${ICONS.rotateCcw}
     </xg-icon>`;
   }
@@ -310,7 +311,7 @@ export class QualityControl extends Plugin {
       return '';
     }
     const current = this.getCurrent();
-    return `<xg-icon class="xgplayer-quality-control" title="">
+    return `<xg-icon class="xgplayer-quality-control xgplayer-personal-control" title="">
       <span class="quality-label">${current}</span>
       <svg class="quality-caret" width="10" height="10" viewBox="0 0 10 10" fill="none">
         <path d="M2.5 3.5L5 6l2.5-2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -572,7 +573,7 @@ export class LineControl extends Plugin {
       return '';
     }
     const current = this.getCurrentLabel();
-    return `<xg-icon class="xgplayer-line-control" title="">
+    return `<xg-icon class="xgplayer-line-control xgplayer-personal-control" title="">
       <span class="line-label">${current || '线路'}</span>
       <svg class="line-caret" width="10" height="10" viewBox="0 0 10 10" fill="none">
         <path d="M2.5 3.5L5 6l2.5-2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
