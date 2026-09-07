@@ -55,7 +55,7 @@ type VersionInfo = {
   published_at?: string;
 };
 
-const GITHUB_RELEASES_URL = 'https://github.com/chen-zeong/DTV/releases';
+const GITHUB_RELEASES_URL = 'https://github.com/kongbaier/DTV/releases';
 
 const basePlatforms: Array<{
   id: Exclude<UiPlatform, 'custom'>;
